@@ -20,7 +20,10 @@
                 "emoji": "",
                 "flag": "fi fi-ro"
             },
-            "friday": null
+            "friday": {
+                "name": "Dirigenție",
+                "emoji": "📰"
+            }
         },
         {
             "time": "13:00",
@@ -152,10 +155,8 @@
             },
             "wednesday": null,
             "thursday": null,
-            "friday": {
-                "name": "Dirigenție",
-                "emoji": "📰"
-            }
+            "friday": null
         }
     ]
 }
+
