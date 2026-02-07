@@ -10,9 +10,15 @@
                     "name": "Mate",
                     "emoji": "📏"
                 },
-                "wednesday": null,
+                "wednesday": {
+                    "name": "Muzică",
+                    "emoji": "🎵"
+                },
                 "thursday": null,
-                "friday": null
+                "friday": {
+                    "name": "Arte",
+                    "emoji": "🎨"
+                }
             },
             {
                 "time": "13:00",
@@ -140,14 +146,8 @@
             {
                 "time": "18:00",
                 "monday": null,
-                "tuesday": {
-                    "name": "Arte",
-                    "emoji": "🎨"
-                },
-                "wednesday": {
-                    "name": "Muzică",
-                    "emoji": "🎵"
-                },
+                "tuesday": null,
+                "wednesday": null,
                 "thursday": {
                     "name": "Franceză",
                     "emoji": "",
