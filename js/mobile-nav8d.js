@@ -457,7 +457,7 @@
             if (todayView?.classList.contains('active')) {
                 populateTodayCards();
             }
-        }, 60000); // Every minute
+        }, 300000); // Every 5 minutes
     }
 
     // Run initialization when DOM is ready
@@ -481,4 +481,5 @@
         closeBottomSheet,
         updateShortcutButtons
     };
+
 })();
