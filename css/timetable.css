@@ -134,7 +134,7 @@ body.minimal-cells .timetable td:not(:first-child):hover {
 /* Generic highlight tag for theming/customization (applied to the header/time/subject cells) */
 .timetable th.current-highlight, .timetable td.current-highlight, .timetable thead th.current-highlight {
     /* Default emphasis using accent color -- can be overridden in themes/settings */
-    border-radius: 4px;
+   
     transition: background-color var(--transition-speed), color var(--transition-speed);
     color: var(--accent-color);
     background: color-mix(in srgb, var(--accent-color) 6%, var(--card-bg));
