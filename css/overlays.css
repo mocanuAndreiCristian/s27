@@ -8,11 +8,11 @@
     position: fixed;
     inset: 0;
     background-color: var(--overlay-bg);
-    z-index: 1999; /* Below Side Menu (2000) */
+    z-index: calc(var(--z-side-menu) - 1);
     opacity: 0;
     transition: opacity var(--transition-speed) ease;
-    backdrop-filter: blur(2px);
-    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(var(--overlay-blur-light));
+    -webkit-backdrop-filter: blur(var(--overlay-blur-light));
 }
 
 #overlay.active {
@@ -56,21 +56,21 @@
 #closeFolderEdit {
     position: absolute;
     top: 1.25rem;
-    right: 1.5rem;
+    right: var(--spacing-lg);
     background: var(--card-bg);
     border: 1px solid var(--border-color);
-    border-radius: 14px; /* Squircle */
+    border-radius: var(--border-radius-sm);
     color: var(--accent-color);
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     cursor: pointer;
-    z-index: 10005; /* High z-index */
-    transition: all 0.2s ease;
-    width: 48px;
-    height: 48px;
+    z-index: var(--z-close-btn);
+    transition: all var(--transition-speed) ease;
+    width: var(--close-btn-size);
+    height: var(--close-btn-size);
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow-sm);
 }
 
 .close-btn:hover,
@@ -89,8 +89,7 @@
     transform: scale(1.08);
     background: var(--highlight-color);
     color: var(--text-color);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.15);
-    /* No rotation animation as requested */
+    box-shadow: var(--box-shadow-md);
 }
 
 /* Time Overlay specific overrides if needed */
@@ -113,14 +112,14 @@
     display: flex;
 }
 #time {
-    font-size: clamp(4rem, 10vw, 10rem);
+    font-size: clamp(var(--spacing-3xl), 10vw, 10rem);
     font-weight: var(--font-weight-bold);
     color: var(--accent-color);
     text-align: center;
-    margin-bottom: 0.5rem;
+    margin-bottom: var(--spacing-sm);
 }
 #date {
-    font-size: clamp(1.2rem, 2vw, 2rem);
+    font-size: clamp(1.2rem, 2vw, var(--font-size-2xl));
     color: var(--accent-secondary);
     opacity: 0.9;
     text-align: center;
@@ -131,8 +130,8 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(10px);
+    background: var(--overlay-bg-strong);
+    backdrop-filter: blur(var(--overlay-blur));
     z-index: 9999;
     justify-content: center;
     align-items: center;
@@ -153,9 +152,9 @@
     width: 100%;
     max-width: 800px;
     background: var(--card-bg);
-    border-radius: 1.5rem;
+    border-radius: var(--spacing-lg);
     padding: 2.5rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--box-shadow-modal);
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
@@ -171,7 +170,7 @@
     padding-right: 3rem; /* Space for close button */
 }
 .info-overlay-header h2 {
-    font-size: 2.5rem;
+    font-size: var(--font-size-2xl);
     color: var(--accent-color);
     margin-bottom: 0.5rem;
     font-weight: var(--font-weight-bold);
@@ -181,16 +180,16 @@
     line-height: 1.6;
 }
 .info-content h2 {
-    margin-top: 1.5rem;
-    margin-bottom: 1rem;
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
     text-align: center;
-    font-size: 1.8rem;
+    font-size: var(--font-size-2xl);
     color: var(--accent-color);
 }
 .info-content h3 {
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-    font-size: 1.3rem;
+    margin-top: var(--spacing-md);
+    margin-bottom: var(--spacing-sm);
+    font-size: var(--font-size-xl);
     color: var(--text-color);
 }
 .info-content p {
@@ -237,17 +236,17 @@
     overflow: visible;
     transition: box-shadow 0.2s ease, transform 0.12s ease;
     background: var(--highlight-color);
-    border-radius: 1rem;
-    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
     margin-bottom: 1rem;
     border-left: 4px solid var(--accent-color);
 }
 .release-note:hover {
     transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow-md);
 }
 .release-note.open {
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--box-shadow-lg);
     transform: translateY(-2px);
 }
 .release-note .release-header {
@@ -259,8 +258,8 @@
     cursor: pointer;
 }
 .release-note .release-header:focus {
-    outline: 3px solid rgba(97, 150, 255, 0.18);
-    border-radius: 8px;
+    outline: var(--focus-outline-width) solid color-mix(in srgb, var(--accent-color) 18%, transparent);
+    border-radius: var(--border-radius-sm);
 }
 .release-note .release-body {
     max-height: 0;
@@ -274,21 +273,21 @@
 }
 .release-version {
     display: inline-block;
-    padding: 0.4rem 1rem;
+    padding: 0.4rem var(--spacing-md);
     background: var(--accent-color);
-    color: var(--bg-color);
-    border-radius: 2rem;
+    color: var(--text-on-accent);
+    border-radius: var(--border-radius-pill);
     font-weight: var(--font-weight-bold);
-    font-size: 0.95rem;
+    font-size: var(--font-size-sm);
 }
 .release-date {
     color: var(--text-color);
     opacity: 0.7;
-    font-size: 0.9rem;
-    font-weight: 600;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
 }
 .release-note h4 {
-    font-size: 1.3rem;
+    font-size: var(--font-size-xl);
     color: var(--text-color);
     margin-bottom: 0.75rem;
     font-weight: 600;
@@ -311,7 +310,7 @@
     width: 6px;
     height: 6px;
     background: var(--accent-color);
-    border-radius: 50%;
+    border-radius: var(--border-radius-pill);
     margin-top: 0.6rem;
     flex-shrink: 0;
 }
@@ -326,8 +325,8 @@
     max-height: 94vh;
     background: var(--bg-color);
     border-radius: var(--border-radius);
-    padding: 1rem;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    padding: var(--spacing-md);
+    box-shadow: var(--box-shadow-modal);
     z-index: 3000;
     display: flex;
     flex-direction: column;
@@ -350,16 +349,16 @@
 }
 
 #manualSearch {
-    margin: 0 auto 1.5rem auto;
+    margin: 0 auto var(--spacing-lg) auto;
     width: 60%;
-    padding: 0.75rem 1rem;
+    padding: var(--spacing-sm) var(--spacing-md);
     font-size: var(--font-size-base);
     border: 2px solid var(--border-color);
     border-radius: var(--border-radius);
     outline: none;
     background: var(--card-bg);
     color: var(--text-color);
-    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--box-shadow-sm);
     display: block;
 }
 #manualSearch:focus {
@@ -382,14 +381,14 @@
 }
 .manuals-popup .container {
     background: var(--card-bg);
-    border-radius: 12px;
+    border-radius: var(--border-radius-sm);
     padding: 0.8rem;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 0.6rem;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--box-shadow-md);
     border: 1px solid var(--border-color);
     transition: transform var(--transition-speed), box-shadow var(--transition-speed);
     text-align: center;

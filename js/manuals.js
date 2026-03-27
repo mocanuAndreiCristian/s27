@@ -154,8 +154,10 @@ function parseTimeCellToDate(timeStr, referenceDate) {
 }
 
 async function updateRecommendedManual() {
-    const now = new Date();
-    let day = now.getDay();
+    const devOverride = window.getDevTimeOverride?.();
+    const devDayOverride = window.getDevDayOverride?.();
+    const now = devOverride || new Date();
+    let day = devDayOverride !== null ? devDayOverride : now.getDay();
     const recManualEl = document.querySelector("#recommendedManual .manual-card");
     const mobileRecEl = document.getElementById("mobileRecommendedManual");
     
@@ -233,7 +235,7 @@ async function updateRecommendedManual() {
                 const img = document.createElement("img");
                 img.src = best.image;
                 img.style.width = "100%";
-                img.style.borderRadius = "0.5rem";
+                img.style.borderRadius = "var(--border-radius-sm)";
                 recManualEl.appendChild(img);
             }
             const p = document.createElement("p");

@@ -66,6 +66,8 @@ function renderTimetable() {
                     content += `<span id="emojis">${subject.emoji}</span>`;
                 }
                 td.innerHTML = content;
+            } else {
+                td.classList.add("no-hover");
             }
             
             tr.appendChild(td);
@@ -77,8 +79,10 @@ function renderTimetable() {
 
 function highlightCurrent() {
     if (!timetableData) return;
-    const date = new Date();
-    const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday...
+    const devOverride = window.getDevTimeOverride?.();
+    const devDayOverride = window.getDevDayOverride?.();
+    const date = devOverride || new Date();
+    const dayOfWeek = devDayOverride !== null ? devDayOverride : date.getDay(); // 0=Sunday, 1=Monday...
     const currentMinutes = date.getHours() * 60 + date.getMinutes();
 
     const table = document.getElementById("timetable");
@@ -108,19 +112,10 @@ function highlightCurrent() {
         const m = timeCell.textContent.trim().match(/^(\d{1,2}):(\d{2})/);
         if (!m) continue;
         const start = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-        // Determine end time from next row's start if available, otherwise fallback to 60 minutes duration
-        let end = start + 60; // default 1h duration
-        if (i + 1 < rows.length) {
-            const nextTimeCell = rows[i + 1].cells[0];
-            if (nextTimeCell) {
-                const m2 = nextTimeCell.textContent.trim().match(/^(\d{1,2}):(\d{2})/);
-                if (m2) {
-                    const nextStart = parseInt(m2[1], 10) * 60 + parseInt(m2[2], 10);
-                    if (nextStart > start) end = nextStart;
-                }
-            }
-        }
-        if (currentMinutes >= start && currentMinutes < end) {
+        // Use the same time window logic as recommended manuals: 10 minutes before + 50 minutes after
+        const windowStart = start - 10;
+        const windowEnd = start + 50;
+        if (currentMinutes >= windowStart && currentMinutes < windowEnd) {
             // highlight hour cell and subject cell, and add a generic current-highlight tag so themes can target it
             timeCell.classList.add("current-hour", "current-highlight");
             const subjectCell = row.cells[dayOfWeek];

@@ -25,7 +25,13 @@ async function loadTimetableData() {
             }
         });
 
-        renderTimetable();
+        // Use the new layout system
+        if (window.renderSelectedTimetableLayout) {
+            window.renderSelectedTimetableLayout(timetableData);
+        } else {
+            renderTimetable();
+        }
+        
         setupSubjectHighlight();
         startHighlightLoop(); // Start highlighting loop after data is loaded
     } catch (error) {
@@ -66,6 +72,8 @@ function renderTimetable() {
                     content += `<span id="emojis">${subject.emoji}</span>`;
                 }
                 td.innerHTML = content;
+            } else {
+                td.classList.add("no-hover");
             }
             
             tr.appendChild(td);
@@ -77,8 +85,10 @@ function renderTimetable() {
 
 function highlightCurrent() {
     if (!timetableData) return;
-    const date = new Date();
-    const dayOfWeek = date.getDay(); // 0=Sunday, 1=Monday...
+    const devOverride = window.getDevTimeOverride?.();
+    const devDayOverride = window.getDevDayOverride?.();
+    const date = devOverride || new Date();
+    const dayOfWeek = devDayOverride !== null ? devDayOverride : date.getDay(); // 0=Sunday, 1=Monday...
     const currentMinutes = date.getHours() * 60 + date.getMinutes();
 
     const table = document.getElementById("timetable");
@@ -108,19 +118,10 @@ function highlightCurrent() {
         const m = timeCell.textContent.trim().match(/^(\d{1,2}):(\d{2})/);
         if (!m) continue;
         const start = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
-        // Determine end time from next row's start if available, otherwise fallback to 60 minutes duration
-        let end = start + 60; // default 1h duration
-        if (i + 1 < rows.length) {
-            const nextTimeCell = rows[i + 1].cells[0];
-            if (nextTimeCell) {
-                const m2 = nextTimeCell.textContent.trim().match(/^(\d{1,2}):(\d{2})/);
-                if (m2) {
-                    const nextStart = parseInt(m2[1], 10) * 60 + parseInt(m2[2], 10);
-                    if (nextStart > start) end = nextStart;
-                }
-            }
-        }
-        if (currentMinutes >= start && currentMinutes < end) {
+        // Use the same time window logic as recommended manuals: 10 minutes before + 50 minutes after
+        const windowStart = start - 10;
+        const windowEnd = start + 50;
+        if (currentMinutes >= windowStart && currentMinutes < windowEnd) {
             // highlight hour cell and subject cell, and add a generic current-highlight tag so themes can target it
             timeCell.classList.add("current-hour", "current-highlight");
             const subjectCell = row.cells[dayOfWeek];
@@ -138,13 +139,27 @@ function highlightCurrent() {
 
 function setupSubjectHighlight() {
     const table = document.getElementById("timetable");
-    if (!table) return;
-    const items = table.querySelectorAll("tbody tr th:not(:first-child)");
-    items.forEach(cell => {
-        if (cell.textContent.trim()) {
-            cell.classList.add("subject");
-        }
-    });
+    const wrapper = document.querySelector('.timetable-wrapper');
+    
+    // For standard table layout
+    if (table) {
+        const items = table.querySelectorAll("tbody tr th:not(:first-child)");
+        items.forEach(cell => {
+            if (cell.textContent.trim()) {
+                cell.classList.add("subject");
+            }
+        });
+    }
+    
+    // For other layouts - add subject class to clickable items
+    if (wrapper) {
+        const subjects = wrapper.querySelectorAll('.timetable-class-item, .tab-class-item, .accordion-class-subject, .kanban-item, .split-class-slot');
+        subjects.forEach(item => {
+            if (item.textContent.trim() && !item.textContent.includes('-')) {
+                item.classList.add('subject');
+            }
+        });
+    }
 }
 
 function startHighlightLoop() {
@@ -154,6 +169,56 @@ function startHighlightLoop() {
 
 // Initialize
 loadTimetableData();
+
+// Global: render or delegate timetable layout based on the selector
+window.renderSelectedTimetableLayout = function () {
+    const selector = document.getElementById('timetableLayoutSelect');
+    const layout = selector ? selector.value : 'standard';
+
+    // Inline renderers handled here
+    if (layout === 'standard' || layout === 'standard-landscape') {
+        // apply body class for landscape modifier
+        document.body.classList.toggle('layout-standard-landscape', layout === 'standard-landscape');
+        renderTimetable();
+        return;
+    }
+    if (layout === 'cards-scroll') {
+        renderTimetableCardScrollable();
+        return;
+    }
+    if (layout === 'kanban-scroll') {
+        renderTimetableKanbanScrollable();
+        return;
+    }
+
+    // Other layouts (swipe, accordion, tabs, split-columns, etc.) are full-layout modes
+    // delegate to mobile-nav / full-layout system so behaviour is consistent
+    if (window.timetableLayouts && typeof window.timetableLayouts.setLayout === 'function') {
+        window.timetableLayouts.setLayout(layout);
+        return;
+    }
+
+    // fallback
+    renderTimetable();
+};
+
+// Listen for layout selector changes
+document.addEventListener('DOMContentLoaded', function() {
+    const selector = document.getElementById('timetableLayoutSelect');
+    if (selector) {
+        selector.addEventListener('change', function() {
+            // trigger the shared renderer
+            window.renderSelectedTimetableLayout();
+        });
+    }
+    
+    // Listen for layout changes from other components
+    window.addEventListener('timetableLayoutChanged', function() {
+        if (window.highlightCurrent) window.highlightCurrent();
+        // re-render selected layout when external change occurs
+        window.renderSelectedTimetableLayout();
+    });
+});
 
 
 /* --- CELL INTERACTION (Click & Keyboard) --- */
@@ -310,6 +375,59 @@ loadTimetableData();
                     activeCell.setAttribute("data-marked", "false");
                 }
                 break;
+        }
+    });
+})();
+
+/* --- LAYOUT-AGNOSTIC CELL INTERACTION --- */
+(function () {
+    // Get interaction mode from localStorage
+    function getInteractionMode() {
+        try {
+            const settings = JSON.parse(localStorage.getItem('advancedSettings') || '{}');
+            return settings.interactionMode || 'link';
+        } catch {
+            return 'link';
+        }
+    }
+
+    function normalizeSubject(text) {
+        if (!text) return "";
+        const withoutEmojis = text.replace(
+            /[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\uFE0F]/gu, ""
+        );
+        return withoutEmojis.replace(/[^0-9\p{L}\s\-]+/gu, "").trim().toLowerCase();
+    }
+
+    function openManual(url) {
+        if (!url) return;
+        window.open(url, "_blank");
+    }
+
+    // Add interaction to all subject items in non-table layouts
+    const wrapper = document.querySelector('.timetable-wrapper');
+    if (!wrapper) return;
+
+    // Listen for clicks on all layout items
+    wrapper.addEventListener('click', function(ev) {
+        const item = ev.target.closest('.timetable-class-item, .tab-class-item, .accordion-class-subject, .kanban-item, .kanban-swipe-item, .split-class-slot, .timetable-swipe-class-item');
+        if (!item) return;
+
+        const mode = getInteractionMode();
+        const text = item.textContent || item.innerText;
+        const subject = normalizeSubject(text);
+        
+        if (!subject) return;
+
+        if (mode === 'mark') {
+            item.classList.toggle('marked-subject');
+        } else {
+            const found = manualMap[subject] || manualMap[subject.split(' ')[0]];
+            if (found) {
+                openManual(found);
+            } else {
+                openManual("https://manuale.edu.ro/?s=" + encodeURIComponent(subject));
+            }
         }
     });
 })();

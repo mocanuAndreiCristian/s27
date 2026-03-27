@@ -13,7 +13,7 @@
     scrollbar-width: thin;
 }
 .timetable-wrapper::-webkit-scrollbar {
-    height: 8px;
+    height: var(--scrollbar-size);
 }
 
 .timetable {
@@ -26,7 +26,7 @@
 
 .timetable th,
 .timetable td {
-    padding: 1rem;
+    padding: var(--spacing-md);
     text-align: center;
     border: 1px solid var(--border-color);
     position: relative;
@@ -34,13 +34,13 @@
     font-size: var(--font-size-2xl);
     border-radius: 0;
     width: 70rem;
-    white-space: nowrap; /* Prevent line breaks */
+    white-space: nowrap;
 }
 
 /* Compact Mode */
 body.compact-timetable .timetable th,
 body.compact-timetable .timetable td {
-    padding: 0.5rem;
+    padding: var(--spacing-sm);
     font-size: calc(var(--font-size-2xl) * 0.85);
 }
 
@@ -62,7 +62,7 @@ body.minimal-cells .timetable td:not(:first-child):hover {
 .timetable th {
     background-color: var(--card-bg);
     color: var(--text-color);
-    font-weight: 600;
+    font-weight: var(--font-weight-semibold);
     text-transform: none;
     letter-spacing: 1px;
     animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
@@ -98,13 +98,13 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     z-index: var(--z-tooltip);
     transform: scale(1.05);
     cursor: pointer;
-    border-radius: 2px;
-    background: color-mix(in srgb, var(--accent-color) 15%, var(--card-bg));
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    border-radius: var(--border-radius-xs);
+    background: var(--highlight-color);
+    box-shadow: var(--box-shadow-md);
 }
 
 #emojis {
-    font-size: 1.7rem;
+    font-size: var(--font-size-xl);
     border-radius: var(--border-radius-xs);
 }
 
@@ -133,8 +133,7 @@ body.minimal-cells .timetable td:not(:first-child):hover {
 
 /* Generic highlight tag for theming/customization (applied to the header/time/subject cells) */
 .timetable th.current-highlight, .timetable td.current-highlight, .timetable thead th.current-highlight {
-    /* Default emphasis using accent color -- can be overridden in themes/settings */
-   
+    border-radius: var(--border-radius-xs);
     transition: background-color var(--transition-speed), color var(--transition-speed);
     color: var(--accent-color);
     background: color-mix(in srgb, var(--accent-color) 6%, var(--card-bg));
@@ -142,5 +141,5 @@ body.minimal-cells .timetable td:not(:first-child):hover {
 
 #timetable th.selected,
 #timetable td.selected {
-    background: rgba(90, 90, 90, 0.12);
+    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
 }

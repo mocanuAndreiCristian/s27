@@ -10,7 +10,8 @@ const timeEl = document.getElementById("time");
 const dateEl = document.getElementById("date");
 
 function updateClock() {
-    const now = new Date();
+    const devOverride = window.getDevTimeOverride?.();
+    const now = devOverride || new Date();
     const hours = now.getHours().toString().padStart(2, "0");
     const minutes = now.getMinutes().toString().padStart(2, "0");
     const seconds = now.getSeconds().toString().padStart(2, "0");
@@ -46,7 +47,8 @@ setInterval(updateClock, 1000);
 
 // --- TITLE TIME DISPLAY ---
 function updateTitleTime() {
-    const now = new Date();
+    const devOverride = window.getDevTimeOverride?.();
+    const now = devOverride || new Date();
     const hours = now.getHours().toString().padStart(2, "0");
     const minutes = now.getMinutes().toString().padStart(2, "0");
     const seconds = now.getSeconds().toString().padStart(2, "0");
@@ -221,7 +223,8 @@ function updateLastUpdateTime() {
 }
 
 function updateOverlayTime() {
-    const now = new Date();
+    const devOverride = window.getDevTimeOverride?.();
+    const now = devOverride || new Date();
     const timeStr =
         now.getHours().toString().padStart(2, "0") +
         ":" +

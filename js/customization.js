@@ -79,6 +79,7 @@
         setupGoogleFonts();
         loadSavedCustomFonts();
         checkColorContrast();
+        initializeBaseControls();
         
         // Initial input sync
         syncInputs();
@@ -228,6 +229,7 @@
         updateFavicon(currentAccentColor);
         checkColorContrast();
         renderRecommendedColors(); // Re-render recs on theme change
+        if (window.applyAutoTintedText) window.applyAutoTintedText();
     }
 
     // --- LOGIC: ACCENT COLOR ---
@@ -245,6 +247,7 @@
         updateButtonTextColors();
         checkColorContrast();
         updateUISelections();
+        if (window.applyAutoTintedText) window.applyAutoTintedText();
     }
 
     // --- LOGIC: FONT ---
@@ -288,6 +291,7 @@
         }
 
         localStorage.setItem(STORAGE_KEYS.UI_SETTINGS, JSON.stringify(uiSettings));
+        if (window.applyAutoTintedText) window.applyAutoTintedText();
     }
 
     // --- LOGIC: ACCESSIBILITY ---
@@ -927,6 +931,494 @@
     };
     
     document.getElementById("addCustomFont")?.addEventListener("click", window.addCustomGoogleFont);
+
+    // ========================================
+    // DEV MODE
+    // ========================================
+
+    const DEV_MODE_KEY = "dev-mode-enabled";
+    const DEV_TIME_OVERRIDE_KEY = "dev-time-override";
+    const DEV_WEATHER_OVERRIDE_KEY = "dev-weather-override";
+    const DEV_DAY_OVERRIDE_KEY = "dev-day-override";
+
+    let devModeEnabled = localStorage.getItem(DEV_MODE_KEY) === "true";
+    let devTimeOverride = localStorage.getItem(DEV_TIME_OVERRIDE_KEY) ? new Date(localStorage.getItem(DEV_TIME_OVERRIDE_KEY)) : null;
+    let devWeatherOverride = localStorage.getItem(DEV_WEATHER_OVERRIDE_KEY) || null;
+    let devDayOverride = localStorage.getItem(DEV_DAY_OVERRIDE_KEY) ? parseInt(localStorage.getItem(DEV_DAY_OVERRIDE_KEY), 10) : null;
+
+    // Initialize dev mode
+    function initDevMode() {
+        const devModeToggle = document.getElementById("devModeToggle");
+        const devModeControls = document.getElementById("devModeControls");
+        const devApplyTimeBtn = document.getElementById("devApplyTimeBtn");
+        const devResetTimeBtn = document.getElementById("devResetTimeBtn");
+        const devApplyWeatherBtn = document.getElementById("devApplyWeatherBtn");
+        const devResetWeatherBtn = document.getElementById("devResetWeatherBtn");
+        const devApplyDayBtn = document.getElementById("devApplyDayBtn");
+        const devResetDayBtn = document.getElementById("devResetDayBtn");
+        const devRefreshHighlightBtn = document.getElementById("devRefreshHighlightBtn");
+        const devReloadDataBtn = document.getElementById("devReloadDataBtn");
+        const devViewTodayBtn = document.getElementById("devViewTodayBtn");
+        const devResetAllBtn = document.getElementById("devResetAllBtn");
+        const devTimeInput = document.getElementById("devTimeInput");
+        const devDaySelect = document.getElementById("devDaySelect");
+
+        if (!devModeToggle) return;
+
+        // Set initial state
+        devModeToggle.checked = devModeEnabled;
+        if (devModeEnabled && devModeControls) {
+            devModeControls.style.display = "block";
+        }
+        // Show/hide base tab when dev mode is enabled
+        const baseTabItem = document.querySelector('.sidebar-item[data-section="base"]');
+        const baseSection = document.getElementById("baseSection");
+
+        function updateBaseTabVisibility() {
+            if (baseTabItem) {
+                baseTabItem.style.display = devModeEnabled ? "flex" : "none";
+            }
+        }
+
+        updateBaseTabVisibility();
+
+        // Toggle dev mode
+        devModeToggle.addEventListener("change", (e) => {
+            devModeEnabled = e.target.checked;
+            localStorage.setItem(DEV_MODE_KEY, devModeEnabled);
+            if (devModeControls) {
+                devModeControls.style.display = devModeEnabled ? "block" : "none";
+            }
+            // Show/hide base tab when toggling dev mode
+            updateBaseTabVisibility();
+            updateDevInfo();
+        });
+
+        // Time controls
+        if (devApplyTimeBtn) {
+            devApplyTimeBtn.addEventListener("click", () => {
+                const timeStr = devTimeInput?.value;
+                if (!timeStr) {
+                    alert("Please select a time");
+                    return;
+                }
+                const [hours, minutes] = timeStr.split(":").map(Number);
+                const overrideDate = new Date();
+                overrideDate.setHours(hours, minutes, 0, 0);
+                devTimeOverride = overrideDate;
+                localStorage.setItem(DEV_TIME_OVERRIDE_KEY, overrideDate.toISOString());
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.updateRecommendedManual) window.updateRecommendedManual();
+                const timeInfoEl = document.getElementById("devTimeInfo");
+                if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}</strong>`;
+            });
+        }
+
+        if (devResetTimeBtn) {
+            devResetTimeBtn.addEventListener("click", () => {
+                devTimeOverride = null;
+                localStorage.removeItem(DEV_TIME_OVERRIDE_KEY);
+                devTimeInput.value = "";
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.updateRecommendedManual) window.updateRecommendedManual();
+                const timeInfoEl = document.getElementById("devTimeInfo");
+                if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+            });
+        }
+
+        // Weather controls
+        if (devApplyWeatherBtn) {
+            devApplyWeatherBtn.addEventListener("click", () => {
+                const weatherSelect = document.getElementById("devWeatherSelect");
+                const code = weatherSelect?.value;
+                if (!code) {
+                    alert("Please select a weather condition");
+                    return;
+                }
+                devWeatherOverride = code;
+                localStorage.setItem(DEV_WEATHER_OVERRIDE_KEY, code);
+                updateDevWeather(parseInt(code, 10));
+                const weatherInfoEl = document.getElementById("devWeatherInfo");
+                const weatherDesc = getWeatherDescriptionForCode(parseInt(code, 10));
+                if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>${weatherDesc}</strong>`;
+            });
+        }
+
+        if (devResetWeatherBtn) {
+            devResetWeatherBtn.addEventListener("click", () => {
+                devWeatherOverride = null;
+                localStorage.removeItem(DEV_WEATHER_OVERRIDE_KEY);
+                const weatherSelect = document.getElementById("devWeatherSelect");
+                if (weatherSelect) weatherSelect.value = "";
+                const weatherInfoEl = document.getElementById("devWeatherInfo");
+                if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+                // Refetch real weather
+                if (window.getWeather) window.getWeather();
+            });
+        }
+
+        // Day controls
+        if (devApplyDayBtn) {
+            devApplyDayBtn.addEventListener("click", () => {
+                if (!devDaySelect) {
+                    alert("Day select element not found");
+                    return;
+                }
+                const dayValue = devDaySelect.value;
+                if (dayValue === "") {
+                    alert("Please select a day");
+                    return;
+                }
+                const dayNum = parseInt(dayValue, 10);
+                devDayOverride = dayNum;
+                localStorage.setItem(DEV_DAY_OVERRIDE_KEY, dayNum.toString());
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayInfoEl = document.getElementById("devDayInfo");
+                if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>${dayNames[dayNum]}</strong>`;
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.fillToday) window.fillToday();
+            });
+        }
+
+        if (devResetDayBtn) {
+            devResetDayBtn.addEventListener("click", () => {
+                devDayOverride = null;
+                localStorage.removeItem(DEV_DAY_OVERRIDE_KEY);
+                if (devDaySelect) devDaySelect.value = "";
+                const dayInfoEl = document.getElementById("devDayInfo");
+                if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.fillToday) window.fillToday();
+            });
+        }
+
+        // Quick actions
+        if (devRefreshHighlightBtn) {
+            devRefreshHighlightBtn.addEventListener("click", () => {
+                if (window.highlightCurrent) window.highlightCurrent();
+                devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-check"></i> Refreshed!';
+                setTimeout(() => {
+                    devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh Highlighting';
+                }, 1500);
+            });
+        }
+
+        if (devReloadDataBtn) {
+            devReloadDataBtn.addEventListener("click", () => {
+                if (window.loadTimetableData) window.loadTimetableData();
+                devReloadDataBtn.innerHTML = '<i class="fa-solid fa-check"></i> Reloaded!';
+                setTimeout(() => {
+                    devReloadDataBtn.innerHTML = '<i class="fa-solid fa-reload"></i> Reload Timetable Data';
+                }, 1500);
+            });
+        }
+
+        if (devViewTodayBtn) {
+            devViewTodayBtn.addEventListener("click", () => {
+                if (window.timetableData) {
+                    const now = new Date();
+                    const dayOfWeek = devDayOverride !== null ? devDayOverride : now.getDay();
+                    const dayKeys = [null, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const currentDayKey = dayKeys[dayOfWeek];
+                    
+                    if (currentDayKey) {
+                        const todayClasses = window.timetableData.schedule
+                            .map(row => ({ ...row, dayClass: row[currentDayKey] }))
+                            .filter(row => row.dayClass)
+                            .map(row => `${row.time}: ${row.dayClass.name}`)
+                            .join("\n");
+                        
+                        if (todayClasses) {
+                            const dayDisplayName = devDayOverride !== null ? `${dayNames[dayOfWeek]} (OVERRIDE)` : dayNames[dayOfWeek];
+                            alert(`${dayDisplayName}'s Classes:\n\n${todayClasses}`);
+                        } else {
+                            alert("No classes on this day!");
+                        }
+                    } else {
+                        alert("No classes on weekends!");
+                    }
+                } else {
+                    alert("Timetable data not loaded");
+                }
+            });
+        }
+
+        if (devResetAllBtn) {
+            devResetAllBtn.addEventListener("click", () => {
+                if (confirm("Are you sure you want to reset ALL customization settings?")) {
+                    // Reset all storage
+                    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+                    localStorage.removeItem(DEV_MODE_KEY);
+                    localStorage.removeItem(DEV_TIME_OVERRIDE_KEY);
+                    localStorage.removeItem(DEV_WEATHER_OVERRIDE_KEY);
+                    localStorage.removeItem(DEV_DAY_OVERRIDE_KEY);
+                    // Reload page
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Restore overrides if they exist
+        if (devTimeOverride && devTimeInput) {
+            const hours = devTimeOverride.getHours();
+            const minutes = devTimeOverride.getMinutes();
+            devTimeInput.value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+            const timeInfoEl = document.getElementById("devTimeInfo");
+            if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}</strong>`;
+        }
+
+        if (devWeatherOverride) {
+            const weatherSelect = document.getElementById("devWeatherSelect");
+            if (weatherSelect) weatherSelect.value = devWeatherOverride;
+            const weatherDesc = getWeatherDescriptionForCode(parseInt(devWeatherOverride, 10));
+            const weatherInfoEl = document.getElementById("devWeatherInfo");
+            if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>${weatherDesc}</strong>`;
+        }
+
+        if (devDayOverride !== null && devDaySelect) {
+            devDaySelect.value = devDayOverride.toString();
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayInfoEl = document.getElementById("devDayInfo");
+            if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>${dayNames[devDayOverride]}</strong>`;
+        }
+
+        // Update dev info every second
+        setInterval(updateDevInfo, 1000);
+        updateDevInfo(); // Initial update
+    }
+
+    function updateDevInfo() {
+        const realTimeEl = document.getElementById("devInfoRealTime");
+        const overrideTimeEl = document.getElementById("devInfoOverrideTime");
+        const dayOfWeekEl = document.getElementById("devInfoDayOfWeek");
+        const currentClassEl = document.getElementById("devInfoCurrentClass");
+
+        const now = devTimeOverride || new Date();
+        const realNow = new Date();
+
+        if (realTimeEl) {
+            const h = realNow.getHours().toString().padStart(2, "0");
+            const m = realNow.getMinutes().toString().padStart(2, "0");
+            const s = realNow.getSeconds().toString().padStart(2, "0");
+            realTimeEl.textContent = `${h}:${m}:${s}`;
+        }
+
+        if (overrideTimeEl) {
+            if (devTimeOverride) {
+                const h = now.getHours().toString().padStart(2, "0");
+                const m = now.getMinutes().toString().padStart(2, "0");
+                overrideTimeEl.textContent = `${h}:${m}`;
+            } else {
+                overrideTimeEl.textContent = "None";
+            }
+        }
+
+        if (dayOfWeekEl) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayIndex = devDayOverride !== null ? devDayOverride : now.getDay();
+            dayOfWeekEl.textContent = days[dayIndex];
+        }
+
+        if (currentClassEl && window.timetableData) {
+            const dayOfWeek = devDayOverride !== null ? devDayOverride : now.getDay();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const dayKeys = [null, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const currentDayKey = dayKeys[dayOfWeek];
+            
+            let currentClass = "None";
+            if (currentDayKey) {
+                for (const row of window.timetableData.schedule) {
+                    const m = row.time.match(/^(\d{1,2}):(\d{2})/);
+                    if (m) {
+                        const start = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+                        const windowStart = start - 10;
+                        const windowEnd = start + 50;
+                        if (currentMinutes >= windowStart && currentMinutes < windowEnd) {
+                            const subject = row[currentDayKey];
+                            if (subject) currentClass = subject.name;
+                            break;
+                        }
+                    }
+                }
+            }
+            currentClassEl.textContent = currentClass;
+        }
+    }
+
+    // Initialize Base Controls
+    function initializeBaseControls() {
+        // Number Input Increment/Decrement
+        const numberInputField = document.querySelector('.number-input-field');
+        const numberBtns = document.querySelectorAll('.number-btn');
+        if (numberInputField && numberBtns.length === 2) {
+            numberBtns[0].addEventListener('click', () => {
+                const current = parseInt(numberInputField.value) || 0;
+                const min = parseInt(numberInputField.min) || 0;
+                if (current > min) {
+                    numberInputField.value = current - 1;
+                }
+            });
+            
+            numberBtns[1].addEventListener('click', () => {
+                const current = parseInt(numberInputField.value) || 0;
+                const max = parseInt(numberInputField.max) || 100;
+                if (current < max) {
+                    numberInputField.value = current + 1;
+                }
+            });
+        }
+        
+        // Range Slider Value Display
+        const rangeSlider = document.querySelector('.range-slider-demo');
+        const rangeValue = document.querySelector('#rangeValue');
+        if (rangeSlider && rangeValue) {
+            const updateRangeValue = () => {
+                rangeValue.textContent = rangeSlider.value;
+            };
+            rangeSlider.addEventListener('input', updateRangeValue);
+        }
+        
+        // Color Picker Hex Display
+        const colorPicker = document.getElementById('demoColorPicker');
+        const colorValue = document.getElementById('demoColorValue');
+        if (colorPicker && colorValue) {
+            const updateColorValue = () => {
+                colorValue.textContent = colorPicker.value.toUpperCase();
+            };
+            colorPicker.addEventListener('input', updateColorValue);
+            colorPicker.addEventListener('change', updateColorValue);
+        }
+    }
+
+    function getWeatherDescriptionForCode(code) {
+        if (code === 0) return "☀️ Clear";
+        if ([1, 2].includes(code)) return "🌤️ Partially Cloudy";
+        if (code === 3) return "☁️ Cloudy";
+        if ([45, 48].includes(code)) return "🌫️ Fog";
+        if ([51, 53, 55, 56, 57].includes(code)) return "🌦️ Drizzle";
+        if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️ Rain";
+        if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️ Snow";
+        if ([95, 96, 99].includes(code)) return "⛈️ Thunderstorm";
+        return "Unknown";
+    }
+
+    function updateDevWeather(code) {
+        const emoji = getWeatherEmoji(code);
+        const description = getWeatherDescriptionForCode(code);
+
+        // Update menu button
+        const menuEmoji = document.getElementById("menuWeatherEmoji");
+        const menuTemp = document.getElementById("menuWeatherTemp");
+        if (menuEmoji) menuEmoji.textContent = emoji;
+        if (menuTemp) menuTemp.textContent = "DEV";
+
+        // Update overlay
+        const overlayEmoji = document.getElementById("overlayWeatherEmoji");
+        const overlayDesc = document.getElementById("overlayWeatherDesc");
+        if (overlayEmoji) overlayEmoji.textContent = emoji;
+        if (overlayDesc) overlayDesc.textContent = description + " (Dev Override)";
+    }
+
+    function getWeatherEmoji(code) {
+        if (code === 0) return "☀️";
+        if ([1, 2].includes(code)) return "🌤️";
+        if (code === 3) return "☁️";
+        if ([45, 48].includes(code)) return "🌫️";
+        if ([51, 53, 55, 56, 57].includes(code)) return "🌦️";
+        if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️";
+        if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
+        if ([95, 96, 99].includes(code)) return "⛈️";
+        return "❓";
+    }
+
+    // Export dev mode time override getter for use in other scripts
+    window.getDevTimeOverride = function() {
+        return devTimeOverride;
+    };
+
+    // Export dev mode day override getter for use in other scripts
+    window.getDevDayOverride = function() {
+        return devDayOverride;
+    };
+
+    // ========================================
+    // AUTO-TINT TEXT IN COLORED CONTAINERS
+    // ========================================
+
+    function getColorBrightness(color) {
+        // Handle hex color format
+        if (!color || color === 'transparent') return 128;
+        
+        let hex = color;
+        if (color.startsWith('rgb')) {
+            // Convert rgb to hex
+            const match = color.match(/\d+/g);
+            if (match && match.length >= 3) {
+                const r = parseInt(match[0]);
+                const g = parseInt(match[1]);
+                const b = parseInt(match[2]);
+                hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+            }
+        }
+        
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    }
+
+    function applyAutoTintedText() {
+        // Apply accent color text with auto-tinting to elements with background colors
+        const selectors = [
+            '.setting-group',
+            '.dev-time-control',
+            '.dev-weather-control',
+            '.dev-quick-actions',
+            '.dev-info-panel',
+            '.ui-control-card',
+            '.font-group',
+            '.ui-controls-grid',
+            '.preset-action-btn',
+            '.mode-toggle-container'
+        ];
+
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => {
+                const bgColor = window.getComputedStyle(el).backgroundColor;
+                const brightness = getColorBrightness(bgColor);
+                
+                // For light backgrounds, use dark text; for dark backgrounds, use light text
+                const textColor = brightness > 150 ? '#000000' : '#ffffff';
+                
+                // Apply to all text children
+                const textElements = el.querySelectorAll('h4, h3, h2, p, label, span, button');
+                textElements.forEach(textEl => {
+                    if (textEl.textContent && textEl.tagName !== 'BUTTON') {
+                        textEl.style.color = textColor;
+                    }
+                });
+            });
+        });
+    }
+
+    // Initialize dev mode
+    initDevMode();
+
+    // Apply auto-tinted text on load
+    setTimeout(() => {
+        applyAutoTintedText();
+        // Reapply when accent color changes
+        window.applyAutoTintedText = applyAutoTintedText;
+    }, 100);
 
     // Bootstrap
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

@@ -16,7 +16,7 @@
 }
 
 .menu-weather-emoji {
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
     line-height: 1;
     flex-shrink: 0;
     animation: floatEmoji 3s ease-in-out infinite;
@@ -31,13 +31,13 @@
 }
 
 .weather-btn-label {
-    font-size: 0.85rem;
+    font-size: var(--font-size-sm);
     opacity: 1;
     font-weight: 500;
 }
 
 .menu-weather-temp {
-    font-size: 1.2rem;
+    font-size: var(--font-size-lg);
     font-weight: 700;
     color: var(--accent-color);
 }
@@ -46,9 +46,9 @@
     width: 100%;
     max-width: 700px;
     background: var(--card-bg);
-    border-radius: 1.5rem;
+    border-radius: var(--border-radius);
     padding: 2.5rem;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--box-shadow-modal);
     position: relative;
     max-height: 90vh;
     overflow-y: auto;
@@ -62,7 +62,7 @@
 }
 
 .weather-overlay-header h2 {
-    font-size: 2.5rem;
+    font-size: var(--font-size-2xl);
     color: var(--accent-color);
     margin-bottom: 0.5rem;
     font-weight: 700;
@@ -80,28 +80,28 @@
 
 .weather-main-info {
     text-align: center;
-    padding: 2rem;
+    padding: var(--spacing-xl);
     background: var(--highlight-color);
-    border-radius: 1.5rem;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-md);
 }
 
 .weather-large-emoji {
-    font-size: 8rem;
+    font-size: var(--font-size-display-lg);
     line-height: 1;
     margin-bottom: 1rem;
     animation: weatherFloat 3s ease-in-out infinite;
 }
 
 .weather-large-temp {
-    font-size: 4rem;
+    font-size: var(--font-size-display);
     font-weight: 700;
     color: var(--accent-color);
     margin-bottom: 0.5rem;
 }
 
 .weather-large-desc {
-    font-size: 1.5rem;
+    font-size: var(--font-size-xl);
     color: var(--text-color);
     opacity: 0.8;
     text-transform: capitalize;
@@ -111,18 +111,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    font-size: 1.2rem;
+    gap: var(--spacing-sm);
+    font-size: var(--font-size-lg);
     color: var(--text-color);
     opacity: 0.9;
-    padding: 1rem;
+    padding: var(--spacing-md);
     background: var(--highlight-color);
-    border-radius: 1rem;
+    border-radius: var(--border-radius);
 }
 
 .weather-location-info i {
     color: var(--accent-color);
-    font-size: 1.3rem;
+    font-size: var(--font-size-xl);
 }
 
 .weather-details-grid {
@@ -133,8 +133,8 @@
 
 .weather-detail-card {
     background: var(--highlight-color);
-    border-radius: 1rem;
-    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    padding: var(--spacing-lg);
     text-align: center;
     transition: all var(--transition-speed) ease;
     border: 2px solid var(--border-color);
@@ -142,25 +142,25 @@
 
 .weather-detail-card:hover {
     transform: translateY(-3px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--box-shadow-hover);
     border-color: var(--accent-color);
 }
 
 .weather-detail-card i {
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
     color: var(--accent-color);
     margin-bottom: 0.75rem;
 }
 
 .weather-detail-label {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     opacity: 0.7;
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
 
 .weather-detail-value {
-    font-size: 1.4rem;
+    font-size: var(--font-size-xl);
     font-weight: 700;
     color: var(--text-color);
 }
@@ -169,21 +169,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 1rem;
-    padding: 1.5rem;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
     background: var(--highlight-color);
-    border-radius: 1rem;
+    border-radius: var(--border-radius);
 }
 
 .refresh-weather-btn {
-    padding: 0.75rem 1.5rem;
+    padding: var(--spacing-sm) var(--spacing-lg);
     background: var(--accent-color);
-    color: var(--bg-color);
+    color: var(--text-on-accent);
     border: none;
-    border-radius: 0.75rem;
+    border-radius: var(--border-radius-sm);
     cursor: pointer;
-    font-weight: 600;
-    font-size: 1rem;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
     transition: all var(--transition-speed) ease;
     display: flex;
     align-items: center;
@@ -192,7 +192,7 @@
 
 .refresh-weather-btn:hover:not(:disabled) {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--box-shadow-hover);
 }
 
 .refresh-weather-btn:disabled {
@@ -201,7 +201,7 @@
 }
 
 .weather-last-update {
-    font-size: 0.9rem;
+    font-size: var(--font-size-sm);
     opacity: 0.7;
     text-align: center;
 }
@@ -214,11 +214,11 @@
 .weather-close-btn {
     position: absolute;
     top: 1.25rem;
-    right: 1.5rem;
+    right: var(--spacing-lg);
     background: none;
     border: none;
     color: var(--accent-color);
-    font-size: 2rem;
+    font-size: var(--font-size-2xl);
     cursor: pointer;
     z-index: 10000;
     transition: transform var(--transition-speed) ease, color var(--transition-speed) ease;

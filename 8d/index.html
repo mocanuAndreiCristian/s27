@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
     <base target="_blank">
     <link rel="stylesheet" href="../css/animations.css">
+    <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/customization.css">
     <link rel="stylesheet" href="../css/mobile.css">
     <link rel="stylesheet" href="../css/overlays.css">
@@ -21,7 +22,6 @@
     <link rel="stylesheet" href="../css/todo.css">
     <link rel="stylesheet" href="../css/weather.css">
     <link rel="stylesheet" href="../css/layout.css">
-    <link rel="stylesheet" href="../css/base.css">
     <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="../css/variables.css">
 
@@ -120,12 +120,12 @@
                 <table class="timetable" id="timetable">
                     <thead>
                         <tr>
-                            <th style="width: 10rem !important; height: 3rem !important;"></th>
-                            <th style="text-transform: uppercase;">Luni</th>
-                            <th style="text-transform: uppercase;">Marți</th>
-                            <th style="text-transform: uppercase;">Miercuri</th>
-                            <th style="text-transform: uppercase;">Joi</th>
-                            <th style="text-transform: uppercase;">Vineri</th>
+                            <th class="no-hover" style="width: 10rem !important; height: 3rem !important;"></th>
+                            <th class="no-hover" style="text-transform: uppercase;">Luni</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Marți</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Miercuri</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Joi</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Vineri</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -699,6 +699,10 @@
                             <i class="fa-solid fa-bookmark"></i>
                             <span>Presets</span>
                         </div>
+                        <div class="sidebar-item dev-mode-only" data-section="base" style="display: none;">
+                            <i class="fa-solid fa-paintbrush"></i>
+                            <span>Base</span>
+                        </div>
                     </nav>
                 </div>
 
@@ -833,7 +837,7 @@
                             <div class="ui-controls-grid">
                                 <div class="ui-control-card">
                                     <label>Border Radius</label>
-                                    <input type="range" id="uiBorderRadius" min="0" max="24" step="4" value="16">
+                                    <input type="range" id="uiBorderRadius" min="0" max="24" step="1" value="16">
                                     <div class="range-labels">
                                         <span>Square</span>
                                         <span>Round</span>
@@ -1023,6 +1027,145 @@
                         </div>
                     </div>
 
+                    <!-- Base Section (Dev Mode Only) -->
+                    <div class="custom-section" id="baseSection">
+                        <h3><i class="fa-solid fa-paintbrush"></i> Base Input Styles</h3>
+                        <p style="opacity: 0.7; margin-bottom: 2rem;">All available input styles for reference</p>
+
+                        <div class="base-inputs-grid">
+                            <!-- Text Inputs -->
+                            <div class="base-input-group">
+                                <h4>Text Input</h4>
+                                <input type="text" placeholder="Text input..." class="base-demo-input">
+                            </div>
+
+                            <!-- Number Input -->
+                            <div class="base-input-group">
+                                <h4>Number Input</h4>
+                                <div class="number-input-wrapper">
+                                    <button class="number-btn">−</button>
+                                    <input type="number" placeholder="Enter number..." class="base-demo-input number-input-field" value="42" min="0" max="100">
+                                    <button class="number-btn">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Custom Color Picker -->
+                            <div class="base-input-group">
+                                <h4>Custom Color Picker</h4>
+                                <div class="custom-color-picker-container">
+                                    <input type="color" value="#6196ff" class="base-demo-input custom-color-input" id="demoColorPicker">
+                                    <div class="color-value-display" id="demoColorValue">#6196FF</div>
+                                </div>
+                            </div>
+
+                            <!-- Range Slider -->
+                            <div class="base-input-group">
+                                <h4>Range Slider</h4>
+                                <input type="range" min="0" max="100" value="50" class="base-demo-input range-slider-demo">
+                                <div class="range-value-display"><span id="rangeValue">50</span>%</div>
+                            </div>
+
+                            <!-- Select Dropdown -->
+                            <div class="base-input-group">
+                                <h4>Select Dropdown</h4>
+                                <select class="base-demo-input">
+                                    <option>Option 1</option>
+                                    <option selected>Option 2</option>
+                                    <option>Option 3</option>
+                                </select>
+                            </div>
+
+                            <!-- Radio Button Range Control -->
+                            <div class="base-input-group">
+                                <h4>Radio Range Control</h4>
+                                <div class="radio-range-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="low" checked>
+                                        <span>Low</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="medium">
+                                        <span>Medium</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="high">
+                                        <span>High</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Switch Toggle -->
+                            <div class="base-input-group">
+                                <h4>Switch Toggle</h4>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <!-- Button Styles -->
+                            <div class="base-input-group">
+                                <h4>Primary Button</h4>
+                                <button class="preset-action-btn">Primary Button</button>
+                            </div>
+
+                            <!-- Secondary Button -->
+                            <div class="base-input-group">
+                                <h4>Secondary Button</h4>
+                                <button class="preset-action-btn secondary">Secondary Button</button>
+                            </div>
+
+                            <!-- Danger Button -->
+                            <div class="base-input-group">
+                                <h4>Danger Button</h4>
+                                <button class="dev-action-btn danger">Danger Button</button>
+                            </div>
+
+                            <!-- Mode Button -->
+                            <div class="base-input-group">
+                                <h4>Mode Button</h4>
+                                <button class="mode-btn active">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Active Mode</span>
+                                </button>
+                            </div>
+
+                            <!-- Settings Control Card -->
+                            <div class="base-input-group full-width">
+                                <h4>UI Control Card</h4>
+                                <div class="ui-control-card">
+                                    <label>Range Control Example</label>
+                                    <input type="range" min="0" max="24" value="16">
+                                    <div class="range-labels">
+                                        <span>Min</span>
+                                        <span>Max</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox Card -->
+                            <div class="base-input-group full-width">
+                                <h4>Checkbox Card</h4>
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Toggle Setting</h4>
+                                        <p>Description of the setting</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Color Preset Item -->
+                            <div class="base-input-group">
+                                <h4>Color Preset</h4>
+                                <div class="preset-item" style="background: #6196ff; border: 2px solid var(--accent-color);"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Advanced Section -->
                     <div class="custom-section" id="advancedSection">
                         <h3><i class="fa-solid fa-cog"></i> Advanced Settings</h3>
@@ -1078,7 +1221,155 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Dev Mode -->
+                        <div class="dev-mode-container">
+                            <div class="setting-group">
+                                <h4><i class="fa-solid fa-toggle-on"></i> Enable Dev Mode</h4>
+                                <label class="switch">
+                                    <input type="checkbox" id="devModeToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div id="devModeControls" style="display: none;">
+                                <!-- Time Manipulation -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-clock"></i> Override System Time</h4>
+                                    <p class="setting-description">Set a custom time for testing current class highlighting.</p>
+                                    <div class="dev-time-control">
+                                        <div class="time-input-group">
+                                            <label for="devTimeInput">Time (HH:MM)</label>
+                                            <input type="time" id="devTimeInput">
+                                        </div>
+                                        <button class="dev-action-btn" id="devApplyTimeBtn">
+                                            <i class="fa-solid fa-check"></i>
+                                            Apply & Refresh
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetTimeBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset to Real Time
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devTimeInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Day Override -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-calendar"></i> Override Day of Week</h4>
+                                    <p class="setting-description">Select a specific day for testing timetable views.</p>
+                                    <div class="dev-day-control">
+                                        <select id="devDaySelect" class="font-select">
+                                            <option value="">-- Use Real Day --</option>
+                                            <option value="1">Monday</option>
+                                            <option value="2">Tuesday</option>
+                                            <option value="3">Wednesday</option>
+                                            <option value="4">Thursday</option>
+                                            <option value="5">Friday</option>
+                                            <option value="6">Saturday</option>
+                                            <option value="0">Sunday</option>
+                                        </select>
+                                        <button class="dev-action-btn" id="devApplyDayBtn">
+                                            <i class="fa-solid fa-check"></i>
+                                            Apply & Refresh
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetDayBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset to Real Day
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devDayInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Weather Control -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-cloud"></i> Override Weather</h4>
+                                    <p class="setting-description">Simulate different weather conditions for testing.</p>
+                                    <div class="dev-weather-control">
+                                        <select id="devWeatherSelect" class="font-select" aria-placeholder="Select Weather">
+                                            <option value="">-- Select Weather --</option>
+                                            <option value="0">☀️ Clear Sky</option>
+                                            <option value="1">🌤️ Mainly Clear</option>
+                                            <option value="2">🌤️ Partly Cloudy</option>
+                                            <option value="3">☁️ Overcast</option>
+                                            <option value="45">🌫️ Fog</option>
+                                            <option value="48">🌫️ Foggy</option>
+                                            <option value="51">🌦️ Light Drizzle</option>
+                                            <option value="61">🌧️ Slight Rain</option>
+                                            <option value="65">🌧️ Heavy Rain</option>
+                                            <option value="71">❄️ Slight Snow</option>
+                                            <option value="85">❄️ Heavy Snow</option>
+                                            <option value="95">⛈️ Slight Thunderstorm</option>
+                                            <option value="99">⛈️ Severe Thunderstorm</option>
+                                        </select>
+                                        <button class="dev-action-btn" id="devApplyWeatherBtn">
+                                            <i class="fa-solid fa-cloud-sun"></i>
+                                            Apply Weather
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetWeatherBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Restore Real Weather
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devWeatherInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-bolt"></i> Quick Actions</h4>
+                                    <div class="dev-quick-actions">
+                                        <button class="dev-action-btn" id="devRefreshHighlightBtn">
+                                            <i class="fa-solid fa-rotate"></i>
+                                            Refresh Highlighting
+                                        </button>
+                                        <button class="dev-action-btn" id="devReloadDataBtn">
+                                            <i class="fa-solid fa-reload"></i>
+                                            Reload Timetable Data
+                                        </button>
+                                        <button class="dev-action-btn" id="devViewTodayBtn">
+                                            <i class="fa-solid fa-calendar-day"></i>
+                                            View Today's Classes
+                                        </button>
+                                        <button class="dev-action-btn danger" id="devResetAllBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset All Settings
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dev Info -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-info"></i> Dev Information</h4>
+                                    <div class="dev-info-panel">
+                                        <div class="dev-info-item">
+                                            <span>Real Time:</span>
+                                            <strong id="devInfoRealTime">--:--:--</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Override Time:</span>
+                                            <strong id="devInfoOverrideTime">None</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Day of Week:</span>
+                                            <strong id="devInfoDayOfWeek">--</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Current Class:</span>
+                                            <strong id="devInfoCurrentClass">None</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+
+
                 </div>
             </div>
         </div>
@@ -1235,6 +1526,7 @@
                 </div>
             </div>
         </div>
+
         <script src="../js/customization.js"></script>
         <script src="../js/manuals.js"></script>
         <script src="../js/mobile-nav8d.js"></script>
