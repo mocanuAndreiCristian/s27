@@ -36,6 +36,17 @@ body.no-scroll-custom {
     overflow: hidden;
 }
 
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after,
+body.theme-switching,
+body.theme-switching *,
+body.theme-switching *::before,
+body.theme-switching *::after {
+    transition: none !important;
+}
+
 /* Background Pattern */
 body.bg-pattern::before {
     content: "";

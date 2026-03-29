@@ -316,6 +316,55 @@
     text-decoration: line-through;
 }
 
+.today-card.is-skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+
+.today-card.is-skeleton:hover,
+.today-card.is-skeleton:active {
+    transform: none;
+    box-shadow: var(--box-shadow);
+}
+
+.today-card.is-skeleton .today-card-subject {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.mobile-skeleton-line,
+.mobile-skeleton-circle {
+    display: block;
+    border-radius: var(--border-radius-pill);
+}
+
+.mobile-skeleton-line {
+    width: 100%;
+    height: 0.9rem;
+}
+
+.mobile-skeleton-line.short {
+    width: 3.25rem;
+}
+
+.mobile-skeleton-line.medium {
+    width: 5.5rem;
+}
+
+.mobile-skeleton-line.long {
+    width: min(100%, 10rem);
+}
+
+.mobile-skeleton-line.tiny {
+    width: 2.5rem;
+    height: 0.7rem;
+}
+
+.mobile-skeleton-circle {
+    width: 2rem;
+    height: 2rem;
+}
+
 .today-empty {
     display: none;
     flex-direction: column;
@@ -779,6 +828,72 @@ body.hide-empty-days .mobile-weekly-empty {
     text-align: left;
     cursor: pointer;
     transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.full-subject-card.is-skeleton,
+.timeline-item.is-skeleton,
+.accordion-day.is-skeleton,
+.day-chip.is-skeleton,
+.swipe-nav.is-skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+
+.full-subject-card.is-skeleton,
+.timeline-item.is-skeleton {
+    transform: none;
+}
+
+.full-subject-card.is-skeleton .full-card-subject,
+.timeline-item.is-skeleton .timeline-main,
+.full-day-panel.is-skeleton h3,
+.kanban-column.is-skeleton h3,
+.timeline-day.is-skeleton h3,
+.split-column.is-skeleton h3,
+.day-chip.is-skeleton {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.full-day-panel.is-skeleton .full-day-header,
+.kanban-column.is-skeleton > header,
+.timeline-day.is-skeleton > header,
+.split-column.is-skeleton > h3 {
+    color: transparent;
+}
+
+.mobile-accordion-skeleton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem;
+}
+
+.mobile-layout-message {
+    display: grid;
+    place-items: center;
+    gap: 0.5rem;
+    min-height: 10rem;
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.mobile-layout-message i {
+    font-size: 2rem;
+    color: var(--accent-color);
+}
+
+.mobile-layout-error {
+    margin-top: 0.5rem;
+}
+
+.swipe-nav.is-skeleton {
+    border-style: solid;
+}
+
+.swipe-dot.is-skeleton {
+    opacity: 0.6;
 }
 
 .full-subject-card:active,

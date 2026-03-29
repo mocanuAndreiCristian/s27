@@ -12,6 +12,7 @@
         THEME: "customization-theme",
         ACCENT_COLOR: "customization-accent-color",
         FONT: "customization-font",
+        THEME_SNAPSHOT: "customization-theme-snapshot",
         COLOR_PRESETS: "customization-color-presets",
         SAVED_PRESETS: "customization-saved-presets",
         UI_SETTINGS: "customization-ui-settings",
@@ -50,6 +51,14 @@
         shortcut1: 'customization',
         shortcut2: 'weather'
     };
+    const VALID_SHORTCUT_OPTIONS = new Set([
+        'customization',
+        'weather',
+        'textbooks',
+        'clock',
+        'tasks',
+        'info'
+    ]);
 
     // State
     let currentTheme = "auto";
@@ -64,6 +73,134 @@
 
     // Google Fonts link element
     let googleFontsLink = null;
+    let themeSwitchCleanupFrame = 0;
+    let deferredCustomizationFrame = 0;
+    let pendingCustomizationWork = {
+        themeChanged: false,
+        accentChanged: false,
+        refreshRecommendedColors: false,
+        fullSync: false
+    };
+
+    function normalizeHexColor(color) {
+        if (typeof color !== "string") return "";
+        let value = color.trim();
+        if (!value) return "";
+        if (!value.startsWith("#")) value = `#${value}`;
+
+        if (/^#[0-9a-f]{3}$/i.test(value)) {
+            value = `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
+        }
+
+        return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : "";
+    }
+
+    function resolveActiveThemeId(themeId = currentTheme) {
+        if (themeId === "auto") {
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            return prefersDark ? "dark" : "light";
+        }
+
+        return themeId;
+    }
+
+    function sanitizeShortcutValue(value, fallback) {
+        return VALID_SHORTCUT_OPTIONS.has(value) ? value : fallback;
+    }
+
+    function sanitizeAdvancedSettings(settings = {}) {
+        return {
+            ...settings,
+            shortcut1: sanitizeShortcutValue(settings.shortcut1, DEFAULT_ADVANCED_SETTINGS.shortcut1),
+            shortcut2: sanitizeShortcutValue(settings.shortcut2, DEFAULT_ADVANCED_SETTINGS.shortcut2)
+        };
+    }
+
+    function getThemeDefinition(themeId = resolveActiveThemeId()) {
+        return themeDefinitions.find(t => t.id === themeId) || null;
+    }
+
+    function syncAccentInputs(color = currentAccentColor) {
+        const colorPicker = document.getElementById("customColorPicker");
+        const hexInput = document.getElementById("colorHexInput");
+        if (colorPicker) colorPicker.value = color;
+        if (hexInput) hexInput.value = color.toUpperCase();
+    }
+
+    function persistThemeSnapshot(activeThemeId, themeDef) {
+        if (!themeDef?.colors) return;
+
+        const scheme = (themeDef.tags || []).includes("light") ? "light" : "dark";
+        const snapshot = {
+            activeThemeId,
+            scheme,
+            colors: themeDef.colors,
+            updatedAt: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEYS.THEME_SNAPSHOT, JSON.stringify(snapshot));
+    }
+
+    function runVisualThemeTransaction(callback) {
+        const root = document.documentElement;
+        const body = document.body;
+
+        root.classList.add("theme-switching");
+        if (body) body.classList.add("theme-switching");
+
+        callback();
+
+        if (themeSwitchCleanupFrame) cancelAnimationFrame(themeSwitchCleanupFrame);
+        themeSwitchCleanupFrame = requestAnimationFrame(() => {
+            root.classList.remove("theme-switching");
+            if (body) body.classList.remove("theme-switching");
+            themeSwitchCleanupFrame = 0;
+        });
+    }
+
+    function queueCustomizationSync({
+        themeChanged = false,
+        accentChanged = false,
+        refreshRecommendedColors = false,
+        fullSync = true
+    } = {}) {
+        pendingCustomizationWork.themeChanged = pendingCustomizationWork.themeChanged || themeChanged;
+        pendingCustomizationWork.accentChanged = pendingCustomizationWork.accentChanged || accentChanged;
+        pendingCustomizationWork.refreshRecommendedColors = pendingCustomizationWork.refreshRecommendedColors || refreshRecommendedColors;
+        pendingCustomizationWork.fullSync = pendingCustomizationWork.fullSync || fullSync;
+
+        if (deferredCustomizationFrame) return;
+
+        deferredCustomizationFrame = requestAnimationFrame(() => {
+            deferredCustomizationFrame = 0;
+            const work = pendingCustomizationWork;
+            pendingCustomizationWork = {
+                themeChanged: false,
+                accentChanged: false,
+                refreshRecommendedColors: false,
+                fullSync: false
+            };
+
+            if (work.accentChanged) {
+                updateButtonTextColors();
+            }
+
+            updateUISelections();
+
+            if (!work.fullSync) return;
+
+            updateMetaThemeColor(currentAccentColor);
+            updateFavicon(currentAccentColor);
+            checkColorContrast();
+
+            if (work.refreshRecommendedColors) {
+                renderRecommendedColors();
+            }
+
+            if (window.applyAutoTintedText) {
+                window.applyAutoTintedText();
+            }
+        });
+    }
 
     // Initialize
     async function init() {
@@ -110,7 +247,7 @@
     // Load settings from localStorage
     function loadSettings() {
         currentTheme = localStorage.getItem(STORAGE_KEYS.THEME) || "auto";
-        currentAccentColor = localStorage.getItem(STORAGE_KEYS.ACCENT_COLOR) || "#6196ff";
+        currentAccentColor = normalizeHexColor(localStorage.getItem(STORAGE_KEYS.ACCENT_COLOR) || "#6196ff") || "#6196ff";
         currentFont = localStorage.getItem(STORAGE_KEYS.FONT) || "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif";
 
         const savedColorPresets = localStorage.getItem(STORAGE_KEYS.COLOR_PRESETS);
@@ -135,7 +272,7 @@
 
         const savedAdvanced = localStorage.getItem(STORAGE_KEYS.ADVANCED_SETTINGS);
         if (savedAdvanced) {
-             try { advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS, ...JSON.parse(savedAdvanced) }; } catch (e) { advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS }; }
+             try { advancedSettings = sanitizeAdvancedSettings({ ...DEFAULT_ADVANCED_SETTINGS, ...JSON.parse(savedAdvanced) }); } catch (e) { advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS }; }
         }
     }
 
@@ -188,66 +325,96 @@
 
     // Apply settings
     function applySettings() {
-        applyTheme(currentTheme);
-        applyAccentColor(currentAccentColor);
+        applyTheme(currentTheme, { persist: false, queueSideEffects: false });
+        applyAccentColor(currentAccentColor, { persist: false, queueSideEffects: false });
         applyFont(currentFont);
         applyUISettings();
         applyA11ySettings();
-        updateUISelections();
+        queueCustomizationSync({
+            themeChanged: true,
+            accentChanged: true,
+            refreshRecommendedColors: true,
+            fullSync: true
+        });
     }
 
     // --- LOGIC: THEMES ---
-    function applyTheme(themeId) {
+    function applyTheme(themeId, options = {}) {
+        const {
+            persist = true,
+            queueSideEffects = true,
+            fullSync = true
+        } = options;
+
         currentTheme = themeId;
-        let activeThemeId = themeId;
-        if (themeId === "auto") {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            activeThemeId = prefersDark ? "dark" : "light";
+        const activeThemeId = resolveActiveThemeId(themeId);
+        const themeDef = getThemeDefinition(activeThemeId);
+        const root = document.documentElement;
+
+        runVisualThemeTransaction(() => {
+            document.body.setAttribute("data-theme", activeThemeId);
+            root.setAttribute("data-theme", activeThemeId);
+
+            if (themeDef && themeDef.colors) {
+                Object.entries(themeDef.colors).forEach(([variable, value]) => {
+                    root.style.setProperty(variable, value);
+                });
+            }
+            
+            // Re-apply background image if exists, as theme might overwrite bg properties
+            if (uiSettings.bgImage) {
+                document.body.style.backgroundImage = `url('${uiSettings.bgImage}')`;
+                document.body.style.backgroundSize = "cover";
+                document.body.style.backgroundAttachment = "fixed";
+            } else if (themeDef && !themeDef.colors["--bg-image"]) {
+                document.body.style.backgroundImage = "";
+            }
+        });
+
+        if (persist) {
+            localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
         }
 
-        document.body.setAttribute("data-theme", activeThemeId);
+        persistThemeSnapshot(activeThemeId, themeDef);
 
-        const themeDef = themeDefinitions.find(t => t.id === activeThemeId);
-        const root = document.documentElement;
-        if (themeDef && themeDef.colors) {
-            Object.entries(themeDef.colors).forEach(([variable, value]) => {
-                root.style.setProperty(variable, value);
+        if (queueSideEffects) {
+            queueCustomizationSync({
+                themeChanged: true,
+                refreshRecommendedColors: true,
+                fullSync
             });
         }
-        
-        // Re-apply background image if exists, as theme might overwrite bg properties
-        if (uiSettings.bgImage) {
-            document.body.style.backgroundImage = `url('${uiSettings.bgImage}')`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundAttachment = 'fixed';
-        } else if (themeDef && !themeDef.colors["--bg-image"]) {
-            // Reset to default theme bg if no custom image
-             document.body.style.backgroundImage = '';
-        }
-
-        localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
-        updateFavicon(currentAccentColor);
-        checkColorContrast();
-        renderRecommendedColors(); // Re-render recs on theme change
-        if (window.applyAutoTintedText) window.applyAutoTintedText();
     }
 
     // --- LOGIC: ACCENT COLOR ---
-    function applyAccentColor(color) {
-        currentAccentColor = color;
-        document.documentElement.style.setProperty("--accent-color", color);
-        localStorage.setItem(STORAGE_KEYS.ACCENT_COLOR, color);
-        updateFavicon(color);
+    function applyAccentColor(color, options = {}) {
+        const normalizedColor = normalizeHexColor(color);
+        if (!normalizedColor) return;
 
-        const colorPicker = document.getElementById("customColorPicker");
-        const hexInput = document.getElementById("colorHexInput");
-        if (colorPicker) colorPicker.value = color;
-        if (hexInput) hexInput.value = color.toUpperCase();
+        const {
+            persist = true,
+            queueSideEffects = true,
+            fullSync = true,
+            syncInputs = true
+        } = options;
 
-        updateButtonTextColors();
-        checkColorContrast();
-        updateUISelections();
-        if (window.applyAutoTintedText) window.applyAutoTintedText();
+        currentAccentColor = normalizedColor;
+
+        runVisualThemeTransaction(() => {
+            document.documentElement.style.setProperty("--accent-color", normalizedColor);
+            if (syncInputs) syncAccentInputs(normalizedColor);
+        });
+
+        if (persist) {
+            localStorage.setItem(STORAGE_KEYS.ACCENT_COLOR, normalizedColor);
+        }
+
+        if (queueSideEffects) {
+            queueCustomizationSync({
+                accentChanged: true,
+                fullSync
+            });
+        }
     }
 
     // --- LOGIC: FONT ---
@@ -310,7 +477,7 @@
 
     // --- LOGIC: ADVANCED ---
     function applyAdvancedSettings(newSettings) {
-        advancedSettings = { ...advancedSettings, ...newSettings };
+        advancedSettings = sanitizeAdvancedSettings({ ...advancedSettings, ...newSettings });
         localStorage.setItem(STORAGE_KEYS.ADVANCED_SETTINGS, JSON.stringify(advancedSettings));
         syncInputs();
         
@@ -418,13 +585,8 @@
         const grid = document.getElementById("recommendedColorsGrid");
         if (!grid) return;
 
-        let activeThemeId = currentTheme;
-        if (activeThemeId === "auto") {
-            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-            activeThemeId = prefersDark ? "dark" : "light";
-        }
-        
-        const themeDef = themeDefinitions.find(t => t.id === activeThemeId);
+        const activeThemeId = resolveActiveThemeId(currentTheme);
+        const themeDef = getThemeDefinition(activeThemeId);
         if (!themeDef) return;
 
         // 1. Curated Theme Colors
@@ -447,8 +609,8 @@
         const item = document.createElement("div");
         item.className = "preset-item";
         item.style.background = color;
-        // Check if color is active (ignoring case)
-        if (color.toLowerCase() === currentAccentColor.toLowerCase()) item.classList.add("active");
+        item.dataset.color = normalizeHexColor(color);
+        if (item.dataset.color === currentAccentColor) item.classList.add("active");
         item.onclick = () => applyAccentColor(color);
         return item;
     }
@@ -482,7 +644,7 @@
 
     function applyPreset(preset) {
         currentTheme = preset.theme;
-        currentAccentColor = preset.accentColor;
+        currentAccentColor = normalizeHexColor(preset.accentColor) || "#6196ff";
         currentFont = preset.font;
         // Merge with defaults to ensure new fields don't break old presets
         uiSettings = { ...DEFAULT_UI_SETTINGS, ...preset.ui };
@@ -560,7 +722,6 @@
 
             card.addEventListener("click", () => {
                 applyTheme(theme.id);
-                updateUISelections();
             });
 
             container.appendChild(card);
@@ -619,7 +780,15 @@
         });
 
         // Color Inputs
-        document.getElementById("customColorPicker")?.addEventListener("input", (e) => applyAccentColor(e.target.value));
+        document.getElementById("customColorPicker")?.addEventListener("input", (e) => {
+            applyAccentColor(e.target.value, {
+                persist: false,
+                fullSync: false
+            });
+        });
+        document.getElementById("customColorPicker")?.addEventListener("change", (e) => {
+            applyAccentColor(e.target.value);
+        });
         document.getElementById("colorHexInput")?.addEventListener("change", (e) => {
              let val = e.target.value;
              if (!val.startsWith("#")) val = "#" + val;
@@ -790,7 +959,7 @@
     // Helper: Update UI Selections (active states)
     function updateUISelections() {
         document.querySelectorAll(".theme-card").forEach(c => c.classList.toggle("active", c.dataset.theme === currentTheme));
-        document.querySelectorAll(".preset-item").forEach(c => c.classList.toggle("active", c.style.background === currentAccentColor || c.style.backgroundColor === currentAccentColor));
+        document.querySelectorAll(".preset-item").forEach(c => c.classList.toggle("active", c.dataset.color === currentAccentColor));
     }
 
     // Helper: Render Saved Presets
@@ -836,11 +1005,8 @@
         const g = parseInt(currentAccentColor.slice(3, 5), 16);
         const b = parseInt(currentAccentColor.slice(5, 7), 16);
         const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-        
-        // Simple heuristic: if light theme & light color, or dark theme & dark color
-        const isDarkTheme = document.body.getAttribute('data-theme') === 'dark' || 
-                           (currentTheme === 'auto' && window.matchMedia("(prefers-color-scheme: dark)").matches) ||
-                           ['space', 'midnight', 'forest', 'ocean'].includes(currentTheme);
+        const activeThemeId = resolveActiveThemeId(currentTheme);
+        const isDarkTheme = ['dark', 'space', 'midnight', 'forest', 'ocean', 'cyberpunk', 'deep-purple'].includes(activeThemeId);
 
         let warn = false;
         if (isDarkTheme && yiq < 50) warn = true;
@@ -872,6 +1038,11 @@
         const link = document.querySelector("link[rel~='icon']") || document.createElement("link");
         link.rel = "icon"; link.href = canvas.toDataURL();
         document.head.appendChild(link);
+    }
+
+    function updateMetaThemeColor(color) {
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute("content", color);
     }
     
     // Theme Card Rendering
@@ -1413,12 +1584,9 @@
     // Initialize dev mode
     initDevMode();
 
-    // Apply auto-tinted text on load
-    setTimeout(() => {
-        applyAutoTintedText();
-        // Reapply when accent color changes
-        window.applyAutoTintedText = applyAutoTintedText;
-    }, 100);
+    // Apply auto-tinted text on load and expose for deferred customization syncs
+    window.applyAutoTintedText = applyAutoTintedText;
+    requestAnimationFrame(applyAutoTintedText);
 
     // Bootstrap
     if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);

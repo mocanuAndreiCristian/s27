@@ -83,7 +83,7 @@
     }
 
     .timetable {
-        border-radius: var(--border-radius-xs);
+        border-radius: 0;
     }
 
     .timetable th,
@@ -92,6 +92,7 @@
         font-size: var(--font-size-lg);
         /* Larger font */
         width: 50rem;
+
     }
 
     #emojis {
@@ -107,63 +108,6 @@
     #scroll-indicator-bg,
     #scroll-indicator {
         display: none;
-    }
-
-    /* Overlays on Mobile - Full Screen Logic */
-    .manuals-popup {
-        width: 100vw;
-        height: 100dvh;
-        border-radius: 0;
-        padding: 1rem;
-        top: 0;
-        left: 0;
-        transform: none;
-        padding-top: 4rem;
-        position: fixed;
-        inset: 0;
-        max-height: none;
-        background: var(--bg-color);
-    }
-
-    .manuals-popup h2 {
-        font-size: var(--font-size-2xl);
-        margin: 1rem 0 1.5rem;
-        padding-right: 0;
-    }
-
-    .manuals-popup .close-btn {
-        top: 1rem;
-        right: 1rem;
-    }
-
-    #manualSearch {
-        width: 95%;
-        font-size: var(--font-size-lg);
-        padding: 0.85rem 1rem;
-    }
-
-    .manuals-popup .boss-container {
-        grid-template-columns: 1fr;
-        gap: 1rem;
-        padding: 1rem;
-        height: calc(100% - 140px);
-        width: 100%;
-        max-width: none;
-        border: none;
-        box-shadow: none;
-    }
-
-    .manuals-popup .container {
-        padding: 0.75rem;
-    }
-
-    .manuals-popup .container h2 {
-        font-size: var(--font-size-lg);
-        margin: 0.75rem 0 0;
-    }
-
-    .manuals-popup .container img {
-        max-height: 220px;
     }
 
     #time {
@@ -191,6 +135,104 @@
 
     .info-overlay-header h2 {
         font-size: var(--font-size-2xl);
+        padding-right: 0;
+    }
+
+    #manualsOverlay {
+        padding: 0;
+        align-items: flex-start;
+    }
+
+    .manuals-shell {
+        width: 100vw;
+        max-width: 100%;
+        height: 100dvh;
+        max-height: 100%;
+        border-radius: 0;
+        padding: 1rem;
+        gap: 0.85rem;
+    }
+
+    .manuals-shell::before,
+    .manuals-shell::after {
+        display: none;
+    }
+
+    .manuals-hero {
+        grid-template-columns: 1fr;
+    }
+
+    .manuals-hero-copy,
+    .manuals-toolbar,
+    .manuals-add-card,
+    .manuals-library-panel {
+        border-radius: 20px;
+    }
+
+    .manuals-hero-copy {
+        padding: 1.2rem;
+    }
+
+    .manuals-hero-copy h2 {
+        font-size: 1.9rem;
+        align-items: flex-start;
+    }
+
+    .manuals-hero-stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .manuals-stat-card {
+        min-height: 6.2rem;
+    }
+
+    .manuals-toolbar {
+        padding: 0.9rem;
+        align-items: stretch;
+    }
+
+    .manuals-search-field,
+    .manuals-toolbar-actions,
+    .manuals-select-field {
+        width: 100%;
+    }
+
+    .manuals-toolbar-actions {
+        flex-direction: column;
+    }
+
+    .manuals-source-chips {
+        overflow-x: auto;
+        padding-bottom: 0.25rem;
+        flex-wrap: nowrap;
+    }
+
+    .manuals-layout {
+        grid-template-columns: 1fr;
+        overflow: auto;
+    }
+
+    .manuals-add-card,
+    .manuals-library-panel {
+        padding: 1rem;
+    }
+
+    .manual-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .manual-form-actions {
+        flex-direction: column;
+    }
+
+    .manuals-library-header,
+    .manuals-results-actions {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .manuals-grid {
+        grid-template-columns: 1fr;
         padding-right: 0;
     }
 
@@ -722,25 +764,30 @@
         border-radius: var(--border-radius);
     }
 
-    .manuals-popup {
-        width: 95%;
-        height: 95%;
-        border-radius: var(--border-radius);
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-    }
-
-    .manuals-popup .boss-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-
     .weather-overlay-container {
         width: 90%;
         max-width: 700px;
         height: 90%;
         max-height: 90vh;
         border-radius: var(--border-radius);
+    }
+
+    .manuals-shell {
+        width: 94%;
+        max-width: 1100px;
+        height: auto;
+        max-height: 92vh;
+        border-radius: 24px;
+        padding: 1rem;
+    }
+
+    .manuals-layout {
+        grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr);
+        overflow: hidden;
+    }
+
+    .manuals-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .weather-details-grid {
@@ -810,11 +857,6 @@
 @media (max-width: 480px) {
     #emojis {
         font-size: var(--font-size-xl);
-    }
-
-    /* Update: Make emojis larger on small screens */
-    .manuals-popup .container img {
-        max-height: 280px;
     }
 
     .menu-toggle {

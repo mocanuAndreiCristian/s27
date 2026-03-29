@@ -8,12 +8,36 @@
     -webkit-overflow-scrolling: touch;
     box-shadow: 0 5px 15px var(--shadow-color);
     border-radius: var(--border-radius);
-    animation: fadeInUp 1s cubic-bezier(0.34, 1.56, 0.64, 1);
     margin-top: -3rem;
     scrollbar-width: thin;
 }
 .timetable-wrapper::-webkit-scrollbar {
     height: var(--scrollbar-size);
+}
+
+.timetable-wrapper.is-loading .timetable {
+    pointer-events: none;
+}
+
+.timetable.is-loading thead th {
+    color: transparent;
+    animation: none;
+}
+
+.timetable.is-loading thead th::after {
+    content: "";
+    display: block;
+    width: 72%;
+    height: 1.45rem;
+    margin: 0 auto;
+    border-radius: var(--border-radius-pill);
+    background: linear-gradient(90deg, var(--highlight-color) 25%, var(--card-bg) 50%, var(--highlight-color) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.timetable.is-loading thead th:first-child::after {
+    width: 4.75rem;
 }
 
 .timetable {
@@ -65,19 +89,44 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     font-weight: var(--font-weight-semibold);
     text-transform: none;
     letter-spacing: 1px;
-    animation: fadeInUp 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    animation: none;
 }
-
-/* Stagger animation for table headers */
-.timetable th:nth-child(1) { animation-delay: 0.1s; }
-.timetable th:nth-child(2) { animation-delay: 0.2s; }
-.timetable th:nth-child(3) { animation-delay: 0.3s; }
-.timetable th:nth-child(4) { animation-delay: 0.4s; }
-.timetable th:nth-child(5) { animation-delay: 0.5s; }
-.timetable th:nth-child(6) { animation-delay: 0.6s; }
 
 .timetable td {
     background-color: var(--card-bg);
+}
+
+.timetable-skeleton-row th {
+    animation: none;
+}
+
+.timetable-skeleton-cell {
+    cursor: default;
+}
+
+.timetable-skeleton-block {
+    display: block;
+    width: 72%;
+    height: 2.75rem;
+    margin: 0 auto;
+    border-radius: var(--border-radius-pill);
+}
+
+.timetable-skeleton-time .timetable-skeleton-block {
+    width: 4.75rem;
+}
+
+.timetable-message-cell {
+    padding: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+}
+
+.timetable.has-error .timetable-message-cell {
+    background: color-mix(in srgb, var(--danger-color) 6%, var(--card-bg));
+    color: var(--text-color);
 }
 
 .timetable td.subject,
@@ -103,6 +152,13 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     box-shadow: var(--box-shadow-md);
 }
 
+.timetable.is-loading .timetable-skeleton-cell:hover,
+.timetable.is-loading .timetable-skeleton-row th:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--card-bg);
+}
+
 #emojis {
     font-size: var(--font-size-xl);
     border-radius: var(--border-radius-xs);
@@ -118,7 +174,6 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     color: var(--accent-color);
     /* stronger contrast so the current hour is clearly visible */
     background: color-mix(in srgb, var(--accent-color) 28%, var(--card-bg));
-    border-right: 4px solid var(--accent-color);
     font-weight: 600;
 }
 
@@ -133,7 +188,7 @@ body.minimal-cells .timetable td:not(:first-child):hover {
 
 /* Generic highlight tag for theming/customization (applied to the header/time/subject cells) */
 .timetable th.current-highlight, .timetable td.current-highlight, .timetable thead th.current-highlight {
-    border-radius: var(--border-radius-xs);
+    border-radius: 0;
     transition: background-color var(--transition-speed), color var(--transition-speed);
     color: var(--accent-color);
     background: color-mix(in srgb, var(--accent-color) 6%, var(--card-bg));

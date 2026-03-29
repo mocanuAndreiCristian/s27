@@ -47,13 +47,12 @@ window.addEventListener("DOMContentLoaded", () => {
             '.list-view',
             '.calendar-view',
             '.info-content',
+            '.manuals-grid',
             '.custom-sidebar',
             '.custom-content',
-            '#manualsPopupContent',
             '.weather-overlay-container',
             '.task-edit-content',
-            '.folder-edit-content',
-            '.boss-container'
+            '.folder-edit-content'
         ];
 
         scrollContainers.forEach(selector => {
