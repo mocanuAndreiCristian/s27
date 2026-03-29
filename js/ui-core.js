@@ -47,7 +47,6 @@ window.addEventListener("DOMContentLoaded", () => {
             '.list-view',
             '.calendar-view',
             '.info-content',
-            '.manuals-grid',
             '.custom-sidebar',
             '.custom-content',
             '.weather-overlay-container',

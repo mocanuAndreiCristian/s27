@@ -138,104 +138,6 @@
         padding-right: 0;
     }
 
-    #manualsOverlay {
-        padding: 0;
-        align-items: flex-start;
-    }
-
-    .manuals-shell {
-        width: 100vw;
-        max-width: 100%;
-        height: 100dvh;
-        max-height: 100%;
-        border-radius: 0;
-        padding: 1rem;
-        gap: 0.85rem;
-    }
-
-    .manuals-shell::before,
-    .manuals-shell::after {
-        display: none;
-    }
-
-    .manuals-hero {
-        grid-template-columns: 1fr;
-    }
-
-    .manuals-hero-copy,
-    .manuals-toolbar,
-    .manuals-add-card,
-    .manuals-library-panel {
-        border-radius: 20px;
-    }
-
-    .manuals-hero-copy {
-        padding: 1.2rem;
-    }
-
-    .manuals-hero-copy h2 {
-        font-size: 1.9rem;
-        align-items: flex-start;
-    }
-
-    .manuals-hero-stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .manuals-stat-card {
-        min-height: 6.2rem;
-    }
-
-    .manuals-toolbar {
-        padding: 0.9rem;
-        align-items: stretch;
-    }
-
-    .manuals-search-field,
-    .manuals-toolbar-actions,
-    .manuals-select-field {
-        width: 100%;
-    }
-
-    .manuals-toolbar-actions {
-        flex-direction: column;
-    }
-
-    .manuals-source-chips {
-        overflow-x: auto;
-        padding-bottom: 0.25rem;
-        flex-wrap: nowrap;
-    }
-
-    .manuals-layout {
-        grid-template-columns: 1fr;
-        overflow: auto;
-    }
-
-    .manuals-add-card,
-    .manuals-library-panel {
-        padding: 1rem;
-    }
-
-    .manual-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .manual-form-actions {
-        flex-direction: column;
-    }
-
-    .manuals-library-header,
-    .manuals-results-actions {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .manuals-grid {
-        grid-template-columns: 1fr;
-        padding-right: 0;
-    }
-
     .release-notes-section>h2 {
         font-size: var(--font-size-xl);
         flex-direction: column;
@@ -770,24 +672,6 @@
         height: 90%;
         max-height: 90vh;
         border-radius: var(--border-radius);
-    }
-
-    .manuals-shell {
-        width: 94%;
-        max-width: 1100px;
-        height: auto;
-        max-height: 92vh;
-        border-radius: 24px;
-        padding: 1rem;
-    }
-
-    .manuals-layout {
-        grid-template-columns: minmax(16rem, 19rem) minmax(0, 1fr);
-        overflow: hidden;
-    }
-
-    .manuals-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .weather-details-grid {

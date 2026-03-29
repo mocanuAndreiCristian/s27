@@ -20,7 +20,6 @@
         fullViewHeader: $("#fullViewHeader"),
         sheetCustomizationBtn: $("#sheetCustomizationBtn"),
         sheetWeatherBtn: $("#sheetWeatherBtn"),
-        sheetManualsBtn: $("#sheetManualsBtn"),
         sheetClockBtn: $("#sheetClockBtn"),
         sheetTodoBtn: $("#sheetTodoBtn"),
         sheetInfoBtn: $("#sheetInfoBtn"),
@@ -44,7 +43,6 @@
     const shortcuts = {
         customization: ["fa-solid fa-sliders", "Custom"],
         weather: ["fa-solid fa-cloud-sun", "Weather"],
-        textbooks: ["fa-solid fa-book-open-reader", "Manuals"],
         clock: ["fa-solid fa-clock", "Clock"],
         tasks: ["fa-solid fa-list-check", "Tasks"],
         info: ["fa-solid fa-circle-info", "Info"],
@@ -841,7 +839,6 @@
         const map = {
             customization: "customizationBtn",
             weather: "weatherBtn",
-            textbooks: "allManualsBtn",
             clock: "clockBtn",
             tasks: "todoBtn",
             info: "infoBtn",
@@ -935,7 +932,6 @@
             trig("customization"),
         );
         dom.sheetWeatherBtn?.addEventListener("click", () => trig("weather"));
-        dom.sheetManualsBtn?.addEventListener("click", () => trig("textbooks"));
         dom.sheetClockBtn?.addEventListener("click", () => trig("clock"));
         dom.sheetTodoBtn?.addEventListener("click", () => trig("tasks"));
         dom.sheetInfoBtn?.addEventListener("click", () => trig("info"));

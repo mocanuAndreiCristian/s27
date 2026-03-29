@@ -54,7 +54,6 @@
     const VALID_SHORTCUT_OPTIONS = new Set([
         'customization',
         'weather',
-        'textbooks',
         'clock',
         'tasks',
         'info'

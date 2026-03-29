@@ -87,11 +87,6 @@
                     </div>
                 </button>
 
-                <button id="allManualsBtn" class="menu-btn">
-                    <i class="fa-solid fa-book-open-reader"></i>
-                    <span>Manuals</span>
-                </button>
-
                 <button id="clockBtn" class="menu-btn">
                     <i class="fa-solid fa-clock"></i>
                     <span>Clock</span>
@@ -570,7 +565,6 @@
                             <li>Menu button = open/close side menu</li>
                             <li>Theme button = switch between light and dark mode</li>
                             <li>Color picker = choose a custom accent color</li>
-                            <li>Manuals = browse the full manual library</li>
                             <li>Clock = view current time and date</li>
                             <li>My Tasks = open the to-do list</li>
                         </ul>
@@ -622,7 +616,6 @@
                                 <h4>Enhanced Features</h4>
                                 <ul>
                                     <li>📚 Recommended textbook based on current class</li>
-                                    <li>🔍 Search functionality for textbooks</li>
                                     <li>⏰ Live clock overlay</li>
                                     <li>🌤️ Weather information with location</li>
                                     <li>📱 Improved mobile responsiveness</li>
@@ -640,7 +633,6 @@
                                     <li>📅 Interactive timetable display</li>
                                     <li>🌓 Light and dark theme support</li>
                                     <li>🎨 Accent color customization</li>
-                                    <li>📖 Quick access to textbooks</li>
                                     <li>📍 Current class highlighting</li>
                                     <li>🔄 Real-time updates</li>
                                 </ul>
@@ -650,145 +642,6 @@
                         <h3><a href="https://s27.ro/8d" target="_blank">Original 8D Schedule Website</a></h3>
                         <h3><a href="https://manuale.edu.ro/" target="_blank">More Textbooks</a></h3>
                         <h3><a href="../other-projects/index.html" target="_blank">Other projects by us</a></h3>
-                    </div>
-                </div>
-            </div>
-
-            <div id="manualsOverlay" class="overlay manuals-overlay">
-                <div class="manuals-shell">
-                    <button id="closeManualsOverlay" class="close-btn" aria-label="Close"><i
-                            class="fa-solid fa-xmark"></i></button>
-
-                    <div class="manuals-hero">
-                        <div class="manuals-hero-copy">
-                            <span class="manuals-eyebrow">Library</span>
-                            <h2><i class="fa-solid fa-book-open-reader"></i> Manuals Hub</h2>
-                            <p>Search official manuals, filter by subject, sort the full library, and save your
-                                own links or PDFs on this device.</p>
-                        </div>
-
-                        <div class="manuals-hero-stats">
-                            <div class="manuals-stat-card">
-                                <strong id="manualStatVisible">0</strong>
-                                <span>Visible</span>
-                            </div>
-                            <div class="manuals-stat-card">
-                                <strong id="manualStatOfficial">0</strong>
-                                <span>Official</span>
-                            </div>
-                            <div class="manuals-stat-card">
-                                <strong id="manualStatCustom">0</strong>
-                                <span>Personal</span>
-                            </div>
-                            <div class="manuals-stat-card">
-                                <strong id="manualStatPdf">0</strong>
-                                <span>PDFs</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="manuals-toolbar">
-                        <label class="manuals-search-field">
-                            <i class="fa-solid fa-magnifying-glass"></i>
-                            <input id="manualSearchInput" type="search" placeholder="Search by title or subject"
-                                autocomplete="off">
-                        </label>
-
-                        <div class="manuals-toolbar-actions">
-                            <label class="manuals-select-field">
-                                <span>Subject</span>
-                                <select id="manualSubjectFilter">
-                                    <option value="all">All subjects</option>
-                                </select>
-                            </label>
-
-                            <label class="manuals-select-field">
-                                <span>Sort</span>
-                                <select id="manualSortSelect">
-                                    <option value="best">Best match</option>
-                                    <option value="title-asc">Title A-Z</option>
-                                    <option value="title-desc">Title Z-A</option>
-                                    <option value="subject-asc">Subject A-Z</option>
-                                    <option value="newest">Newest first</option>
-                                </select>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="manuals-source-chips" id="manualSourceFilters">
-                        <button type="button" class="manual-source-chip active" data-source-filter="all">All</button>
-                        <button type="button" class="manual-source-chip"
-                            data-source-filter="official">Official</button>
-                        <button type="button" class="manual-source-chip" data-source-filter="custom">My
-                            Manuals</button>
-                        <button type="button" class="manual-source-chip" data-source-filter="pdf">PDFs</button>
-                        <button type="button" class="manual-source-chip" data-source-filter="link">Links</button>
-                    </div>
-
-                    <div class="manuals-layout">
-                        <aside class="manuals-add-card">
-                            <div class="manuals-section-heading">
-                                <span class="manuals-section-kicker">Save your own</span>
-                                <h3>Add a manual</h3>
-                            </div>
-                            <p class="manuals-muted">Keep a web manual handy or upload a PDF that stays saved on
-                                this device.</p>
-
-                            <div class="manual-type-switch" id="manualTypeSwitch">
-                                <button type="button" class="manual-type-btn active"
-                                    data-manual-type="link">Link</button>
-                                <button type="button" class="manual-type-btn" data-manual-type="pdf">PDF</button>
-                            </div>
-
-                            <div class="manual-form-grid">
-                                <label class="manual-field">
-                                    <span>Title</span>
-                                    <input id="manualTitleInput" type="text" placeholder="Ex: Algebra Notes">
-                                </label>
-
-                                <label class="manual-field">
-                                    <span>Subject</span>
-                                    <input id="manualSubjectInput" type="text" placeholder="Ex: Mate">
-                                </label>
-
-                                <label class="manual-field manual-field-full" id="manualLinkField">
-                                    <span>Manual link</span>
-                                    <input id="manualLinkInput" type="url" placeholder="https://...">
-                                </label>
-
-                                <label class="manual-upload-card manual-field-full" id="manualPdfField" hidden>
-                                    <input id="manualPdfInput" type="file" accept="application/pdf,.pdf" hidden>
-                                    <span class="manual-upload-icon"><i class="fa-solid fa-file-pdf"></i></span>
-                                    <span class="manual-upload-title">Choose a PDF</span>
-                                    <span class="manual-upload-note" id="manualPdfName">No file selected</span>
-                                </label>
-                            </div>
-
-                            <div class="manual-form-actions">
-                                <button id="saveManualBtn" class="btn-primary">Save Manual</button>
-                                <button id="resetManualFormBtn" class="btn-secondary">Reset</button>
-                            </div>
-
-                            <p class="manual-form-status" id="manualFormStatus" aria-live="polite"></p>
-                        </aside>
-
-                        <section class="manuals-library-panel">
-                            <div class="manuals-library-header">
-                                <div>
-                                    <span class="manuals-section-kicker">Browse</span>
-                                    <h3>Library</h3>
-                                </div>
-
-                                <div class="manuals-results-actions">
-                                    <p id="manualResultsSummary">Loading manuals...</p>
-                                    <button id="clearManualFilters" type="button" class="manual-link-btn">Clear
-                                        filters</button>
-                                </div>
-                            </div>
-
-                            <div id="manualsNotice" class="manuals-inline-notice" hidden></div>
-                            <div id="manualsGrid" class="manuals-grid" aria-live="polite"></div>
-                        </section>
                     </div>
                 </div>
             </div>
@@ -1337,7 +1190,6 @@
                                     <select id="shortcut1Select" class="shortcut-select">
                                         <option value="customization" selected>Customization</option>
                                         <option value="weather">Weather</option>
-                                        <option value="textbooks">Manuals</option>
                                         <option value="clock">Clock</option>
                                         <option value="tasks">My Tasks</option>
                                         <option value="info">Info</option>
@@ -1348,7 +1200,6 @@
                                     <select id="shortcut2Select" class="shortcut-select">
                                         <option value="customization">Customization</option>
                                         <option value="weather" selected>Weather</option>
-                                        <option value="textbooks">Manuals</option>
                                         <option value="clock">Clock</option>
                                         <option value="tasks">My Tasks</option>
                                         <option value="info">Info</option>
@@ -1637,11 +1488,6 @@
                                 <span id="sheetWeatherTemp" class="sheet-weather-temp">--°C</span>
                             </div>
                         </div>
-                    </button>
-
-                    <button class="sheet-menu-btn" id="sheetManualsBtn">
-                        <i class="fa-solid fa-book-open-reader"></i>
-                        <span>Manuals</span>
                     </button>
 
                     <button class="sheet-menu-btn" id="sheetClockBtn">
