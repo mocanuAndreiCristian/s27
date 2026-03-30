@@ -1,5 +1,3 @@
-
-
 /* ========================================
    CUSTOMIZATION OVERLAY SYSTEM
    ======================================== */
@@ -33,7 +31,13 @@
         bgImage: '',
         mobileNavScroll: false,
         hideEmptyDays: false,
-        bgPattern: false
+        bgPattern: false,
+        libraryPreferredOpenType: 'link',
+        libraryDesktopColumns: 4,
+        libraryRecommendedOpenBehavior: 'open-all',
+        libraryRecommendedManualMap: {},
+        libraryRecommendedMode: 'link',
+        libraryRecommendedCustomTypes: {}
     };
 
     // Default A11y Settings
@@ -56,7 +60,8 @@
         'weather',
         'clock',
         'tasks',
-        'info'
+        'info',
+        'library'
     ]);
 
     // State
@@ -105,6 +110,94 @@
 
     function sanitizeShortcutValue(value, fallback) {
         return VALID_SHORTCUT_OPTIONS.has(value) ? value : fallback;
+    }
+
+    function normalizeLibrarySubjectKey(value = "") {
+        const stripped = String(value).replace(/<[^>]*>/g, " ");
+        const lettersOnly = stripped.replace(/[^\p{L}\p{N}\s]/gu, " ");
+        const noDiacritics = lettersOnly.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+        return noDiacritics.toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function normalizeLibraryOpenType(value, fallback = DEFAULT_UI_SETTINGS.libraryPreferredOpenType) {
+        return ["link", "pdf", "app"].includes(value) ? value : fallback;
+    }
+
+    function normalizeLibraryRecommendedMode(value, fallback = DEFAULT_UI_SETTINGS.libraryRecommendedMode) {
+        return ["link", "pdf", "app", "custom"].includes(value) ? value : fallback;
+    }
+
+    function normalizeLibraryOpenBehavior(value, fallback = DEFAULT_UI_SETTINGS.libraryRecommendedOpenBehavior) {
+        return ["open-all", "buttons", "both"].includes(value) ? value : fallback;
+    }
+
+    function sanitizeLibraryManualList(value) {
+        if (!Array.isArray(value)) return [];
+
+        const seen = new Set();
+        const result = [];
+
+        value.forEach((manualId) => {
+            const normalized = String(manualId || "").trim();
+            if (!normalized || seen.has(normalized)) return;
+            seen.add(normalized);
+            result.push(normalized);
+        });
+
+        return result.slice(0, 3);
+    }
+
+    function sanitizeLibraryCustomTypeMap(value) {
+        if (!value || typeof value !== "object") return {};
+
+        return Object.fromEntries(
+            Object.entries(value)
+                .map(([key, type]) => [normalizeLibrarySubjectKey(key), normalizeLibraryOpenType(type, "link")])
+                .filter(([key]) => Boolean(key))
+        );
+    }
+
+    function sanitizeLibraryManualMap(value) {
+        if (!value || typeof value !== "object") return {};
+
+        return Object.fromEntries(
+            Object.entries(value)
+                .map(([key, manualIds]) => [normalizeLibrarySubjectKey(key), sanitizeLibraryManualList(manualIds)])
+                .filter(([key, manualIds]) => Boolean(key) && manualIds.length > 0)
+        );
+    }
+
+    function sanitizeUISettings(settings = {}) {
+        return {
+            ...settings,
+            libraryPreferredOpenType: normalizeLibraryOpenType(
+                settings.libraryPreferredOpenType,
+                DEFAULT_UI_SETTINGS.libraryPreferredOpenType,
+            ),
+            libraryDesktopColumns: Math.max(
+                2,
+                Math.min(
+                    6,
+                    Number.isFinite(Number(settings.libraryDesktopColumns))
+                        ? Math.round(Number(settings.libraryDesktopColumns))
+                        : DEFAULT_UI_SETTINGS.libraryDesktopColumns,
+                ),
+            ),
+            libraryRecommendedMode: normalizeLibraryRecommendedMode(
+                settings.libraryRecommendedMode,
+                DEFAULT_UI_SETTINGS.libraryRecommendedMode,
+            ),
+            libraryRecommendedOpenBehavior: normalizeLibraryOpenBehavior(
+                settings.libraryRecommendedOpenBehavior,
+                DEFAULT_UI_SETTINGS.libraryRecommendedOpenBehavior,
+            ),
+            libraryRecommendedManualMap: sanitizeLibraryManualMap(
+                settings.libraryRecommendedManualMap,
+            ),
+            libraryRecommendedCustomTypes: sanitizeLibraryCustomTypeMap(
+                settings.libraryRecommendedCustomTypes,
+            ),
+        };
     }
 
     function sanitizeAdvancedSettings(settings = {}) {
@@ -261,7 +354,7 @@
 
         const savedUISettings = localStorage.getItem(STORAGE_KEYS.UI_SETTINGS);
         if (savedUISettings) {
-             try { uiSettings = { ...DEFAULT_UI_SETTINGS, ...JSON.parse(savedUISettings) }; } catch (e) { uiSettings = { ...DEFAULT_UI_SETTINGS }; }
+             try { uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS, ...JSON.parse(savedUISettings) }); } catch (e) { uiSettings = { ...DEFAULT_UI_SETTINGS }; }
         }
 
         const savedA11ySettings = localStorage.getItem(STORAGE_KEYS.A11Y_SETTINGS);
@@ -295,6 +388,7 @@
         document.getElementById("uiMobileNavScroll").checked = uiSettings.mobileNavScroll || false;
         document.getElementById("uiHideEmptyDays").checked = uiSettings.hideEmptyDays || false;
         document.getElementById("uiBgPattern").checked = uiSettings.bgPattern || false;
+        syncLibrarySettingsInputs();
 
         // A11y
         document.getElementById("a11yHighContrast").checked = a11ySettings.highContrast;
@@ -313,13 +407,195 @@
             modeMarkBtn.classList.toggle("active", advancedSettings.interactionMode === 'mark');
         }
         if (modeText) {
-            modeText.textContent = advancedSettings.interactionMode === 'link' ? "Open Textbook" : "Mark Subject";
+            modeText.textContent = advancedSettings.interactionMode === 'link' ? "Deschide manual" : "Marcheaza materia";
         }
 
         const sc1 = document.getElementById("shortcut1Select");
         const sc2 = document.getElementById("shortcut2Select");
         if (sc1) sc1.value = advancedSettings.shortcut1;
         if (sc2) sc2.value = advancedSettings.shortcut2;
+    }
+
+    function getLibrarySubjectEntries() {
+        const manuals = window.getManualsCatalog ? window.getManualsCatalog() : [];
+        const grouped = new Map();
+
+        manuals.forEach((manual) => {
+            const key = normalizeLibrarySubjectKey(manual.subject || manual.title);
+            if (!key) return;
+
+            if (!grouped.has(key)) {
+                grouped.set(key, {
+                    key,
+                    label: manual.displaySubject || manual.subject || manual.title,
+                    manuals: [],
+                });
+            }
+
+            grouped.get(key).manuals.push({
+                id: manual.id,
+                title: manual.title,
+                type: manual.type,
+                source: manual.source,
+            });
+        });
+
+        const entries = Array.from(grouped.values()).map((entry) => ({
+            ...entry,
+            manuals: entry.manuals.sort((left, right) => {
+                if (left.source !== right.source) {
+                    return left.source === "custom" ? -1 : 1;
+                }
+
+                return left.title.localeCompare(right.title, "ro", { sensitivity: "base" });
+            }),
+        }));
+
+        entries.sort((left, right) => left.label.localeCompare(right.label, "ro", { sensitivity: "base" }));
+        return entries;
+    }
+
+    function renderLibraryCustomPreferenceRows() {
+        const grid = document.getElementById("uiLibraryCustomPrefsGrid");
+        if (!grid) return;
+
+        const subjects = getLibrarySubjectEntries();
+        grid.innerHTML = "";
+
+        if (!subjects.length) {
+            const empty = document.createElement("p");
+            empty.className = "library-pref-empty";
+            empty.textContent = "Materiile vor aparea aici dupa ce se incarca manualele.";
+            grid.appendChild(empty);
+            return;
+        }
+
+        subjects.forEach(({ key, label, manuals }) => {
+            const item = document.createElement("div");
+            item.className = "library-pref-item";
+            item.dataset.librarySubjectRow = key;
+
+            const title = document.createElement("span");
+            title.textContent = label;
+
+            const slots = document.createElement("div");
+            slots.className = "library-pref-slots";
+
+            const selectedManuals = sanitizeLibraryManualList(
+                uiSettings.libraryRecommendedManualMap?.[key],
+            );
+
+            for (let slotIndex = 0; slotIndex < 3; slotIndex += 1) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "custom-select-wrapper library-pref-slot";
+
+                const select = document.createElement("select");
+                select.className = "font-select library-pref-select";
+                select.dataset.librarySubjectPref = key;
+                select.dataset.librarySubjectSlot = String(slotIndex);
+
+                const emptyOption = document.createElement("option");
+                emptyOption.value = "";
+                emptyOption.textContent = `Gol ${slotIndex + 1}`;
+                select.appendChild(emptyOption);
+
+                manuals.forEach((manual) => {
+                    const option = document.createElement("option");
+                    option.value = manual.id;
+                    option.textContent = `${manual.title} (${manual.type.toUpperCase()}${manual.source === "custom" ? ", personalizat" : ""})`;
+                    select.appendChild(option);
+                });
+
+                select.value = selectedManuals[slotIndex] || "";
+
+                const icon = document.createElement("i");
+                icon.className = "fa-solid fa-chevron-down select-arrow";
+
+                wrapper.appendChild(select);
+                wrapper.appendChild(icon);
+                slots.appendChild(wrapper);
+
+                if (slotIndex < 2) {
+                    const separator = document.createElement("span");
+                    separator.className = "library-pref-separator";
+                    separator.setAttribute("aria-hidden", "true");
+                    separator.textContent = "|";
+                    slots.appendChild(separator);
+                }
+            }
+
+            item.appendChild(title);
+            item.appendChild(slots);
+            grid.appendChild(item);
+        });
+    }
+
+    function syncLibrarySettingsInputs() {
+        const openTypeSelect = document.getElementById("uiLibraryPreferredOpenType");
+        const openTypeNote = document.getElementById("uiLibraryOpenTypeNote");
+        const columnsInput = document.getElementById("uiLibraryDesktopColumns");
+        const columnsValue = document.getElementById("uiLibraryDesktopColumnsValue");
+        const behaviorText = document.getElementById("uiLibraryBehaviorText");
+        const customPrefsWrap = document.getElementById("uiLibraryCustomPrefsWrap");
+        const interactionLocked = advancedSettings.interactionMode !== "link";
+
+        if (openTypeSelect) {
+            openTypeSelect.value = uiSettings.libraryPreferredOpenType;
+            openTypeSelect.disabled = interactionLocked;
+            openTypeSelect.closest(".ui-control-card")?.classList.toggle("is-disabled", interactionLocked);
+        }
+
+        if (openTypeNote) {
+            openTypeNote.textContent = interactionLocked
+                ? "Dezactivat pentru ca modul de interactiune este Marcare materie."
+                : "Folosit cand modul de interactiune este Deschide manual.";
+        }
+
+        if (columnsInput) {
+            columnsInput.value = String(uiSettings.libraryDesktopColumns);
+        }
+
+        if (columnsValue) {
+            columnsValue.textContent = `${uiSettings.libraryDesktopColumns} / rand`;
+        }
+
+        document.querySelectorAll("[data-library-open-behavior]").forEach((button) => {
+            button.classList.toggle(
+                "active",
+                button.dataset.libraryOpenBehavior === uiSettings.libraryRecommendedOpenBehavior,
+            );
+        });
+
+        if (behaviorText) {
+            const label = window.getLibraryOpenBehaviorLabel
+                ? window.getLibraryOpenBehaviorLabel(uiSettings.libraryRecommendedOpenBehavior)
+                : "Deschide toate";
+            behaviorText.textContent = label;
+        }
+
+        if (customPrefsWrap) {
+            customPrefsWrap.hidden = false;
+        }
+
+        renderLibraryCustomPreferenceRows();
+    }
+
+    function reloadUISettingsFromStorage() {
+        const savedUISettings = localStorage.getItem(STORAGE_KEYS.UI_SETTINGS);
+        if (!savedUISettings) {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS });
+            return;
+        }
+
+        try {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS, ...JSON.parse(savedUISettings) });
+        } catch (error) {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS });
+        }
+    }
+
+    function notifyLibrarySettingsChanged() {
+        window.dispatchEvent(new CustomEvent("library-settings:updated"));
     }
 
     // Apply settings
@@ -429,6 +705,7 @@
 
     // --- LOGIC: UI SETTINGS ---
     function applyUISettings() {
+        uiSettings = sanitizeUISettings(uiSettings);
         const root = document.documentElement;
         
         // Border Radius
@@ -438,6 +715,7 @@
         const glassVal = uiSettings.glassIntensity / 100;
         const blurVal = 20 * glassVal;
         root.style.setProperty("--backdrop-blur", `${blurVal}px`);
+        root.style.setProperty("--library-desktop-columns", String(uiSettings.libraryDesktopColumns));
         
         // Classes
         document.body.classList.toggle("compact-timetable", uiSettings.compactMode);
@@ -839,6 +1117,55 @@
             uiSettings.bgPattern = e.target.checked;
             applyUISettings();
         });
+        document.getElementById("uiLibraryPreferredOpenType")?.addEventListener("change", (e) => {
+            uiSettings.libraryPreferredOpenType = normalizeLibraryOpenType(e.target.value);
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+        document.getElementById("uiLibraryDesktopColumns")?.addEventListener("input", (e) => {
+            uiSettings.libraryDesktopColumns = Math.max(2, Math.min(6, parseInt(e.target.value, 10) || 4));
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+        document.querySelectorAll("[data-library-open-behavior]").forEach((button) => {
+            button.addEventListener("click", () => {
+                uiSettings.libraryRecommendedOpenBehavior = normalizeLibraryOpenBehavior(
+                    button.dataset.libraryOpenBehavior,
+                );
+                applyUISettings();
+                syncLibrarySettingsInputs();
+                notifyLibrarySettingsChanged();
+            });
+        });
+        document.getElementById("uiLibraryCustomPrefsGrid")?.addEventListener("change", (e) => {
+            const select = e.target.closest("[data-library-subject-pref]");
+            if (!select) return;
+
+            const row = select.closest("[data-library-subject-row]");
+            if (!row) return;
+
+            const values = Array.from(
+                row.querySelectorAll("[data-library-subject-pref]")
+            ).map((input) => input.value);
+
+            const sanitizedValues = sanitizeLibraryManualList(values);
+            const nextMap = {
+                ...uiSettings.libraryRecommendedManualMap,
+            };
+
+            if (sanitizedValues.length) {
+                nextMap[select.dataset.librarySubjectPref] = sanitizedValues;
+            } else {
+                delete nextMap[select.dataset.librarySubjectPref];
+            }
+
+            uiSettings.libraryRecommendedManualMap = nextMap;
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
 
         // A11y Inputs
         document.getElementById("a11yHighContrast")?.addEventListener("change", (e) => {
@@ -887,6 +1214,17 @@
                 document.querySelectorAll(".ui-content-wrapper").forEach(c => c.classList.remove("active"));
                 document.getElementById(btn.dataset.tab + "Content").classList.add("active");
             });
+        });
+
+        window.addEventListener("manuals:updated", () => {
+            reloadUISettingsFromStorage();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+
+        window.addEventListener("library-settings:updated", () => {
+            reloadUISettingsFromStorage();
+            renderLibraryCustomPreferenceRows();
         });
 
         document.getElementById("savePresetBtn")?.addEventListener("click", saveCurrentPreset);

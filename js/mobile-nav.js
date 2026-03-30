@@ -22,6 +22,7 @@
         sheetWeatherBtn: $("#sheetWeatherBtn"),
         sheetClockBtn: $("#sheetClockBtn"),
         sheetTodoBtn: $("#sheetTodoBtn"),
+        sheetLibraryBtn: $("#sheetLibraryBtn"),
         sheetInfoBtn: $("#sheetInfoBtn"),
         mobileHeaderTime: $("#mobileHeaderTime"),
         mobileHeaderDate: $("#mobileHeaderDate"),
@@ -46,6 +47,7 @@
         clock: ["fa-solid fa-clock", "Clock"],
         tasks: ["fa-solid fa-list-check", "Tasks"],
         info: ["fa-solid fa-circle-info", "Info"],
+        library: ["fa-solid fa-book-open", "Biblioteca"],
     };
     const MIN_SKELETON_VISIBLE_MS = 430;
     let sched = null,
@@ -214,9 +216,18 @@
                 sched = scheduleData.schedule || [];
                 window.timetableData = scheduleData;
                 manualMap = {};
-                manuals.forEach(
-                    (x) => x.subject && (manualMap[x.subject.toLowerCase()] = x.link),
-                );
+                manuals.forEach((x) => {
+                    if (x.subject) {
+                        // New format: resources array
+                        if (Array.isArray(x.resources) && x.resources.length > 0) {
+                            manualMap[x.subject.toLowerCase()] = x.resources[0].link;
+                        }
+                        // Legacy format: direct link
+                        else if (x.link) {
+                            manualMap[x.subject.toLowerCase()] = x.link;
+                        }
+                    }
+                });
                 week = null;
                 loadFailed = false;
                 return true;
@@ -842,6 +853,7 @@
             clock: "clockBtn",
             tasks: "todoBtn",
             info: "infoBtn",
+            library: "libraryBtn",
         };
         document.getElementById(map[type] || "")?.click();
     }
@@ -934,6 +946,7 @@
         dom.sheetWeatherBtn?.addEventListener("click", () => trig("weather"));
         dom.sheetClockBtn?.addEventListener("click", () => trig("clock"));
         dom.sheetTodoBtn?.addEventListener("click", () => trig("tasks"));
+        dom.sheetLibraryBtn?.addEventListener("click", () => trig("library"));
         dom.sheetInfoBtn?.addEventListener("click", () => trig("info"));
         let sy = 0;
         dom.bottomSheet?.addEventListener(

@@ -51,7 +51,8 @@ window.addEventListener("DOMContentLoaded", () => {
             '.custom-content',
             '.weather-overlay-container',
             '.task-edit-content',
-            '.folder-edit-content'
+            '.folder-edit-content',
+            '.library-container'
         ];
 
         scrollContainers.forEach(selector => {

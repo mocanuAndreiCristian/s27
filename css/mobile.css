@@ -551,8 +551,6 @@ body.hide-empty-days .mobile-weekly-empty {
     border: 1px solid var(--accent-color);
     border-radius: var(--border-radius);
     padding: var(--spacing-md);
-    text-align: center;
-    cursor: pointer;
     box-shadow: var(--box-shadow-sm);
     display: none;
     /* Hidden by default, shown by JS */
@@ -568,6 +566,7 @@ body.hide-empty-days .mobile-weekly-empty {
     color: var(--accent-color);
     margin: 0 0 0.5rem 0;
     letter-spacing: 0.5px;
+    text-align: center;
 }
 
 .mobile-recommended-manual p {
@@ -575,6 +574,11 @@ body.hide-empty-days .mobile-weekly-empty {
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
+}
+
+.mobile-recommended-subject {
+    text-align: center;
+    margin-bottom: 0.85rem !important;
 }
 
 

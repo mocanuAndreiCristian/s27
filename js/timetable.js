@@ -45,7 +45,14 @@ async function loadTimetableData() {
         // Build manual map for quick access
         manuals.forEach(m => {
             if (m.subject) {
-                manualMap[m.subject.toLowerCase()] = m.link;
+                // New format: resources array
+                if (Array.isArray(m.resources) && m.resources.length > 0) {
+                    manualMap[m.subject.toLowerCase()] = m.resources[0].link;
+                }
+                // Legacy format: direct link
+                else if (m.link) {
+                    manualMap[m.subject.toLowerCase()] = m.link;
+                }
             }
         });
 

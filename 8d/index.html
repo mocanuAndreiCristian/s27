@@ -25,6 +25,7 @@
     <link rel="stylesheet" href="../css/layout.css">
     <link rel="stylesheet" href="../css/responsive.css">
     <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/library.css">
 
     <script>
         window.CLASS_ID = '8d';
@@ -32,7 +33,7 @@
         const dataPath = window.DATA_PATH || 'data/';
         const classId = window.CLASS_ID || '8d';
         const p = window.DATA_PATH || "../data/",
-        id = window.CLASS_ID || "8a";
+        id = window.CLASS_ID || "8d";
     </script>
 </head>
 
@@ -97,14 +98,19 @@
                     <span>My Tasks</span>
                 </button>
 
+                <button id="libraryBtn" class="menu-btn">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </button>
+
                 <button id="infoBtn" class="menu-btn">
                     <i class="fa-solid fa-circle-info"></i>
                     <span>Info</span>
                 </button>
                 <div id="recommendedManual" class="recommended-manual">
-                    <h3>Recommended Textbook</h3>
+                    <h3>Manuale recomandate</h3>
                     <div class="manual-card">
-                        <p>No textbook available</p>
+                        <p>Niciun manual disponibil</p>
                     </div>
                 </div>
             </div>
@@ -819,6 +825,7 @@
                             <button class="ui-tab-btn active" data-tab="uiLayout">Layout</button>
                             <button class="ui-tab-btn" data-tab="uiTimetable">Timetable</button>
                             <button class="ui-tab-btn" data-tab="uiBackground">Background</button>
+                            <button class="ui-tab-btn" data-tab="uiLibrary">Biblioteca</button>
                         </div>
 
                         <div class="ui-content-wrapper active" id="uiLayoutContent">
@@ -912,6 +919,78 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
+                            </div>
+                        </div>
+
+                        <div class="ui-content-wrapper" id="uiLibraryContent">
+                            <div class="ui-controls-grid">
+                                <div class="ui-control-card full-width">
+                                    <label for="uiLibraryPreferredOpenType">Tip manual preferat</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="uiLibraryPreferredOpenType" class="font-select">
+                                            <option value="link">Link</option>
+                                            <option value="pdf">PDF</option>
+                                            <option value="app">Aplicatie</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                                    </div>
+                                    <p class="library-settings-note" id="uiLibraryOpenTypeNote">
+                                        Folosit cand modul de interactiune este Deschide manual.
+                                    </p>
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label for="uiLibraryDesktopColumns">Manuale pe rand</label>
+                                    <input type="range" id="uiLibraryDesktopColumns" min="2" max="6" step="1" value="4">
+                                    <div class="range-labels">
+                                        <span>2</span>
+                                        <span id="uiLibraryDesktopColumnsValue">4 / rand</span>
+                                        <span>6</span>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card full-width library-settings-note-card">
+                                    <div class="checkbox-info">
+                                        <h4>Pe mobil</h4>
+                                        <p>Pe telefoane grila se adapteaza automat, asa ca aceasta setare afecteaza doar desktopul si tabletele late.</p>
+                                    </div>
+                                    <div class="library-settings-note-icon">
+                                        <i class="fa-solid fa-mobile-screen-button"></i>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card full-width">
+                                    <label>Manuale multiple pe materie</label>
+                                    <p class="library-settings-note">
+                                        Alege cum se deschid manualele cand o materie are 2 sau 3 selectii salvate.
+                                    </p>
+                                    <div class="mode-toggle-container library-mode-toggle">
+                                        <button type="button" class="mode-btn active" data-library-open-behavior="open-all" id="uiLibraryBehaviorOpenAll">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                            <span>Toate</span>
+                                        </button>
+                                        <button type="button" class="mode-btn" data-library-open-behavior="buttons" id="uiLibraryBehaviorButtons">
+                                            <i class="fa-solid fa-grip"></i>
+                                            <span>Butoane</span>
+                                        </button>
+                                        <button type="button" class="mode-btn" data-library-open-behavior="both" id="uiLibraryBehaviorBoth">
+                                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                                            <span>Ambele</span>
+                                        </button>
+                                    </div>
+                                    <div class="mode-indicator">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span>Mod curent: <strong id="uiLibraryBehaviorText">Deschide toate</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="library-pref-custom" id="uiLibraryCustomPrefsWrap">
+                                <div class="library-pref-custom-header">
+                                    <h4>Manuale exacte pe materie</h4>
+                                    <p>Alege pana la 3 manuale in ordinea in care vrei sa fie deschise. Selectiile sunt impartite prin bare.</p>
+                                </div>
+                                <div class="library-pref-grid" id="uiLibraryCustomPrefsGrid"></div>
                             </div>
                         </div>
                     </div>
@@ -1166,16 +1245,16 @@
                             <div class="mode-toggle-container">
                                 <button class="mode-btn active" data-mode="link" id="modeLinkBtn">
                                     <i class="fa-solid fa-external-link"></i>
-                                    <span>Open Textbook</span>
+                                    <span>Deschide manual</span>
                                 </button>
                                 <button class="mode-btn" data-mode="mark" id="modeMarkBtn">
                                     <i class="fa-solid fa-highlighter"></i>
-                                    <span>Mark Subject</span>
+                                    <span>Marcheaza materia</span>
                                 </button>
                             </div>
                             <div class="mode-indicator" id="modeIndicator">
                                 <i class="fa-solid fa-circle-info"></i>
-                                <span>Current mode: <strong id="currentModeText">Open Textbook</strong></span>
+                                <span>Mod curent: <strong id="currentModeText">Deschide manual</strong></span>
                             </div>
                         </div>
 
@@ -1193,6 +1272,7 @@
                                         <option value="clock">Clock</option>
                                         <option value="tasks">My Tasks</option>
                                         <option value="info">Info</option>
+                                        <option value="library">Biblioteca</option>
                                     </select>
                                 </div>
                                 <div class="shortcut-item">
@@ -1203,6 +1283,7 @@
                                         <option value="clock">Clock</option>
                                         <option value="tasks">My Tasks</option>
                                         <option value="info">Info</option>
+                                        <option value="library">Biblioteca</option>
                                     </select>
                                 </div>
                             </div>
@@ -1360,6 +1441,62 @@
             </div>
         </div>
 
+        <!-- Library Overlay -->
+        <div id="libraryOverlay" class="overlay">
+            <!-- Sticky head: title + toolbar -->
+            <div class="library-content">
+            <div class="library-head">
+                <div class="library-header">
+                    <div class="library-header-text">
+                        <h2><i class="fa-solid fa-book-open"></i> Bibliotecă</h2>
+                        <p>Toate manualele clasei în același loc</p>
+                    </div>
+                    <div class="library-header-actions">
+                        <button id="libraryFab" class="library-fab" title="Adaugă manual">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Adaugă manual</span>
+                        </button>
+                        <button id="closeLibraryOverlay" class="close-btn">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="library-toolbar">
+                    <div class="library-search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="librarySearch" placeholder="Caută manual..." autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="library-filter-wrap">
+                        <i class="fa-solid fa-filter"></i>
+                        <select id="libraryTypeFilter">
+                            <option value="all">Toate</option>
+                            <option value="link">Link</option>
+                            <option value="pdf">PDF</option>
+                            <option value="app">Aplicatie</option>
+                        </select>
+                    </div>
+                    <div class="library-sort">
+                        <button class="lib-sort-btn active" data-sort="az">A–Z</button>
+                        <button class="lib-sort-btn" data-sort="za">Z–A</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Scrollable body -->
+            <div class="library-body" id="libraryBody">
+
+                <div class="library-count-row">
+                    <div class="library-count" id="libraryCount"></div>
+                    <p class="library-status" id="libraryStatus" aria-live="polite" hidden></p>
+                </div>
+                <div class="library-grid" id="libraryGrid"></div>
+                <div class="library-empty" id="libraryEmpty">
+                    <i class="fa-solid fa-book"></i>
+                    <p>Niciun manual găsit</p>
+                </div>
+            </div>
+            </div>
+        </div>
+
         <!-- Weather Overlay -->
         <div id="weatherOverlay" class="overlay">
             <div class="weather-overlay-container">
@@ -1413,6 +1550,62 @@
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Add Manual Overlay -->
+        <div id="libraryAddManualOverlay" class="overlay add-manual-overlay">
+            <div class="add-manual-modal">
+                <button id="closeLibraryAddManualOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h2>Adaugă un manual</h2>
+                
+                <form id="libraryAddManualForm" class="add-manual-form">
+                    <div class="form-group">
+                        <label for="libraryAddTitle">Titlu</label>
+                        <input type="text" id="libraryAddTitle" required placeholder="Ex: Algebra Notes">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddSubject">Materie</label>
+                        <input type="text" id="libraryAddSubject" required placeholder="Ex: Mate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddType">Tip</label>
+                        <select id="libraryAddType" required>
+                            <option value="link">Link</option>
+                            <option value="pdf">PDF</option>
+                            <option value="app">Aplicatie</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="libraryAddUrlWrap">
+                        <label id="libraryAddUrlLabel" for="libraryAddUrl">URL</label>
+                        <input type="url" id="libraryAddUrl" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddImage">Imagine copertă (opțional)</label>
+                        <input type="url" id="libraryAddImage" placeholder="https://example.com/cover.png">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Salvează manualul</button>
+                        <button type="button" id="libraryAddCancelBtn" class="btn-secondary">Renunță</button>
+                    </div>
+
+                    <p id="libraryAddStatus" class="form-status" aria-live="polite" hidden></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manual Choice Overlay -->
+        <div id="manualChoiceOverlay" class="overlay manual-choice-overlay">
+            <div class="manual-choice-modal">
+                <button id="closeManualChoiceOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h2 id="manualChoiceTitle">Manuale</h2>
+                <p id="manualChoiceDescription"></p>
+                <div id="manualChoiceActions" class="manual-choice-actions"></div>
             </div>
         </div>
 
@@ -1500,6 +1693,11 @@
                         <span>My Tasks</span>
                     </button>
 
+                    <button class="sheet-menu-btn" id="sheetLibraryBtn">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Biblioteca</span>
+                    </button>
+
                     <button class="sheet-menu-btn" id="sheetInfoBtn">
                         <i class="fa-solid fa-circle-info"></i>
                         <span>Info</span>
@@ -1514,8 +1712,8 @@
         <script src="../js/overlay-manager.js"></script>
         <script src="../js/timetable.js"></script>
         <script src="../js/todo.js"></script>
+        <script src="../js/library.js"></script>
         <script src="../js/ui-core.js"></script>
         <script src="../js/weather-time.js"></script>
 </body>
-
 </html>

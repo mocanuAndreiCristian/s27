@@ -5,7 +5,10 @@
 #from HTML tables, normalizes subject names, and saves the parsed schedule as JSON files.
 
 
-# python scripts/schedule_sync.py --class-id 8d (or any other class id) to fetch and update the schedule for that class
+# Usage:
+#   python scripts/schedule_sync.py --class-id 8d                    # Fetch and update schedule JSON
+#   python scripts/schedule_sync.py --class-id 8a --build-html       # Build HTML file from template
+#   python scripts/schedule_sync.py --class-id 8a --build-html --template 8d/index.html  # Custom template
 
 from __future__ import annotations
 
@@ -264,12 +267,112 @@ def save_json(path: Path, data: Dict[str, Any]) -> None:
         handle.write("\n")  # Ensure file ends with newline
 
 
+def build_class_html(class_id: str, template_path: Path = None) -> Path:
+    """Build HTML file for a class by copying template and replacing class ID.
+    
+    Args:
+        class_id: The class identifier (e.g., "8a", "8b", "8c")
+        template_path: Path to the template HTML file (default: 8d/index.html)
+    
+    Returns:
+        Path to the newly created HTML file
+    """
+    if template_path is None:
+        template_path = Path("8d/index.html")
+    
+    if not template_path.exists():
+        raise FileNotFoundError(f"Template file not found: {template_path}")
+    
+    # Read the template
+    with template_path.open("r", encoding="utf-8") as f:
+        html_content = f.read()
+    
+    # Create class ID with capital letter for display (e.g., "8D" from "8d")
+    display_id = class_id.upper()
+    
+    # Replace occurrences of the class ID
+    # Handle various patterns found in the HTML
+    
+    # Replace window.CLASS_ID value
+    html_content = re.sub(
+        r"window\.CLASS_ID\s*=\s*'8d'",
+        f"window.CLASS_ID = '{class_id}'",
+        html_content
+    )
+    html_content = re.sub(
+        r'window\.CLASS_ID\s*=\s*"8d"',
+        f'window.CLASS_ID = "{class_id}"',
+        html_content
+    )
+    
+    # Replace fallback values in OR expressions (e.g., || "8d")
+    html_content = re.sub(
+        r'\|\|\s*"8d"',
+        f'|| "{class_id}"',
+        html_content
+    )
+    html_content = re.sub(
+        r"\|\|\s*'8d'",
+        f"|| '{class_id}'",
+        html_content
+    )
+    
+    # Replace title text "Orar 8D" -> "Orar 8A" etc.
+    html_content = re.sub(
+        r'<title>Orar 8D</title>',
+        f'<title>Orar {display_id}</title>',
+        html_content
+    )
+    
+    # Replace mobile header title "Orar 8D"
+    html_content = re.sub(
+        r'class="mobile-app-title">Orar 8D</h1>',
+        f'class="mobile-app-title">Orar {display_id}</h1>',
+        html_content
+    )
+    
+    # Replace main title "Orar 8D"
+    html_content = re.sub(
+        r'class="main-title">Orar 8D</h1>',
+        f'class="main-title">Orar {display_id}</h1>',
+        html_content
+    )
+    
+    # Replace "About Orar 8D" in info overlay
+    html_content = re.sub(
+        r'About Orar 8D',
+        f'About Orar {display_id}',
+        html_content
+    )
+    
+    # Replace URL references to 8d (e.g., https://s27.ro/8d)
+    html_content = re.sub(
+        r'https://s27\.ro/8d',
+        f'https://s27.ro/{class_id}',
+        html_content
+    )
+    
+    # Create output directory
+    output_dir = Path(class_id)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Write the modified HTML
+    output_path = output_dir / "index.html"
+    with output_path.open("w", encoding="utf-8", newline="\n") as f:
+        f.write(html_content)
+    
+    return output_path
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fetch class schedule and output JSON format.")
     parser.add_argument("--url", help="Schedule URL (default: https://s27.ro/<class-id>)")
     parser.add_argument("--class-id", default="8d", help="Class id for default URL/output")
     parser.add_argument("--out", help="Output path (default: data/<class-id>.json)")
     parser.add_argument("--check", action="store_true", help="Only check if schedule changed")
+    parser.add_argument("--build-html", action="store_true", help="Build HTML file for class from template")
+    parser.add_argument("--template", help="Template HTML file path (default: 8d/index.html)")
+    parser.add_argument("--force", action="store_true", help="Skip confirmation prompt and update automatically")
 
     args = parser.parse_args()
 
@@ -299,22 +402,39 @@ def main() -> int:
     if args.check:
         return 1 if changed else 0
 
-    # Skip saving if no changes
-    if not changed:
+    # Determine if we should save
+    should_save = False
+
+    if args.force:
+        # Force mode: save regardless of changes, skip confirmation
+        print("Force flag set, skipping confirmation and saving.")
+        should_save = True
+    elif not changed:
+        # No changes detected, skip saving
         return 0
+    else:
+        # Changes detected, prompt for confirmation
+        try:
+            choice = input("Update schedule file? [y/N]: ").strip().lower()
+        except EOFError:
+            choice = ""
 
-    # Prompt user to confirm update
-    try:
-        choice = input("Update schedule file? [y/N]: ").strip().lower()
-    except EOFError:
-        choice = ""
+        if choice in {"y", "yes"}:
+            should_save = True
 
-    # Save if confirmed
-    if choice in {"y", "yes"}:
+    if should_save:
         save_json(out_path, new_data)
-        return 0
 
-    print("Skipped updating schedule file.")
+    # Build HTML if requested
+    if args.build_html:
+        template_path = Path(args.template) if args.template else None
+        try:
+            output_path = build_class_html(class_id, template_path)
+            print(f"Built HTML for class {class_id}: {output_path}")
+        except FileNotFoundError as e:
+            print(f"Error: {e}")
+            return 1
+
     return 0
 
 
