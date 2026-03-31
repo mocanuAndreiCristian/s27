@@ -1,0 +1,161 @@
+{
+    "schedule": [
+        {
+            "time": "12:00",
+            "monday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "tuesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "wednesday": {
+                "name": "Dirigenție",
+                "emoji": "📰"
+            },
+            "thursday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "friday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            }
+        },
+        {
+            "time": "13:00",
+            "monday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "tuesday": {
+                "name": "Informatică",
+                "emoji": "💻"
+            },
+            "wednesday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "thursday": {
+                "name": "Muzică",
+                "emoji": "🎵"
+            },
+            "friday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            }
+        },
+        {
+            "time": "14:00",
+            "monday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "tuesday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "wednesday": {
+                "name": "Tehnologică",
+                "emoji": "🧰"
+            },
+            "thursday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "friday": {
+                "name": "Biologie",
+                "emoji": "🧬"
+            }
+        },
+        {
+            "time": "15:00",
+            "monday": {
+                "name": "Civică",
+                "emoji": "🏛️"
+            },
+            "tuesday": {
+                "name": "Opt Mate",
+                "emoji": "📐"
+            },
+            "wednesday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            },
+            "thursday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "friday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            }
+        },
+        {
+            "time": "16:00",
+            "monday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "tuesday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "wednesday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "thursday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            },
+            "friday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            }
+        },
+        {
+            "time": "17:00",
+            "monday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "tuesday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "wednesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "thursday": {
+                "name": "Religie",
+                "emoji": "☦️"
+            },
+            "friday": {
+                "name": "Arte",
+                "emoji": "🎨"
+            }
+        },
+        {
+            "time": "18:00",
+            "monday": null,
+            "tuesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "wednesday": null,
+            "thursday": null,
+            "friday": null
+        }
+    ]
+}

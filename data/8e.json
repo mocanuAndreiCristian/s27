@@ -1,0 +1,158 @@
+{
+    "schedule": [
+        {
+            "time": "12:00",
+            "monday": null,
+            "tuesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "wednesday": {
+                "name": "Tehnologică",
+                "emoji": "🧰"
+            },
+            "thursday": null,
+            "friday": null
+        },
+        {
+            "time": "13:00",
+            "monday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "tuesday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "wednesday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "thursday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "friday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            }
+        },
+        {
+            "time": "14:00",
+            "monday": {
+                "name": "Muzică",
+                "emoji": "🎵"
+            },
+            "tuesday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "wednesday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "thursday": {
+                "name": "Opt Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "friday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            }
+        },
+        {
+            "time": "15:00",
+            "monday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "tuesday": {
+                "name": "Civică",
+                "emoji": "🏛️"
+            },
+            "wednesday": {
+                "name": "Informatică",
+                "emoji": "💻"
+            },
+            "thursday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "friday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            }
+        },
+        {
+            "time": "16:00",
+            "monday": {
+                "name": "Mate",
+                "emoji": "📏",
+                "rowspan": 2
+            },
+            "tuesday": {
+                "name": "Mate",
+                "emoji": "📏",
+                "rowspan": 2
+            },
+            "wednesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "thursday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "friday": {
+                "name": "Arte",
+                "emoji": "🎨"
+            }
+        },
+        {
+            "time": "17:00",
+            "monday": null,
+            "tuesday": null,
+            "wednesday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "thursday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "friday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            }
+        },
+        {
+            "time": "18:00",
+            "monday": {
+                "name": "Biologie",
+                "emoji": "🧬"
+            },
+            "tuesday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            },
+            "wednesday": null,
+            "thursday": {
+                "name": "Religie",
+                "emoji": "☦️"
+            },
+            "friday": {
+                "name": "Dirigenție",
+                "emoji": "📰"
+            }
+        }
+    ]
+}

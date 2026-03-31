@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orar S27 - Selectare Clasă</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #6196ff;
+            --secondary: #4a7dff;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text: #f8fafc;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(circle at 20% 20%, rgba(97, 150, 255, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(97, 150, 255, 0.1) 0%, transparent 40%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1000px;
+            width: 90%;
+            text-align: center;
+            z-index: 10;
+        }
+
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        p.subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 3rem;
+            animation: fadeIn 1s ease-out 0.2s both;
+        }
+
+        .class-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            animation: fadeInUp 0.8s ease-out 0.4s both;
+        }
+
+        .class-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 2.5rem;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+
+        .class-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), 0 0 20px rgba(97, 150, 255, 0.2);
+        }
+
+        .class-card:hover::before {
+            opacity: 0.1;
+        }
+
+        .class-icon {
+            width: 80px;
+            height: 80px;
+            background: rgba(97, 150, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            transition: all 0.4s ease;
+        }
+
+        .class-card:hover .class-icon {
+            background: var(--primary);
+            color: white;
+            transform: rotate(-10deg);
+        }
+
+        .class-name {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .class-desc {
+            font-size: 1rem;
+            opacity: 0.6;
+        }
+
+        .footer {
+            margin-top: 5rem;
+            opacity: 0.5;
+            font-size: 0.9rem;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Particles Background Simulation */
+        .blobs {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: blur(80px);
+            opacity: 0.4;
+        }
+
+        .blob {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: move 20s infinite alternate;
+        }
+
+        .blob:nth-child(2) {
+            background: #ab47bc;
+            width: 300px;
+            height: 300px;
+            right: 10%;
+            top: 20%;
+            animation-duration: 25s;
+            animation-delay: -5s;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(100px, 100px);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.5rem;
+            }
+
+            .class-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="blobs">
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+
+    <div class="container">
+        <h1>Orar S27</h1>
+        <p class="subtitle">Selectează clasa pentru a vizualiza orarul complet</p>
+
+        <div class="class-grid">
+            <a href="8a/" class="class-card">
+                <div class="class-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="class-name">Clasa 8A</div>
+                <div class="class-desc">Orar, Manuale și Task-uri</div>
+            </a>
+            <a href="8b/" class="class-card">
+                <div class="class-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="class-name">Clasa 8B</div>
+                <div class="class-desc">Orar, Manuale și Task-uri</div>
+            </a>
+            <a href="8c/" class="class-card">
+                <div class="class-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="class-name">Clasa 8C</div>
+                <div class="class-desc">Orar, Manuale și Task-uri</div>
+            </a>
+            <a href="8d/" class="class-card">
+                <div class="class-icon"><i class="fa-solid fa-book-open"></i></div>
+                <div class="class-name">Clasa 8D</div>
+                <div class="class-desc">Orar, Manuale și Task-uri</div>
+            </a>
+            <a href="8e/" class="class-card">
+                <div class="class-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="class-name">Clasa 8E</div>
+                <div class="class-desc">Orar, Manuale și Task-uri</div>
+            </a>
+        </div>
+
+        <div class="footer">
+            &copy; 2026 Orar Școala Gimnazială Nr. 27
+        </div>
+    </div>
+
+    <script>
+        // Simple hover effect for cards
+        document.querySelectorAll('.class-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Potential sound effect or haptic feedback
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,162 @@
+{
+    "schedule": [
+        {
+            "time": "12:00",
+            "monday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "tuesday": null,
+            "wednesday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "thursday": null,
+            "friday": null
+        },
+        {
+            "time": "13:00",
+            "monday": {
+                "name": "Biologie",
+                "emoji": "🧬"
+            },
+            "tuesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "wednesday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "thursday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "friday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            }
+        },
+        {
+            "time": "14:00",
+            "monday": {
+                "name": "Religie",
+                "emoji": "☦️"
+            },
+            "tuesday": {
+                "name": "Tehnologică",
+                "emoji": "🧰"
+            },
+            "wednesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "thursday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "friday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            }
+        },
+        {
+            "time": "15:00",
+            "monday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "tuesday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "wednesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "thursday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "friday": {
+                "name": "Mate",
+                "emoji": "📏"
+            }
+        },
+        {
+            "time": "16:00",
+            "monday": {
+                "name": "Arte",
+                "emoji": "🎨"
+            },
+            "tuesday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            },
+            "wednesday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "thursday": {
+                "name": "Dirigenție",
+                "emoji": "📰"
+            },
+            "friday": {
+                "name": "Opt Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            }
+        },
+        {
+            "time": "17:00",
+            "monday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "tuesday": {
+                "name": "Civică",
+                "emoji": "🏛️"
+            },
+            "wednesday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "thursday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "friday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            }
+        },
+        {
+            "time": "18:00",
+            "monday": {
+                "name": "Muzică",
+                "emoji": "🎵"
+            },
+            "tuesday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "wednesday": null,
+            "thursday": {
+                "name": "Informatică",
+                "emoji": "💻"
+            },
+            "friday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            }
+        }
+    ]
+}

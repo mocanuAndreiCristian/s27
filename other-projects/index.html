@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#6196ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Other projects by us</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://kit.webawesome.com/45396e3eb4054c87.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
+    <base target="_blank">
+
+    <!-- Shared site styles -->
+    <link rel="stylesheet" href="../css/variables.css">
+    <link rel="stylesheet" href="../css/base.css">
+    <link rel="stylesheet" href="../css/layout.css">
+
+    <!-- Page styles -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <a class="back-link" href="../index.html">← Back</a>
+            <h1>Other projects by us</h1>
+            <p class="lead">A collection of our projects. Download archives or open project pages.</p>
+        </div>
+    </header>
+
+    <main class="container">
+        <section id="projectsSection">
+            <div class="controls-wrapper">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search projects..." class="search-input">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                </div>
+                <div class="filters-box">
+                    <span class="filter-label">Filter by subject:</span>
+                    <div id="filtersList" class="filters-list">
+                        <!-- Filters will be rendered here -->
+                    </div>
+                </div>
+            </div>
+            <div id="projectsGrid" class="projects-grid" aria-live="polite">
+                <!-- Projects will be rendered here -->
+            </div>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="container">
+            <small>© 2026 Orar Școala Gimnazială Nr. 27</small>
+        </div>
+    </footer>
+
+    <script src="script.js" defer></script>
+</body>
+</html>
