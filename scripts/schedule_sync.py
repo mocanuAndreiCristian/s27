@@ -1,5 +1,4 @@
-﻿
-#Schedule Sync - Fetch and parse school class schedules from HTML and save as JSON.
+﻿#Schedule Sync - Fetch and parse school class schedules from HTML and save as JSON.
 
 #This script fetches HTML schedule pages from a school website, extracts schedule data
 #from HTML tables, normalizes subject names, and saves the parsed schedule as JSON files.
@@ -20,7 +19,7 @@ import sys
 import unicodedata
 from html.parser import HTMLParser
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 from urllib.request import Request, urlopen
 
 # Days of the week in order (Monday-Friday)
@@ -67,10 +66,13 @@ SUBJECT_MAP: Dict[str, Dict[str, str]] = {
 
 
 class ScheduleTableParser(HTMLParser):
-    #HTML parser that extracts schedule table data from school website HTML.
+    """HTML parser that extracts schedule table data from school website HTML.
     
-    #Parses HTML tables looking for the schedule table (identified by specific id or class)
-    #and extracts the table rows into a 2D list of strings.
+    Parses HTML tables looking for the schedule table (identified by specific id or class)
+    and extracts the table rows into a 2D list of strings. Handles rowspan attributes
+    by tracking them and filling in spanned values in subsequent rows. Also handles
+    vertically stacked classes marked by <!-- span --> HTML comments.
+    """
     
     def __init__(self) -> None:
         super().__init__()
@@ -80,9 +82,15 @@ class ScheduleTableParser(HTMLParser):
         self.in_row = False  # Whether we're currently parsing a table row (tr)
         self.in_cell = False  # Whether we're currently inside a cell (td/th)
         self.current_cell: List[str] = []  # Text content of current cell
-        self.current_row: List[str] = []  # Cells in current row
-        self.rows: List[List[str]] = []  # All parsed rows from the table
+        self.current_row: List[Tuple[str, int]] = []  # Cells in current row as (content, rowspan)
+        self.rows: List[List[Tuple[str, int]]] = []  # All parsed rows, with rowspan info
         self.target_table_found = False  # Flag to ensure we only parse one target table
+        
+        # Rowspan tracking: list of (remaining_rows, column_index, value)
+        self.active_rowspans: List[Tuple[int, int, str]] = []
+        self.current_rowspan = 1  # Rowspan value for current cell being parsed
+        self.current_col = 0  # Current column index in the row
+        self.pending_span_marker = False  # Flag set by <!-- span --> comments
 
     def handle_starttag(self, tag: str, attrs: List[tuple[str, Optional[str]]]) -> None:
         """Handle opening HTML tags while parsing."""
@@ -105,12 +113,22 @@ class ScheduleTableParser(HTMLParser):
         elif self.in_tbody and tag == "tr":
             self.in_row = True
             self.current_row = []
+            self.current_col = 0
+            self.pending_span_marker = False  # Reset span marker at start of new row
         elif self.in_row and tag in {"th", "td"}:
             self.in_cell = True
             self.current_cell = []
+            self.current_rowspan = 1
+            # Parse rowspan attribute
+            for attr_name, attr_value in attrs:
+                if attr_name == "rowspan" and attr_value:
+                    try:
+                        self.current_rowspan = int(attr_value)
+                    except ValueError:
+                        self.current_rowspan = 1
 
     def handle_endtag(self, tag: str) -> None:
-        #Handle closing HTML tags while parsing.
+        """Handle closing HTML tags while parsing."""
         if tag == "table" and self.in_table:
             self.table_depth -= 1
             if self.table_depth <= 0:
@@ -126,24 +144,88 @@ class ScheduleTableParser(HTMLParser):
             # Clean up cell text: unescape HTML entities and normalize whitespace
             text = html.unescape("".join(self.current_cell))
             text = re.sub(r"\s+", " ", text).strip()
-            self.current_row.append(text)
+            
+            # Skip columns that are occupied by active rowspans
+            while self.current_col < 6:
+                occupied = False
+                for i, (remaining, col, value) in enumerate(self.active_rowspans):
+                    if remaining > 0 and col == self.current_col:
+                        # This column is occupied by a rowspan, skip it
+                        self.current_row.append(("", 1))  # Add placeholder for spanned column
+                        self.active_rowspans[i] = (remaining - 1, col, value)
+                        self.current_col += 1
+                        occupied = True
+                        break
+                if not occupied:
+                    break
+            
+            # Check if this cell is truly a span placeholder (marked AND empty)
+            is_span_marked = self.pending_span_marker and text == ""
+            self.pending_span_marker = False  # Reset the marker for next cell
+            
+            if is_span_marked:
+                # This cell is an empty span placeholder - do nothing, just skip it
+                self.in_cell = False
+                return
+            
+            # Regular cell with content
+            self.current_row.append((text, self.current_rowspan))
+            
+            # Track rowspan if > 1
+            if self.current_rowspan > 1:
+                self.active_rowspans.append((self.current_rowspan - 1, self.current_col, text))
+            
+            self.current_col += 1
             self.in_cell = False
+            
         elif tag == "tr" and self.in_row:
+            # Fill any remaining columns that are occupied by rowspans
+            while self.current_col < 6:
+                occupied = False
+                for i, (remaining, col, value) in enumerate(self.active_rowspans):
+                    if remaining > 0 and col == self.current_col:
+                        # This column is occupied by a rowspan
+                        self.current_row.append(("", 1))
+                        self.active_rowspans[i] = (remaining - 1, col, value)
+                        self.current_col += 1
+                        occupied = True
+                        break
+                if not occupied:
+                    # No more occupied columns, fill remaining with empty
+                    self.current_row.append(("", 1))
+                    self.current_col += 1
+            
+            # Clean up rowspans that are no longer active
+            self.active_rowspans = [
+                (remaining, col, value)
+                for remaining, col, value in self.active_rowspans
+                if remaining > 0
+            ]
+            
             # Add completed row to results
             if self.current_row:
                 self.rows.append(self.current_row)
             self.in_row = False
 
     def handle_data(self, data: str) -> None:
-        #Handle text data within HTML elements.
+        """Handle text data within HTML elements."""
         if self.in_cell:
             self.current_cell.append(data)
 
+    def handle_comment(self, data: str) -> None:
+        """Handle HTML comments. Track <!-- span --> markers for vertically stacked classes."""
+        if self.in_row and self.in_tbody:
+            # Check if this is a span marker comment
+            comment_text = data.strip().lower()
+            if comment_text == "span":
+                self.pending_span_marker = True
+
     @staticmethod
     def _is_target_table(attrs: List[tuple[str, Optional[str]]]) -> bool:
-        #Check if a table element is the schedule table we're looking for.
-        #Looks for tables with id starting with 'table_' or class containing 'odd_table'.
-
+        """Check if a table element is the schedule table we're looking for.
+        
+        Looks for tables with id starting with 'table_' or class containing 'odd_table'.
+        """
         attr_map = {k: (v or "") for k, v in attrs}
         table_id = attr_map.get("id", "")
         table_class = attr_map.get("class", "")
@@ -153,7 +235,6 @@ class ScheduleTableParser(HTMLParser):
 
 
 def fetch_html(url: str) -> str:
-
     req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
     with urlopen(req) as response:
         charset = response.headers.get_content_charset() or "utf-8"
@@ -222,26 +303,34 @@ def subject_from_text(text: str) -> Optional[Dict[str, str]]:
     return {"name": raw, "emoji": ""}
 
 
-def build_schedule(rows: List[List[str]]) -> Dict[str, Any]:
+def build_schedule(rows: List[List[Tuple[str, int]]]) -> Dict[str, Any]:
     schedule_rows: List[Dict[str, Any]] = []
     for row in rows:
         if not row:
             continue
         # First cell is the time slot
-        time_value = row[0].strip() if row[0] else ""
+        time_tuple = row[0]
+        time_value = time_tuple[0].strip() if time_tuple[0] else ""
         if not time_value:
             continue
 
         # Remaining cells are days (Monday-Friday)
         day_cells = row[1:]
-        # Pad with empty strings if fewer than 5 days
+        # Pad with empty tuples if fewer than 5 days
         if len(day_cells) < len(DAY_KEYS):
-            day_cells = day_cells + [""] * (len(DAY_KEYS) - len(day_cells))
+            day_cells = day_cells + [("", 1)] * (len(DAY_KEYS) - len(day_cells))
 
         entry: Dict[str, Any] = {"time": time_value}
         # Convert each day's subject text to standardized format
         for idx, day in enumerate(DAY_KEYS):
-            entry[day] = subject_from_text(day_cells[idx])
+            cell_content, cell_rowspan = day_cells[idx]
+            subject = subject_from_text(cell_content)
+            
+            # Add rowspan property if > 1
+            if subject and cell_rowspan > 1:
+                subject["rowspan"] = cell_rowspan
+            
+            entry[day] = subject
 
         schedule_rows.append(entry)
 

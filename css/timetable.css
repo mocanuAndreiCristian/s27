@@ -52,6 +52,7 @@
 .timetable td {
     padding: var(--spacing-md);
     text-align: center;
+    vertical-align: middle;
     border: 1px solid var(--border-color);
     position: relative;
     transition: background-color var(--transition-speed);
@@ -175,13 +176,13 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     /* stronger contrast so the current hour is clearly visible */
     background: color-mix(in srgb, var(--accent-color) 28%, var(--card-bg));
     font-weight: 600;
+    border-right: 4px solid var(--accent-color);
 }
 
 .timetable th.current-cell, .timetable td.current-cell {
     color: var(--accent-color);
     /* stronger contrast so the subject cell stands out */
     background: color-mix(in srgb, var(--accent-color) 30%, var(--card-bg));
-    border-left: 4px solid var(--accent-color);
     font-weight: 600;
 }
 

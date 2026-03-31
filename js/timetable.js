@@ -166,40 +166,67 @@ function renderTimetable() {
     if (wrapper) wrapper.classList.remove("has-error");
     tbody.innerHTML = "";
 
-    timetableData.schedule.forEach(row => {
-        const tr = document.createElement("tr");
-        
-        // Time cell
-        const timeTh = document.createElement("th");
-        timeTh.style.width = "10rem";
-        timeTh.textContent = row.time;
-        tr.appendChild(timeTh);
+    try {
+        // Track which columns have active rowspan
+        let rowspanActive = {};
 
-        // Days
-        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach(day => {
-            const td = document.createElement("th"); // Using <th> as per original structure
-            const subject = row[day];
+        timetableData.schedule.forEach(row => {
+            const tr = document.createElement("tr");
             
-            // Set tabIndex for keyboard navigation
-            td.tabIndex = -1;
+            // Time cell
+            const timeTh = document.createElement("th");
+            timeTh.style.width = "10rem";
+            timeTh.textContent = row.time;
+            tr.appendChild(timeTh);
 
-            if (subject) {
-                let content = subject.name + " ";
-                if (subject.flag) {
-                    content += `<span class="${subject.flag}" id="emojis"></span>`;
-                } else if (subject.emoji) {
-                    content += `<span id="emojis">${subject.emoji}</span>`;
+            const newRowspanActive = {};
+
+            // Days
+            ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'].forEach((day, dayIdx) => {
+                // Skip if this column is covered by a rowspan from previous row
+                if (rowspanActive[dayIdx]) {
+                    rowspanActive[dayIdx]--;
+                    return;
                 }
-                td.innerHTML = content;
-            } else {
-                td.classList.add("no-hover");
-            }
-            
-            tr.appendChild(td);
-        });
 
-        tbody.appendChild(tr);
-    });
+                const subject = row[day];
+                const td = document.createElement("th"); // Using <th> as per original structure
+                
+                // Set tabIndex for keyboard navigation
+                td.tabIndex = -1;
+
+                if (subject) {
+                    let content = subject.name + " ";
+                    if (subject.flag) {
+                        content += `<span class="${subject.flag}" id="emojis"></span>`;
+                    } else if (subject.emoji) {
+                        content += `<span id="emojis">${subject.emoji}</span>`;
+                    }
+                    td.innerHTML = content;
+                    
+                    // Apply rowspan attribute if present
+                    if (subject.rowspan && subject.rowspan > 1) {
+                        td.rowSpan = subject.rowspan;
+                        newRowspanActive[dayIdx] = subject.rowspan - 1;
+                    }
+                } else {
+                    // Empty cell
+                    td.classList.add("no-hover");
+                }
+                
+                tr.appendChild(td);
+            });
+
+            tbody.appendChild(tr);
+            // Update rowspan tracking for next row
+            rowspanActive = newRowspanActive;
+        });
+    } catch (error) {
+        console.error("Error rendering timetable:", error);
+        tbody.innerHTML = '<tr><th colspan="6" class="no-hover">Error rendering timetable: ' + error.message + '</th></tr>';
+        table.classList.add("has-error");
+        if (wrapper) wrapper.classList.add("has-error");
+    }
 
     setTimetableLoadingState(false);
 }

@@ -1,92 +1,232 @@
 [
     {
         "title": "Arte Plastice",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20plastica/Uy5DLiBMaXRlcmEgRWR1/",
+        "subject": "arte",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1899.png",
-        "subject": "arte"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20plastica/Uy5DLiBMaXRlcmEgRWR1/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20plastica/Uy5DLiBMaXRlcmEgRWR1/A1899.pdf"
+            }
+        ]
     },
     {
         "title": "Biologie",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Biologie/Q29yaW50IExvZ2lzdGlj/",
+        "subject": "biologie",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1857.png",
-        "subject": "biologie"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Biologie/Q29yaW50IExvZ2lzdGlj/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Biologie/Q29yaW50IExvZ2lzdGlj/A1857.pdf"
+            },
+            {
+                "type": "pdf",
+                "link": "./pdfs/biologie-vechi.pdf",
+                "image": "https://cartea-mea.ro/site_img/products/400/2021/09/biologie-8.jpg"
+            }
+        ]
     },
     {
         "title": "Chimie",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Chimie/QXJ0IEtsZXR0IFMuUi5M/#book/0-help",
+        "subject": "chimie",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1877.png",
-        "subject": "chimie"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Chimie/QXJ0IEtsZXR0IFMuUi5M/#book/0-help"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Chimie/QXJ0IEtsZXR0IFMuUi5M/A1877.pdf"
+            }
+        ]
     },
     {
         "title": "Civică",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20sociala/Q0QgUHJlc3MgUy5SLkwu/book.html?book#0",
+        "subject": "civică",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1902.png",
-        "subject": "civică"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20sociala/Q0QgUHJlc3MgUy5SLkwu/book.html?book#0"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20sociala/Q0QgUHJlc3MgUy5SLkwu/A1902.pdf"
+            }
+        ]
     },
     {
         "title": "Engleză",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%201-limba%20engleza/QXJ0IEtsZXR0IFMuUi5M/#book/0-help",
+        "subject": "engleză",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1942.png",
-        "subject": "engleză"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%201-limba%20engleza/QXJ0IEtsZXR0IFMuUi5M/#book/0-help"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%201-limba%20engleza/QXJ0IEtsZXR0IFMuUi5M/A1942.pdf"
+            }
+        ]
     },
     {
         "title": "Franceză",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%202%20franceza/Uy5DLiBCb29rbGV0IFMu/",
+        "subject": "franceză",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1958.png",
-        "subject": "franceză"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%202%20franceza/Uy5DLiBCb29rbGV0IFMu/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20moderna%202%20franceza/Uy5DLiBCb29rbGV0IFMu/A1958.pdf"
+            }
+        ]
     },
     {
         "title": "Fizică",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Fizica/QXJ0IEtsZXR0IFMuUi5M/",
+        "subject": "fizică",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1915.png",
-        "subject": "fizică"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Fizica/QXJ0IEtsZXR0IFMuUi5M/"
+            },
+            {
+                "type": "app",
+                "link": "https://www.fizichim.ro/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Fizica/QXJ0IEtsZXR0IFMuUi5M/A1915.pdf"
+            }
+        ]
     },
     {
         "title": "Geografie",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Geografie/QXJ0IEtsZXR0IFMuUi5M/#book/0-help",
+        "subject": "geografie",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1920.png",
-        "subject": "geografie"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Geografie/QXJ0IEtsZXR0IFMuUi5M/#book/0-help"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Geografie/QXJ0IEtsZXR0IFMuUi5M/A1920.pdf"
+            }
+        ]
     },
     {
         "title": "Informatică",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Informatica%20si%20TIC/Uy5DLiBMaXRlcmEgRWR1/",
+        "subject": "informatică",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1969.png",
-        "subject": "informatică"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Informatica%20si%20TIC/Uy5DLiBMaXRlcmEgRWR1/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Informatica%20si%20TIC/Uy5DLiBMaXRlcmEgRWR1/A1969.pdf"
+            }
+        ]
     },
     {
         "title": "Istorie",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Istorie/QWthZGVtb3MgQXJ0IFMu/interior.html",
+        "subject": "istorie",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1940.png",
-        "subject": "istorie"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Istorie/QWthZGVtb3MgQXJ0IFMu/interior.html"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Istorie/QWthZGVtb3MgQXJ0IFMu/A1940.pdf"
+            }
+        ]
     },
     {
-        "title": "Mate",
-        "link": "https://app.asq.ro/",
-        "image": "https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Fplay-lh.googleusercontent.com%2FB_xhOxjZahDaNvf7NYDBa8uCj1bmmUpQAdsxeG8_n7HErkfqHnFQS3HCZWLua6tj7w&f=1&nofb=1&ipt=e0719d2a65e76c03a8158e5fbf69d6f994c312763d96851f8383d094269c73dc",
-        "subject": "mate"
+        "title": "Matematică",
+        "subject": "mate",
+        "image": "https://play-lh.googleusercontent.com/B_xhOxjZahDaNvf7NYDBa8uCj1bmmUpQAdsxeG8_n7HErkfqHnFQS3HCZWLua6tj7w",
+        "resources": [
+            {
+                "type": "app",
+                "link": "https://app.asq.ro/"
+            }
+        ]
     },
     {
         "title": "Muzică",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20muzicala/QXJ0IEtsZXR0IFMuUi5M/",
+        "subject": "muzică",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1893.png",
-        "subject": "muzică"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20muzicala/QXJ0IEtsZXR0IFMuUi5M/"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20muzicala/QXJ0IEtsZXR0IFMuUi5M/A1893.pdf"
+            }
+        ]
     },
     {
         "title": "Religie",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Religie%20Cultul%20Ortodox/QWthZGVtb3MgQXJ0IFMu/front-cover.html",
+        "subject": "religie",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1978.png",
-        "subject": "religie"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Religie%20Cultul%20Ortodox/QWthZGVtb3MgQXJ0IFMu/front-cover.html"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Religie%20Cultul%20Ortodox/QWthZGVtb3MgQXJ0IFMu/A1978.pdf"
+            }
+        ]
     },
     {
-        "title": "Română",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20si%20literatura%20romana/QXJ0IEtsZXR0IFMuUi5M/A1948.pdf",
+        "title": "Limba și Literatura Română",
+        "subject": "română",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1948.png",
-        "subject": "română"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20si%20literatura%20romana/QXJ0IEtsZXR0IFMuUi5M/#book/0-help"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Limba%20si%20literatura%20romana/QXJ0IEtsZXR0IFMuUi5M/A1948.pdf"
+            }
+        ]
     },
     {
         "title": "Tehnologică",
-        "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20tehnologica%20si%20aplicatii%20practice/Q0QgUHJlc3MgUy5SLkwu/book.html?book#0",
+        "subject": "tehnologică",
         "image": "https://www.manuale.edu.ro/assets/img/manuale/A1911.png",
-        "subject": "tehnologică"
+        "resources": [
+            {
+                "type": "web",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20tehnologica%20si%20aplicatii%20practice/Q0QgUHJlc3MgUy5SLkwu/book.html?book#0"
+            },
+            {
+                "type": "pdf",
+                "link": "https://manuale.edu.ro/manuale/Clasa%20a%20VIII-a/Educatie%20tehnologica%20si%20aplicatii%20practice/Q0QgUHJlc3MgUy5SLkwu/A1911.pdf"
+            }
+        ]
     }
 ]
