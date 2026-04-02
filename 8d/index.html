@@ -704,19 +704,33 @@
                 <div class="custom-content" data-simplebar>
                     <!-- Theme Section -->
                     <div class="custom-section active" id="themeSection">
-                        <div class="section-header-custom">
-                            <h3><i class="fa-solid fa-moon"></i> Theme Settings</h3>
-                            <div class="theme-filters">
-                                <input type="text" id="themeSearch" placeholder="Search themes..."
-                                    class="theme-search-input">
-                                <div class="theme-tags">
-                                    <button class="theme-tag active" data-tag="all">All</button>
-                                    <button class="theme-tag" data-tag="light">Light</button>
-                                    <button class="theme-tag" data-tag="dark">Dark</button>
+                        <div class="section-header-custom theme-section-hero">
+                            <div class="theme-hero-copy">
+                                <span class="theme-kicker">Theme Studio</span>
+                                <h3><i class="fa-solid fa-swatchbook"></i> Pick a base mood</h3>
+                                <p>Search by vibe, skim tags, and preview every palette before you lock it in.</p>
+                            </div>
+                            <div class="theme-hero-stats">
+                                <div class="theme-hero-stat">
+                                    <strong id="themeResultsCount">0</strong>
+                                    <span>Visible</span>
+                                </div>
+                                <div class="theme-hero-stat">
+                                    <strong id="themeActiveLabel">Auto</strong>
+                                    <span>Active</span>
                                 </div>
                             </div>
                         </div>
-                        <div class="theme-options">
+                        <div class="theme-filters">
+                            <label class="theme-search-shell" for="themeSearch">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="themeSearch" placeholder="Search themes, moods, or tags..."
+                                    class="theme-search-input">
+                            </label>
+                            <div class="theme-tags" id="themeTags"></div>
+                        </div>
+                        <p class="theme-results-meta" id="themeResultsMeta">0 of 0 visible</p>
+                        <div class="theme-options" id="themeOptions">
                             <!-- Theme cards will be rendered here dynamically from themes.json -->
                         </div>
                     </div>
@@ -1706,14 +1720,16 @@
             </div>
         </div>
 
+
+        <script src="../js/overlay-manager.js"></script>
+
         <script src="../js/customization.js"></script>
         <script src="../js/manuals.js"></script>
-        <script src="../js/mobile-nav.js"></script>
-        <script src="../js/overlay-manager.js"></script>
         <script src="../js/timetable.js"></script>
         <script src="../js/todo.js"></script>
         <script src="../js/library.js"></script>
         <script src="../js/ui-core.js"></script>
         <script src="../js/weather-time.js"></script>
+        <script src="../js/mobile-nav.js"></script>
 </body>
 </html>
