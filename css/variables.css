@@ -26,7 +26,7 @@
     --warning-border: #ef4444;
     --warning-text: #991b1b;
     --warning-text-dark: #fecaca;
-    --text-on-accent: var(--bg-color);
+    --text-on-accent: #ffffff;
     --text-on-danger: white;
 
     /* === Border & Shadow === */
@@ -40,6 +40,7 @@
     --overlay-blur: 10px;
     --overlay-blur-light: 2px;
     --overlay-blur-medium: 8px;
+    --theme-background-image: none;
 
     /* === Current Indicators === */
     --current-hour-color: #81ade6;
@@ -135,26 +136,4 @@
     --z-bottom-sheet: 2600;
 }
 
-/* Theme Background Gradients */
-[data-theme="midnight"] {
-    background-image: radial-gradient(circle at 20% 50%, rgba(120, 119, 198, 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(50, 160, 220, 0.05) 0%, transparent 50%);
-}
-
-[data-theme="sunset"] {
-    background-image: radial-gradient(circle at 80% 20%, rgba(255, 140, 100, 0.08) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(255, 180, 100, 0.06) 0%, transparent 50%);
-}
-
-[data-theme="forest"] {
-    background-image: radial-gradient(circle at 30% 40%, rgba(45, 140, 70, 0.05) 0%, transparent 50%), radial-gradient(circle at 70% 70%, rgba(30, 100, 50, 0.04) 0%, transparent 50%);
-}
-
-[data-theme="ocean"] {
-    background-image: radial-gradient(circle at 50% 30%, rgba(30, 90, 150, 0.06) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(20, 70, 120, 0.05) 0%, transparent 50%);
-}
-
-[data-theme="lavender"] {
-    background-image: radial-gradient(circle at 60% 40%, rgba(180, 140, 255, 0.08) 0%, transparent 50%), radial-gradient(circle at 30% 70%, rgba(200, 160, 255, 0.06) 0%, transparent 50%);
-}
-[data-theme="rose"] {
-    background-image: radial-gradient(circle at 50% 50%, rgba(255, 100, 100, 0.08) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255, 150, 150, 0.06) 0%, transparent 50%);
-}
+/* Theme atmospheres are generated dynamically per theme and applied through --theme-background-image. */

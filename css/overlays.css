@@ -56,8 +56,7 @@
     position: absolute;
     top: 1.25rem;
     right: var(--spacing-lg);
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
+    background: var(--highlight-color);
     border-radius: var(--border-radius-sm);
     color: var(--accent-color);
     font-size: var(--font-size-xl);
@@ -128,7 +127,7 @@
     display: none;
     position: fixed;
     inset: 0;
-    background: var(--overlay-bg-strong);
+    background: var(--overlay-bg);
     backdrop-filter: blur(var(--overlay-blur));
     z-index: 9999;
     justify-content: center;
