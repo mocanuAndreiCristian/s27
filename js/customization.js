@@ -71,6 +71,8 @@
     let colorPresets = [...DEFAULT_COLOR_PRESETS];
     let savedPresets = [];
     let themeDefinitions = [];
+    let currentThemeSearchTerm = "";
+    let activeThemeTag = "all";
     let uiSettings = { ...DEFAULT_UI_SETTINGS };
     let a11ySettings = { ...DEFAULT_A11Y_SETTINGS };
     let advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS };
@@ -208,6 +210,172 @@
         };
     }
 
+    function getThemeScheme(themeOrId) {
+        const theme = typeof themeOrId === "string"
+            ? themeDefinitions.find((item) => item.id === themeOrId)
+            : themeOrId;
+
+        if (!theme) return "dark";
+        if (theme.id === "auto") return "dynamic";
+        if (["light", "dark", "dynamic"].includes(theme.scheme)) return theme.scheme;
+        if ((theme.tags || []).includes("dynamic")) return "dynamic";
+        return (theme.tags || []).includes("light") ? "light" : "dark";
+    }
+
+    function uniqueThemeTags(tags = [], scheme = "dark") {
+        const unique = new Set();
+
+        if (scheme === "light" || scheme === "dark") {
+            unique.add(scheme);
+        }
+
+        (tags || []).forEach((tag) => {
+            const normalized = String(tag || "").trim().toLowerCase();
+            if (normalized) unique.add(normalized);
+        });
+
+        return Array.from(unique);
+    }
+
+    function hexToRgbObject(color) {
+        const normalized = normalizeHexColor(color);
+        if (!normalized) return null;
+
+        const value = parseInt(normalized.slice(1), 16);
+        return {
+            r: (value >> 16) & 255,
+            g: (value >> 8) & 255,
+            b: value & 255
+        };
+    }
+
+    function hexToRgba(color, alpha) {
+        const rgb = hexToRgbObject(color);
+        const safeAlpha = Math.max(0, Math.min(1, Number(alpha) || 0));
+        if (!rgb) return "transparent";
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${safeAlpha})`;
+    }
+
+    function mixHexColors(primary, secondary, weight = 0.5) {
+        const left = hexToRgbObject(primary);
+        const right = hexToRgbObject(secondary);
+        const ratio = Math.max(0, Math.min(1, Number(weight) || 0));
+
+        if (!left && !right) return "";
+        if (!left) return normalizeHexColor(secondary);
+        if (!right) return normalizeHexColor(primary);
+
+        const r = Math.round((left.r * (1 - ratio)) + (right.r * ratio));
+        const g = Math.round((left.g * (1 - ratio)) + (right.g * ratio));
+        const b = Math.round((left.b * (1 - ratio)) + (right.b * ratio));
+
+        return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+    }
+
+    function getRelativeLuminance(color) {
+        const rgb = hexToRgbObject(color);
+        if (!rgb) return 0;
+
+        const channels = [rgb.r, rgb.g, rgb.b].map((channel) => {
+            const value = channel / 255;
+            return value <= 0.03928
+                ? value / 12.92
+                : Math.pow((value + 0.055) / 1.055, 2.4);
+        });
+
+        return (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+    }
+
+    function getContrastRatio(firstColor, secondColor) {
+        const first = getRelativeLuminance(firstColor);
+        const second = getRelativeLuminance(secondColor);
+        const lighter = Math.max(first, second);
+        const darker = Math.min(first, second);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function getAccessibleTextColor(backgroundColor) {
+        const normalized = normalizeHexColor(backgroundColor);
+        if (!normalized) return "#ffffff";
+
+        return getContrastRatio(normalized, "#000000") >= getContrastRatio(normalized, "#ffffff")
+            ? "#000000"
+            : "#ffffff";
+    }
+
+    function clampThemeSurface(color, scheme, { maxLuminance = 0.16, mixStrength = 0.18 } = {}) {
+        const normalized = normalizeHexColor(color);
+        if (!normalized || scheme !== "dark") return normalized;
+
+        const luminance = getRelativeLuminance(normalized);
+        if (luminance <= maxLuminance) return normalized;
+
+        const blend = Math.min(0.72, mixStrength + ((luminance - maxLuminance) * 2.4));
+        return mixHexColors(normalized, "#000000", blend);
+    }
+
+    function generateThemeAtmosphere(colors = {}, scheme = "dark") {
+        if (scheme === "dynamic") return "none";
+
+        const baseColor = normalizeHexColor(colors["--bg-color"]) || (scheme === "dark" ? "#121212" : "#f8fafc");
+        const glowPrimary = normalizeHexColor(colors["--highlight-color"])
+            || normalizeHexColor(colors["--surface-alt"])
+            || normalizeHexColor(colors["--surface-color"])
+            || baseColor;
+        const glowSecondary = normalizeHexColor(colors["--border-color"])
+            || normalizeHexColor(colors["--surface-color"])
+            || glowPrimary;
+        const glowTertiary = mixHexColors(glowPrimary, glowSecondary, 0.5) || glowPrimary;
+
+        const first = mixHexColors(glowPrimary, scheme === "dark" ? "#ffffff" : baseColor, scheme === "dark" ? 0.08 : 0.18) || glowPrimary;
+        const second = mixHexColors(glowSecondary, scheme === "dark" ? "#000000" : "#ffffff", scheme === "dark" ? 0.12 : 0.08) || glowSecondary;
+
+        return [
+            `radial-gradient(circle at 14% 18%, ${hexToRgba(first, scheme === "dark" ? 0.26 : 0.18)} 0%, transparent 42%)`,
+            `radial-gradient(circle at 82% 16%, ${hexToRgba(second, scheme === "dark" ? 0.18 : 0.12)} 0%, transparent 38%)`,
+            `radial-gradient(circle at 54% 84%, ${hexToRgba(glowTertiary, scheme === "dark" ? 0.16 : 0.1)} 0%, transparent 44%)`
+        ].join(", ");
+    }
+
+    function normalizeThemeDefinition(theme = {}) {
+        const scheme = theme.id === "auto"
+            ? "dynamic"
+            : ((theme.tags || []).includes("light") ? "light" : "dark");
+        const colors = { ...(theme.colors || {}) };
+
+        if (scheme === "dark") {
+            colors["--bg-color"] = clampThemeSurface(colors["--bg-color"] || "#121212", scheme, { maxLuminance: 0.08, mixStrength: 0.28 }) || "#121212";
+            colors["--surface-color"] = clampThemeSurface(colors["--surface-color"] || "#1e1e1e", scheme, { maxLuminance: 0.12, mixStrength: 0.24 }) || "#1e1e1e";
+            colors["--surface-alt"] = clampThemeSurface(colors["--surface-alt"] || colors["--surface-color"], scheme, { maxLuminance: 0.15, mixStrength: 0.2 }) || colors["--surface-color"];
+            colors["--card-bg"] = clampThemeSurface(colors["--card-bg"] || colors["--surface-color"], scheme, { maxLuminance: 0.12, mixStrength: 0.22 }) || colors["--surface-color"];
+            colors["--input-bg"] = clampThemeSurface(colors["--input-bg"] || colors["--bg-color"], scheme, { maxLuminance: 0.09, mixStrength: 0.2 }) || colors["--bg-color"];
+            colors["--highlight-color"] = clampThemeSurface(colors["--highlight-color"] || colors["--surface-alt"], scheme, { maxLuminance: 0.18, mixStrength: 0.16 }) || colors["--surface-alt"];
+            colors["--text-color"] = "#ffffff";
+            colors["--text-muted"] = "rgba(255, 255, 255, 0.72)";
+            colors["--shadow-color"] = "rgba(0, 0, 0, 0.36)";
+            colors["--shadow-color-strong"] = "rgba(0, 0, 0, 0.52)";
+            colors["--shadow-color-modal"] = "rgba(0, 0, 0, 0.72)";
+        } else if (scheme === "light") {
+            colors["--text-color"] = "#000000";
+            colors["--text-muted"] = "rgba(0, 0, 0, 0.64)";
+            colors["--shadow-color"] = "rgba(15, 23, 42, 0.10)";
+            colors["--shadow-color-strong"] = "rgba(15, 23, 42, 0.18)";
+            colors["--shadow-color-modal"] = "rgba(15, 23, 42, 0.42)";
+        }
+
+        if (scheme !== "dynamic") {
+            colors["--theme-background-image"] = generateThemeAtmosphere(colors, scheme);
+        }
+
+        return {
+            ...theme,
+            scheme,
+            tags: uniqueThemeTags(theme.tags, scheme),
+            colors,
+            recommendedColors: [...new Set((theme.recommendedColors || []).map(normalizeHexColor).filter(Boolean))]
+        };
+    }
+
     function getThemeDefinition(themeId = resolveActiveThemeId()) {
         return themeDefinitions.find(t => t.id === themeId) || null;
     }
@@ -222,7 +390,7 @@
     function persistThemeSnapshot(activeThemeId, themeDef) {
         if (!themeDef?.colors) return;
 
-        const scheme = (themeDef.tags || []).includes("light") ? "light" : "dark";
+        const scheme = getThemeScheme(themeDef);
         const snapshot = {
             activeThemeId,
             scheme,
@@ -319,7 +487,7 @@
         try {
             const response = await fetch(`${dataPath}themes.json`);
             const data = await response.json();
-            themeDefinitions = data.themes;
+            themeDefinitions = (data.themes || []).map(normalizeThemeDefinition);
             
             // Initialize savedPresets with defaults if empty
             if (localStorage.getItem(STORAGE_KEYS.SAVED_PRESETS) === null) {
@@ -629,6 +797,7 @@
         runVisualThemeTransaction(() => {
             document.body.setAttribute("data-theme", activeThemeId);
             root.setAttribute("data-theme", activeThemeId);
+            root.style.colorScheme = getThemeScheme(themeDef) === "light" ? "light" : "dark";
 
             if (themeDef && themeDef.colors) {
                 Object.entries(themeDef.colors).forEach(([variable, value]) => {
@@ -674,9 +843,11 @@
         } = options;
 
         currentAccentColor = normalizedColor;
+        const accentTextColor = getAccessibleTextColor(normalizedColor);
 
         runVisualThemeTransaction(() => {
             document.documentElement.style.setProperty("--accent-color", normalizedColor);
+            document.documentElement.style.setProperty("--text-on-accent", accentTextColor);
             if (syncInputs) syncAccentInputs(normalizedColor);
         });
 
@@ -973,36 +1144,225 @@
     }
 
     // --- FILTER THEMES LOGIC ---
-    function filterThemes(searchTerm, tag) {
-        const container = document.querySelector(".theme-options");
-        if (!container) return;
+    function formatThemeTagLabel(tag) {
+        if (tag === "all") return "All";
+        if (tag === "dynamic") return "Auto";
 
-        container.innerHTML = "";
-        
-        const filtered = themeDefinitions.filter(t => {
-            const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase());
-            const matchesTag = tag === 'all' || (t.tags && t.tags.includes(tag));
-            return matchesSearch && matchesTag;
+        return String(tag || "")
+            .split("-")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    }
+
+    function getThemeSearchText(theme) {
+        return [
+            theme.name,
+            theme.description,
+            theme.scheme,
+            ...(theme.tags || [])
+        ].join(" ").toLowerCase();
+    }
+
+    function buildThemeFilterOptions() {
+        const counts = new Map([["all", themeDefinitions.length]]);
+
+        themeDefinitions.forEach((theme) => {
+            uniqueThemeTags(theme.tags, theme.scheme).forEach((tag) => {
+                counts.set(tag, (counts.get(tag) || 0) + 1);
+            });
         });
 
-        filtered.forEach(theme => {
-            const card = document.createElement("div");
-            card.className = "theme-card";
-            card.dataset.theme = theme.id;
-            if (theme.id === currentTheme) card.classList.add("active");
+        const priority = ["all", "dynamic", "light", "dark"];
+        const ordered = [];
 
-            card.innerHTML = `
-                <div class="theme-icon">${theme.icon}</div>
-                <div class="theme-name">${theme.name}</div>
-                <div class="theme-description">${theme.description}</div>
-            `;
+        priority.forEach((tag) => {
+            if (!counts.has(tag)) return;
+            ordered.push({
+                tag,
+                count: counts.get(tag)
+            });
+            counts.delete(tag);
+        });
 
-            card.addEventListener("click", () => {
-                applyTheme(theme.id);
+        Array.from(counts.entries())
+            .sort((left, right) => {
+                if (right[1] !== left[1]) return right[1] - left[1];
+                return left[0].localeCompare(right[0]);
+            })
+            .forEach(([tag, count]) => {
+                ordered.push({ tag, count });
             });
 
-            container.appendChild(card);
+        return ordered;
+    }
+
+    function getCurrentThemeLabel() {
+        const selectedTheme = themeDefinitions.find((theme) => theme.id === currentTheme);
+        const activeTheme = getThemeDefinition(resolveActiveThemeId(currentTheme));
+
+        if (currentTheme === "auto" && activeTheme) {
+            return `Auto -> ${activeTheme.name}`;
+        }
+
+        return selectedTheme?.name || activeTheme?.name || "Theme";
+    }
+
+    function getThemeCardDescription(theme) {
+        if (theme.id !== "auto") return theme.description || "";
+
+        const activeTheme = getThemeDefinition(resolveActiveThemeId("auto"));
+        return activeTheme
+            ? `Follows your system. Right now it resolves to ${activeTheme.name}.`
+            : (theme.description || "Follows your system.");
+    }
+
+    function getThemeVisibleTags(theme) {
+        return uniqueThemeTags(theme.tags, theme.scheme)
+            .filter((tag) => tag !== theme.scheme)
+            .slice(0, 3);
+    }
+
+    function matchesThemeFilter(theme, searchTerm = currentThemeSearchTerm, tag = activeThemeTag) {
+        const normalizedSearch = String(searchTerm || "").trim().toLowerCase();
+        const matchesSearch = !normalizedSearch || getThemeSearchText(theme).includes(normalizedSearch);
+        const matchesTag = tag === "all"
+            || theme.scheme === tag
+            || (theme.tags || []).includes(tag);
+
+        return matchesSearch && matchesTag;
+    }
+
+    function filterThemes(searchTerm = currentThemeSearchTerm, tag = activeThemeTag) {
+        currentThemeSearchTerm = searchTerm;
+        activeThemeTag = tag;
+        return themeDefinitions.filter((theme) => matchesThemeFilter(theme, searchTerm, tag));
+    }
+
+    function renderThemeFilterTags() {
+        const tagsContainer = document.getElementById("themeTags");
+        if (!tagsContainer) return;
+
+        tagsContainer.innerHTML = "";
+
+        buildThemeFilterOptions().forEach(({ tag, count }) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "theme-tag";
+            button.dataset.tag = tag;
+            button.classList.toggle("active", tag === activeThemeTag);
+            button.setAttribute("aria-pressed", tag === activeThemeTag ? "true" : "false");
+
+            const label = document.createElement("span");
+            label.textContent = formatThemeTagLabel(tag);
+
+            const badge = document.createElement("span");
+            badge.className = "theme-tag-count";
+            badge.textContent = String(count);
+
+            button.append(label, badge);
+            tagsContainer.appendChild(button);
         });
+    }
+
+    function updateThemeHeader(filteredThemes = filterThemes()) {
+        const countEl = document.getElementById("themeResultsCount");
+        const activeEl = document.getElementById("themeActiveLabel");
+        const metaEl = document.getElementById("themeResultsMeta");
+
+        if (countEl) countEl.textContent = String(filteredThemes.length);
+        if (activeEl) activeEl.textContent = getCurrentThemeLabel();
+
+        if (!metaEl) return;
+
+        const summary = [`${filteredThemes.length} of ${themeDefinitions.length} visible`];
+
+        if (activeThemeTag !== "all") {
+            summary.push(`tag: ${formatThemeTagLabel(activeThemeTag)}`);
+        }
+
+        if (currentThemeSearchTerm.trim()) {
+            summary.push(`search: "${currentThemeSearchTerm.trim()}"`);
+        }
+
+        metaEl.textContent = summary.join(" - ");
+    }
+
+    function createThemeCard(theme) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "theme-card";
+        card.dataset.theme = theme.id;
+        card.dataset.scheme = theme.scheme;
+        card.classList.toggle("active", theme.id === currentTheme);
+
+        const preview = document.createElement("div");
+        preview.className = "theme-card-preview";
+        preview.style.setProperty("--theme-preview-bg", theme.colors?.["--bg-color"] || "#121212");
+        preview.style.setProperty("--theme-preview-surface", theme.colors?.["--surface-color"] || theme.colors?.["--card-bg"] || "#1e1e1e");
+        preview.style.setProperty("--theme-preview-highlight", theme.colors?.["--highlight-color"] || theme.colors?.["--surface-alt"] || "#2a2a2a");
+        preview.style.setProperty("--theme-preview-atmosphere", theme.colors?.["--theme-background-image"] || "none");
+
+        const windowDots = document.createElement("div");
+        windowDots.className = "theme-card-preview-window";
+        windowDots.innerHTML = "<span></span><span></span><span></span>";
+
+        const layout = document.createElement("div");
+        layout.className = "theme-card-preview-layout";
+        layout.innerHTML = `
+            <div class="theme-card-preview-rail"></div>
+            <div class="theme-card-preview-stack">
+                <span></span>
+                <span></span>
+            </div>
+        `;
+
+        preview.append(windowDots, layout);
+
+        const header = document.createElement("div");
+        header.className = "theme-card-header";
+
+        const icon = document.createElement("div");
+        icon.className = "theme-icon";
+        icon.textContent = theme.icon || " ";
+
+        const badge = document.createElement("span");
+        badge.className = "theme-card-badge";
+        badge.textContent = formatThemeTagLabel(theme.scheme);
+
+        header.append(icon, badge);
+
+        const name = document.createElement("div");
+        name.className = "theme-name";
+        name.textContent = theme.name;
+
+        const description = document.createElement("div");
+        description.className = "theme-description";
+        description.textContent = getThemeCardDescription(theme);
+
+        const footer = document.createElement("div");
+        footer.className = "theme-card-footer";
+
+        const tags = document.createElement("div");
+        tags.className = "theme-card-tags";
+        getThemeVisibleTags(theme).forEach((tag) => {
+            const tagPill = document.createElement("span");
+            tagPill.className = "theme-card-tag";
+            tagPill.textContent = formatThemeTagLabel(tag);
+            tags.appendChild(tagPill);
+        });
+
+        const swatches = document.createElement("div");
+        swatches.className = "theme-card-swatches";
+        (theme.recommendedColors || []).slice(0, 3).forEach((color) => {
+            const swatch = document.createElement("span");
+            swatch.style.background = color;
+            swatches.appendChild(swatch);
+        });
+
+        footer.append(tags, swatches);
+        card.append(preview, header, name, description, footer);
+        card.addEventListener("click", () => applyTheme(theme.id));
+        return card;
     }
 
     // --- EVENT LISTENERS ---
@@ -1011,7 +1371,6 @@
         const customBtn = document.getElementById("customizationBtn");
         const sheetBtn = document.getElementById("sheetCustomizationBtn");
         const closeBtn = document.getElementById("closeCustomization");
-        const overlay = document.getElementById("customizationOverlay");
 
         const openFn = () => {
             if (window.overlayManager) {
@@ -1040,21 +1399,42 @@
 
         // Theme Filtering
         const searchInput = document.getElementById("themeSearch");
-        const tags = document.querySelectorAll(".theme-tag");
-        let activeTag = "all";
+        const tagsContainer = document.getElementById("themeTags");
 
         if (searchInput) {
-            searchInput.addEventListener("input", (e) => filterThemes(e.target.value, activeTag));
-        }
-        
-        tags.forEach(btn => {
-            btn.addEventListener("click", () => {
-                tags.forEach(t => t.classList.remove("active"));
-                btn.classList.add("active");
-                activeTag = btn.dataset.tag;
-                filterThemes(searchInput ? searchInput.value : "", activeTag);
+            searchInput.value = currentThemeSearchTerm;
+            searchInput.addEventListener("input", (e) => {
+                currentThemeSearchTerm = e.target.value;
+                renderThemeCards();
             });
-        });
+        }
+
+        if (tagsContainer) {
+            tagsContainer.addEventListener("click", (event) => {
+                const button = event.target.closest(".theme-tag");
+                if (!button) return;
+
+                activeThemeTag = button.dataset.tag || "all";
+                renderThemeCards();
+            });
+        }
+
+        const colorSchemeQuery = window.matchMedia
+            ? window.matchMedia("(prefers-color-scheme: dark)")
+            : null;
+        const syncAutoTheme = () => {
+            if (currentTheme !== "auto") return;
+            applyTheme("auto", { persist: false });
+            renderThemeCards();
+        };
+
+        if (colorSchemeQuery) {
+            if (typeof colorSchemeQuery.addEventListener === "function") {
+                colorSchemeQuery.addEventListener("change", syncAutoTheme);
+            } else if (typeof colorSchemeQuery.addListener === "function") {
+                colorSchemeQuery.addListener(syncAutoTheme);
+            }
+        }
 
         // Color Inputs
         document.getElementById("customColorPicker")?.addEventListener("input", (e) => {
@@ -1296,7 +1676,13 @@
     // Helper: Update UI Selections (active states)
     function updateUISelections() {
         document.querySelectorAll(".theme-card").forEach(c => c.classList.toggle("active", c.dataset.theme === currentTheme));
+        document.querySelectorAll(".theme-tag").forEach((tagButton) => {
+            const isActive = tagButton.dataset.tag === activeThemeTag;
+            tagButton.classList.toggle("active", isActive);
+            tagButton.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
         document.querySelectorAll(".preset-item").forEach(c => c.classList.toggle("active", c.dataset.color === currentAccentColor));
+        updateThemeHeader(themeDefinitions.filter((theme) => matchesThemeFilter(theme)));
     }
 
     // Helper: Render Saved Presets
@@ -1337,33 +1723,30 @@
     function checkColorContrast() {
         const warningEl = document.getElementById("contrastWarning");
         if (!warningEl) return;
-        
-        const r = parseInt(currentAccentColor.slice(1, 3), 16);
-        const g = parseInt(currentAccentColor.slice(3, 5), 16);
-        const b = parseInt(currentAccentColor.slice(5, 7), 16);
-        const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-        const activeThemeId = resolveActiveThemeId(currentTheme);
-        const isDarkTheme = ['dark', 'space', 'midnight', 'forest', 'ocean', 'cyberpunk', 'deep-purple'].includes(activeThemeId);
 
-        let warn = false;
-        if (isDarkTheme && yiq < 50) warn = true;
-        if (!isDarkTheme && yiq > 200) warn = true;
+        const activeTheme = getThemeDefinition(resolveActiveThemeId(currentTheme));
+        const themeBackground = normalizeHexColor(activeTheme?.colors?.["--bg-color"]) || "#ffffff";
+        const accentTextColor = getAccessibleTextColor(currentAccentColor);
+        const accentToBackground = getContrastRatio(currentAccentColor, themeBackground);
+        const accentToText = getContrastRatio(currentAccentColor, accentTextColor);
+        const warnings = [];
 
-        warningEl.style.display = warn ? "block" : "none";
-        warningEl.textContent = warn ? "Warning: Low contrast with background." : "";
+        if (accentToBackground < 2.8) {
+            warnings.push("Accent blends into this theme.");
+        }
+
+        if (accentToText < 4.5) {
+            warnings.push("Filled buttons may be hard to read.");
+        }
+
+        warningEl.style.display = warnings.length ? "block" : "none";
+        warningEl.textContent = warnings.length
+            ? `${warnings.join(" ")} Try a lighter or darker accent.`
+            : "";
     }
 
     function updateButtonTextColors() {
-        // Logic to flip text color based on accent brightness
-        const r = parseInt(currentAccentColor.slice(1, 3), 16);
-        const g = parseInt(currentAccentColor.slice(3, 5), 16);
-        const b = parseInt(currentAccentColor.slice(5, 7), 16);
-        const yiq = ((r * 299) + (g * 587) + (b * 114)) / 1000;
-        const textColor = (yiq >= 128) ? 'black' : 'white';
-        
-        document.querySelectorAll('.add-preset-btn, .refresh-weather-btn').forEach(btn => {
-            btn.style.color = textColor;
-        });
+        document.documentElement.style.setProperty("--text-on-accent", getAccessibleTextColor(currentAccentColor));
     }
 
     function updateFavicon(color) {
@@ -1384,7 +1767,26 @@
     
     // Theme Card Rendering
     function renderThemeCards() {
-        filterThemes("", "all");
+        const container = document.getElementById("themeOptions") || document.querySelector(".theme-options");
+        if (!container) return;
+
+        const filteredThemes = filterThemes(currentThemeSearchTerm, activeThemeTag);
+        renderThemeFilterTags();
+        updateThemeHeader(filteredThemes);
+
+        container.innerHTML = "";
+
+        if (!filteredThemes.length) {
+            const empty = document.createElement("div");
+            empty.className = "theme-empty-state";
+            empty.textContent = "No themes match that combination yet.";
+            container.appendChild(empty);
+            return;
+        }
+
+        filteredThemes.forEach((theme) => {
+            container.appendChild(createThemeCard(theme));
+        });
     }
 
     // Google Fonts

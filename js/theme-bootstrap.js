@@ -81,6 +81,25 @@
         return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : "";
     }
 
+    function getAccessibleTextColor(backgroundColor) {
+        const normalized = normalizeHexColor(backgroundColor);
+        if (!normalized) return "#ffffff";
+
+        const rgb = [1, 3, 5].map((index) => parseInt(normalized.slice(index, index + 2), 16));
+        const luminance = rgb
+            .map((channel) => {
+                const value = channel / 255;
+                return value <= 0.03928
+                    ? value / 12.92
+                    : Math.pow((value + 0.055) / 1.055, 2.4);
+            });
+        const relative = (0.2126 * luminance[0]) + (0.7152 * luminance[1]) + (0.0722 * luminance[2]);
+        const blackContrast = (relative + 0.05) / 0.05;
+        const whiteContrast = 1.05 / (relative + 0.05);
+
+        return blackContrast >= whiteContrast ? "#000000" : "#ffffff";
+    }
+
     function resolveActiveThemeId(themeId) {
         if (themeId === "auto") {
             return window.matchMedia &&
@@ -135,6 +154,7 @@
         });
 
         root.style.setProperty("--accent-color", accentColor);
+        root.style.setProperty("--text-on-accent", getAccessibleTextColor(accentColor));
         if (fontFamily) root.style.setProperty("--font-family", fontFamily);
 
         if (resolvedColors["--bg-color"]) {
