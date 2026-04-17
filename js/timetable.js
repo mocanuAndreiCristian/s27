@@ -195,25 +195,31 @@ function renderTimetable() {
                 // Set tabIndex for keyboard navigation
                 td.tabIndex = -1;
 
-                if (subject) {
-                    let content = subject.name + " ";
-                    if (subject.flag) {
-                        content += `<span class="${subject.flag}" id="emojis"></span>`;
-                    } else if (subject.emoji) {
-                        content += `<span id="emojis">${subject.emoji}</span>`;
-                    }
-                    td.innerHTML = content;
-                    
-                    // Apply rowspan attribute if present
-                    if (subject.rowspan && subject.rowspan > 1) {
-                        td.rowSpan = subject.rowspan;
-                        newRowspanActive[dayIdx] = subject.rowspan - 1;
-                    }
-                } else {
-                    // Empty cell
-                    td.classList.add("no-hover");
-                }
                 
+                if (subject) {
+    let content = "";
+
+    // Add emoji or flag FIRST
+    if (subject.flag) {
+        content += `<span class="${subject.flag}" id="emojis"></span> `;
+    } else if (subject.emoji) {
+        content += `<span id="emojis">${subject.emoji}</span> `;
+    }
+
+    // Then add subject name
+    content += subject.name;
+
+    td.innerHTML = content;
+
+    // Apply rowspan attribute if present
+    if (subject.rowspan && subject.rowspan > 1) {
+        td.rowSpan = subject.rowspan;
+        newRowspanActive[dayIdx] = subject.rowspan - 1;
+    }
+} else {
+    // Empty cell
+    td.classList.add("no-hover");
+}
                 tr.appendChild(td);
             });
 
