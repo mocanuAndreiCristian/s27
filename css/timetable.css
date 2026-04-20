@@ -40,6 +40,10 @@
     width: 4.75rem;
 }
 
+.timetable th, .timetable td {
+    text-align: left !important;
+}
+
 .timetable {
     width: 100%;
     border-collapse: separate;
