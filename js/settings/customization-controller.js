@@ -254,11 +254,7 @@ function applyUISettings() {
     root.style.setProperty("--backdrop-blur", `${blurVal}px`);
     root.style.setProperty("--library-desktop-columns", String(state.uiSettings.libraryDesktopColumns));
 
-    // Mark and highlight customization
-    root.style.setProperty("--mark-color", state.uiSettings.markColor);
-    root.style.setProperty("--mark-opacity", `${state.uiSettings.markOpacity / 100}`);
-    root.style.setProperty("--highlight-color", state.uiSettings.highlightColor);
-    root.style.setProperty("--highlight-opacity", `${state.uiSettings.highlightOpacity / 100}`);
+
 
     document.body.classList.toggle("compact-timetable", state.uiSettings.compactMode);
     document.body.classList.toggle("minimal-cells", state.uiSettings.minimalCells);

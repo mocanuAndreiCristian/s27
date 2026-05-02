@@ -28,10 +28,7 @@ export const DEFAULT_UI_SETTINGS = {
     libraryRecommendedManualMap: {},
     libraryRecommendedMode: "link",
     libraryRecommendedCustomTypes: {},
-    markColor: "#6196ff",
-    markOpacity: 80,
-    highlightColor: "#6196ff",
-    highlightOpacity: 30,
+
 };
 
 export const DEFAULT_A11Y_SETTINGS = {
