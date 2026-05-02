@@ -28,12 +28,7 @@
     <link rel="stylesheet" href="../css/library.css">
 
     <script>
-        window.CLASS_ID = '8e';
-        window.DATA_PATH = '../data/';
-        const dataPath = window.DATA_PATH || 'data/';
-        const classId = window.CLASS_ID || '8e';
-        const p = window.DATA_PATH || "../data/",
-        id = window.CLASS_ID || "8e";
+        window.AppConfig = { classId: "8e", dataPath: "../data/" };
     </script>
 </head>
 
@@ -909,6 +904,34 @@
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
+
+                                <div class="ui-control-card">
+                                    <label>Mark Color</label>
+                                    <input type="color" id="uiMarkColor" value="#6196ff">
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label>Mark Opacity</label>
+                                    <input type="range" id="uiMarkOpacity" min="0" max="100" step="10" value="80">
+                                    <div class="range-labels">
+                                        <span>Transparent</span>
+                                        <span>Opaque</span>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label>Highlight Color</label>
+                                    <input type="color" id="uiHighlightColor" value="#6196ff">
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label>Highlight Opacity</label>
+                                    <input type="range" id="uiHighlightOpacity" min="0" max="100" step="10" value="30">
+                                    <div class="range-labels">
+                                        <span>Transparent</span>
+                                        <span>Opaque</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -1721,15 +1744,6 @@
         </div>
 
 
-        <script src="../js/overlay-manager.js"></script>
-
-        <script src="../js/customization.js"></script>
-        <script src="../js/manuals.js"></script>
-        <script src="../js/timetable.js"></script>
-        <script src="../js/todo.js"></script>
-        <script src="../js/library.js"></script>
-        <script src="../js/ui-core.js"></script>
-        <script src="../js/weather-time.js"></script>
-        <script src="../js/mobile-nav.js"></script>
+        <script type="module" src="../js/app.js"></script>
 </body>
 </html>

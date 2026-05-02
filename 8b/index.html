@@ -28,12 +28,7 @@
     <link rel="stylesheet" href="../css/library.css">
 
     <script>
-        window.CLASS_ID = '8b';
-        window.DATA_PATH = '../data/';
-        const dataPath = window.DATA_PATH || 'data/';
-        const classId = window.CLASS_ID || '8b';
-        const p = window.DATA_PATH || "../data/",
-        id = window.CLASS_ID || "8b";
+        window.AppConfig = { classId: "8b", dataPath: "../data/" };
     </script>
 </head>
 
@@ -1721,15 +1716,6 @@
         </div>
 
 
-        <script src="../js/overlay-manager.js"></script>
-
-        <script src="../js/customization.js"></script>
-        <script src="../js/manuals.js"></script>
-        <script src="../js/timetable.js"></script>
-        <script src="../js/todo.js"></script>
-        <script src="../js/library.js"></script>
-        <script src="../js/ui-core.js"></script>
-        <script src="../js/weather-time.js"></script>
-        <script src="../js/mobile-nav.js"></script>
+        <script type="module" src="../js/app.js"></script>
 </body>
 </html>

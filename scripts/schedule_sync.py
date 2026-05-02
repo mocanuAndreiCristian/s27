@@ -356,6 +356,27 @@ def save_json(path: Path, data: Dict[str, Any]) -> None:
         handle.write("\n")  # Ensure file ends with newline
 
 
+def build_app_config_script(class_id: str) -> str:
+    return (
+        "    <script>\n"
+        f'        window.AppConfig = {{ classId: "{class_id}", dataPath: "../data/" }};\n'
+        "    </script>"
+    )
+
+
+def replace_inline_app_config(html_content: str, class_id: str) -> str:
+    pattern = re.compile(
+        r"<script>\s*(?:window\.CLASS_ID[\s\S]*?window\.AppConfig[\s\S]*?|window\.AppConfig[\s\S]*?)</script>",
+        re.MULTILINE,
+    )
+    replacement = build_app_config_script(class_id)
+
+    if pattern.search(html_content):
+        return pattern.sub(replacement, html_content, count=1)
+
+    return html_content
+
+
 def build_class_html(class_id: str, template_path: Path = None) -> Path:
     """Build HTML file for a class by copying template and replacing class ID.
     
@@ -379,33 +400,9 @@ def build_class_html(class_id: str, template_path: Path = None) -> Path:
     # Create class ID with capital letter for display (e.g., "8D" from "8d")
     display_id = class_id.upper()
     
-    # Replace occurrences of the class ID
-    # Handle various patterns found in the HTML
-    
-    # Replace window.CLASS_ID value
-    html_content = re.sub(
-        r"window\.CLASS_ID\s*=\s*'8d'",
-        f"window.CLASS_ID = '{class_id}'",
-        html_content
-    )
-    html_content = re.sub(
-        r'window\.CLASS_ID\s*=\s*"8d"',
-        f'window.CLASS_ID = "{class_id}"',
-        html_content
-    )
-    
-    # Replace fallback values in OR expressions (e.g., || "8d")
-    html_content = re.sub(
-        r'\|\|\s*"8d"',
-        f'|| "{class_id}"',
-        html_content
-    )
-    html_content = re.sub(
-        r"\|\|\s*'8d'",
-        f"|| '{class_id}'",
-        html_content
-    )
-    
+    # Replace inline app config script with the simplified AppConfig shape
+    html_content = replace_inline_app_config(html_content, class_id)
+
     # Replace title text "Orar 8D" -> "Orar 8A" etc.
     html_content = re.sub(
         r'<title>Orar 8D</title>',

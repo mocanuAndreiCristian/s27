@@ -63,6 +63,7 @@
     scrollbar-width: thin;
     scrollbar-color: var(--accent-color) var(--card-bg);
     min-width: 220px;
+    border-radius: var(--border-radius);
 } 
 
 .sidebar-header {
@@ -231,6 +232,7 @@
 .theme-search-input::placeholder {
     color: var(--text-muted);
 }
+
 .theme-tags {
     display: flex;
     flex-wrap: wrap;

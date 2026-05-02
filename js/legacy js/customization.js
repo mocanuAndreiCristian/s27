@@ -1,0 +1,2334 @@
+/* ========================================
+   CUSTOMIZATION OVERLAY SYSTEM
+   ======================================== */
+
+(function () {
+    "use strict";
+
+    // Storage keys
+    const STORAGE_KEYS = {
+        THEME: "customization-theme",
+        ACCENT_COLOR: "customization-accent-color",
+        FONT: "customization-font",
+        THEME_SNAPSHOT: "customization-theme-snapshot",
+        COLOR_PRESETS: "customization-color-presets",
+        SAVED_PRESETS: "customization-saved-presets",
+        UI_SETTINGS: "customization-ui-settings",
+        A11Y_SETTINGS: "customization-a11y-settings",
+        CUSTOM_FONTS: "custom-fonts",
+        ADVANCED_SETTINGS: "advancedSettings" // Shared with other modules
+    };
+
+    // Default color presets
+    const DEFAULT_COLOR_PRESETS = ["#6196ff", "#ff6b6b", "#f59e0b", "#51d88a", "#a855f7"];
+
+    // Default UI Settings
+    const DEFAULT_UI_SETTINGS = {
+        borderRadius: 16,
+        glassIntensity: 80,
+        compactMode: false,
+        minimalCells: false,
+        bgImage: '',
+        mobileNavScroll: false,
+        hideEmptyDays: false,
+        bgPattern: false,
+        libraryPreferredOpenType: 'link',
+        libraryDesktopColumns: 4,
+        libraryRecommendedOpenBehavior: 'open-all',
+        libraryRecommendedManualMap: {},
+        libraryRecommendedMode: 'link',
+        libraryRecommendedCustomTypes: {}
+    };
+
+    // Default A11y Settings
+    const DEFAULT_A11Y_SETTINGS = {
+        highContrast: false,
+        reducedMotion: false,
+        focusIndicators: false,
+        grayscale: false,
+        textScale: 1
+    };
+
+    // Default Advanced Settings
+    const DEFAULT_ADVANCED_SETTINGS = {
+        interactionMode: 'link',
+        shortcut1: 'customization',
+        shortcut2: 'weather'
+    };
+    const VALID_SHORTCUT_OPTIONS = new Set([
+        'customization',
+        'weather',
+        'clock',
+        'tasks',
+        'info',
+        'library'
+    ]);
+
+    // State
+    let currentTheme = "auto";
+    let currentAccentColor = "#6196ff";
+    let currentFont = "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif";
+    let colorPresets = [...DEFAULT_COLOR_PRESETS];
+    let savedPresets = [];
+    let themeDefinitions = [];
+    let currentThemeSearchTerm = "";
+    let activeThemeTag = "all";
+    let uiSettings = { ...DEFAULT_UI_SETTINGS };
+    let a11ySettings = { ...DEFAULT_A11Y_SETTINGS };
+    let advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS };
+
+    // Google Fonts link element
+    let googleFontsLink = null;
+    let themeSwitchCleanupFrame = 0;
+    let deferredCustomizationFrame = 0;
+    let pendingCustomizationWork = {
+        themeChanged: false,
+        accentChanged: false,
+        refreshRecommendedColors: false,
+        fullSync: false
+    };
+
+    function normalizeHexColor(color) {
+        if (typeof color !== "string") return "";
+        let value = color.trim();
+        if (!value) return "";
+        if (!value.startsWith("#")) value = `#${value}`;
+
+        if (/^#[0-9a-f]{3}$/i.test(value)) {
+            value = `#${value[1]}${value[1]}${value[2]}${value[2]}${value[3]}${value[3]}`;
+        }
+
+        return /^#[0-9a-f]{6}$/i.test(value) ? value.toLowerCase() : "";
+    }
+
+    function resolveActiveThemeId(themeId = currentTheme) {
+        if (themeId === "auto") {
+            const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+            return prefersDark ? "dark" : "light";
+        }
+
+        return themeId;
+    }
+
+    function sanitizeShortcutValue(value, fallback) {
+        return VALID_SHORTCUT_OPTIONS.has(value) ? value : fallback;
+    }
+
+    function normalizeLibrarySubjectKey(value = "") {
+        const stripped = String(value).replace(/<[^>]*>/g, " ");
+        const lettersOnly = stripped.replace(/[^\p{L}\p{N}\s]/gu, " ");
+        const noDiacritics = lettersOnly.normalize("NFD").replace(/\p{Diacritic}/gu, "");
+        return noDiacritics.toLowerCase().replace(/\s+/g, " ").trim();
+    }
+
+    function normalizeLibraryOpenType(value, fallback = DEFAULT_UI_SETTINGS.libraryPreferredOpenType) {
+        return ["link", "pdf", "app"].includes(value) ? value : fallback;
+    }
+
+    function normalizeLibraryRecommendedMode(value, fallback = DEFAULT_UI_SETTINGS.libraryRecommendedMode) {
+        return ["link", "pdf", "app", "custom"].includes(value) ? value : fallback;
+    }
+
+    function normalizeLibraryOpenBehavior(value, fallback = DEFAULT_UI_SETTINGS.libraryRecommendedOpenBehavior) {
+        return ["open-all", "buttons", "both"].includes(value) ? value : fallback;
+    }
+
+    function sanitizeLibraryManualList(value) {
+        if (!Array.isArray(value)) return [];
+
+        const seen = new Set();
+        const result = [];
+
+        value.forEach((manualId) => {
+            const normalized = String(manualId || "").trim();
+            if (!normalized || seen.has(normalized)) return;
+            seen.add(normalized);
+            result.push(normalized);
+        });
+
+        return result.slice(0, 3);
+    }
+
+    function sanitizeLibraryCustomTypeMap(value) {
+        if (!value || typeof value !== "object") return {};
+
+        return Object.fromEntries(
+            Object.entries(value)
+                .map(([key, type]) => [normalizeLibrarySubjectKey(key), normalizeLibraryOpenType(type, "link")])
+                .filter(([key]) => Boolean(key))
+        );
+    }
+
+    function sanitizeLibraryManualMap(value) {
+        if (!value || typeof value !== "object") return {};
+
+        return Object.fromEntries(
+            Object.entries(value)
+                .map(([key, manualIds]) => [normalizeLibrarySubjectKey(key), sanitizeLibraryManualList(manualIds)])
+                .filter(([key, manualIds]) => Boolean(key) && manualIds.length > 0)
+        );
+    }
+
+    function sanitizeUISettings(settings = {}) {
+        return {
+            ...settings,
+            libraryPreferredOpenType: normalizeLibraryOpenType(
+                settings.libraryPreferredOpenType,
+                DEFAULT_UI_SETTINGS.libraryPreferredOpenType,
+            ),
+            libraryDesktopColumns: Math.max(
+                2,
+                Math.min(
+                    6,
+                    Number.isFinite(Number(settings.libraryDesktopColumns))
+                        ? Math.round(Number(settings.libraryDesktopColumns))
+                        : DEFAULT_UI_SETTINGS.libraryDesktopColumns,
+                ),
+            ),
+            libraryRecommendedMode: normalizeLibraryRecommendedMode(
+                settings.libraryRecommendedMode,
+                DEFAULT_UI_SETTINGS.libraryRecommendedMode,
+            ),
+            libraryRecommendedOpenBehavior: normalizeLibraryOpenBehavior(
+                settings.libraryRecommendedOpenBehavior,
+                DEFAULT_UI_SETTINGS.libraryRecommendedOpenBehavior,
+            ),
+            libraryRecommendedManualMap: sanitizeLibraryManualMap(
+                settings.libraryRecommendedManualMap,
+            ),
+            libraryRecommendedCustomTypes: sanitizeLibraryCustomTypeMap(
+                settings.libraryRecommendedCustomTypes,
+            ),
+        };
+    }
+
+    function sanitizeAdvancedSettings(settings = {}) {
+        return {
+            ...settings,
+            shortcut1: sanitizeShortcutValue(settings.shortcut1, DEFAULT_ADVANCED_SETTINGS.shortcut1),
+            shortcut2: sanitizeShortcutValue(settings.shortcut2, DEFAULT_ADVANCED_SETTINGS.shortcut2)
+        };
+    }
+
+    function getThemeScheme(themeOrId) {
+        const theme = typeof themeOrId === "string"
+            ? themeDefinitions.find((item) => item.id === themeOrId)
+            : themeOrId;
+
+        if (!theme) return "dark";
+        if (theme.id === "auto") return "dynamic";
+        if (["light", "dark", "dynamic"].includes(theme.scheme)) return theme.scheme;
+        if ((theme.tags || []).includes("dynamic")) return "dynamic";
+        return (theme.tags || []).includes("light") ? "light" : "dark";
+    }
+
+    function uniqueThemeTags(tags = [], scheme = "dark") {
+        const unique = new Set();
+
+        if (scheme === "light" || scheme === "dark") {
+            unique.add(scheme);
+        }
+
+        (tags || []).forEach((tag) => {
+            const normalized = String(tag || "").trim().toLowerCase();
+            if (normalized) unique.add(normalized);
+        });
+
+        return Array.from(unique);
+    }
+
+    function hexToRgbObject(color) {
+        const normalized = normalizeHexColor(color);
+        if (!normalized) return null;
+
+        const value = parseInt(normalized.slice(1), 16);
+        return {
+            r: (value >> 16) & 255,
+            g: (value >> 8) & 255,
+            b: value & 255
+        };
+    }
+
+    function hexToRgba(color, alpha) {
+        const rgb = hexToRgbObject(color);
+        const safeAlpha = Math.max(0, Math.min(1, Number(alpha) || 0));
+        if (!rgb) return "transparent";
+        return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${safeAlpha})`;
+    }
+
+    function mixHexColors(primary, secondary, weight = 0.5) {
+        const left = hexToRgbObject(primary);
+        const right = hexToRgbObject(secondary);
+        const ratio = Math.max(0, Math.min(1, Number(weight) || 0));
+
+        if (!left && !right) return "";
+        if (!left) return normalizeHexColor(secondary);
+        if (!right) return normalizeHexColor(primary);
+
+        const r = Math.round((left.r * (1 - ratio)) + (right.r * ratio));
+        const g = Math.round((left.g * (1 - ratio)) + (right.g * ratio));
+        const b = Math.round((left.b * (1 - ratio)) + (right.b * ratio));
+
+        return `#${[r, g, b].map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+    }
+
+    function getRelativeLuminance(color) {
+        const rgb = hexToRgbObject(color);
+        if (!rgb) return 0;
+
+        const channels = [rgb.r, rgb.g, rgb.b].map((channel) => {
+            const value = channel / 255;
+            return value <= 0.03928
+                ? value / 12.92
+                : Math.pow((value + 0.055) / 1.055, 2.4);
+        });
+
+        return (0.2126 * channels[0]) + (0.7152 * channels[1]) + (0.0722 * channels[2]);
+    }
+
+    function getContrastRatio(firstColor, secondColor) {
+        const first = getRelativeLuminance(firstColor);
+        const second = getRelativeLuminance(secondColor);
+        const lighter = Math.max(first, second);
+        const darker = Math.min(first, second);
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    function getAccessibleTextColor(backgroundColor) {
+        const normalized = normalizeHexColor(backgroundColor);
+        if (!normalized) return "#ffffff";
+
+        return getContrastRatio(normalized, "#000000") >= getContrastRatio(normalized, "#ffffff")
+            ? "#000000"
+            : "#ffffff";
+    }
+
+    function clampThemeSurface(color, scheme, { maxLuminance = 0.16, mixStrength = 0.18 } = {}) {
+        const normalized = normalizeHexColor(color);
+        if (!normalized || scheme !== "dark") return normalized;
+
+        const luminance = getRelativeLuminance(normalized);
+        if (luminance <= maxLuminance) return normalized;
+
+        const blend = Math.min(0.72, mixStrength + ((luminance - maxLuminance) * 2.4));
+        return mixHexColors(normalized, "#000000", blend);
+    }
+
+    function generateThemeAtmosphere(colors = {}, scheme = "dark") {
+        if (scheme === "dynamic") return "none";
+
+        const baseColor = normalizeHexColor(colors["--bg-color"]) || (scheme === "dark" ? "#121212" : "#f8fafc");
+        const glowPrimary = normalizeHexColor(colors["--highlight-color"])
+            || normalizeHexColor(colors["--surface-alt"])
+            || normalizeHexColor(colors["--surface-color"])
+            || baseColor;
+        const glowSecondary = normalizeHexColor(colors["--border-color"])
+            || normalizeHexColor(colors["--surface-color"])
+            || glowPrimary;
+        const glowTertiary = mixHexColors(glowPrimary, glowSecondary, 0.5) || glowPrimary;
+
+        const first = mixHexColors(glowPrimary, scheme === "dark" ? "#ffffff" : baseColor, scheme === "dark" ? 0.08 : 0.18) || glowPrimary;
+        const second = mixHexColors(glowSecondary, scheme === "dark" ? "#000000" : "#ffffff", scheme === "dark" ? 0.12 : 0.08) || glowSecondary;
+
+        return [
+            `radial-gradient(circle at 14% 18%, ${hexToRgba(first, scheme === "dark" ? 0.26 : 0.18)} 0%, transparent 42%)`,
+            `radial-gradient(circle at 82% 16%, ${hexToRgba(second, scheme === "dark" ? 0.18 : 0.12)} 0%, transparent 38%)`,
+            `radial-gradient(circle at 54% 84%, ${hexToRgba(glowTertiary, scheme === "dark" ? 0.16 : 0.1)} 0%, transparent 44%)`
+        ].join(", ");
+    }
+
+    function normalizeThemeDefinition(theme = {}) {
+        const scheme = theme.id === "auto"
+            ? "dynamic"
+            : ((theme.tags || []).includes("light") ? "light" : "dark");
+        const colors = { ...(theme.colors || {}) };
+
+        if (scheme === "dark") {
+            colors["--bg-color"] = clampThemeSurface(colors["--bg-color"] || "#121212", scheme, { maxLuminance: 0.08, mixStrength: 0.28 }) || "#121212";
+            colors["--surface-color"] = clampThemeSurface(colors["--surface-color"] || "#1e1e1e", scheme, { maxLuminance: 0.12, mixStrength: 0.24 }) || "#1e1e1e";
+            colors["--surface-alt"] = clampThemeSurface(colors["--surface-alt"] || colors["--surface-color"], scheme, { maxLuminance: 0.15, mixStrength: 0.2 }) || colors["--surface-color"];
+            colors["--card-bg"] = clampThemeSurface(colors["--card-bg"] || colors["--surface-color"], scheme, { maxLuminance: 0.12, mixStrength: 0.22 }) || colors["--surface-color"];
+            colors["--input-bg"] = clampThemeSurface(colors["--input-bg"] || colors["--bg-color"], scheme, { maxLuminance: 0.09, mixStrength: 0.2 }) || colors["--bg-color"];
+            colors["--highlight-color"] = clampThemeSurface(colors["--highlight-color"] || colors["--surface-alt"], scheme, { maxLuminance: 0.18, mixStrength: 0.16 }) || colors["--surface-alt"];
+            colors["--text-color"] = "#ffffff";
+            colors["--text-muted"] = "rgba(255, 255, 255, 0.72)";
+            colors["--shadow-color"] = "rgba(0, 0, 0, 0.36)";
+            colors["--shadow-color-strong"] = "rgba(0, 0, 0, 0.52)";
+            colors["--shadow-color-modal"] = "rgba(0, 0, 0, 0.72)";
+        } else if (scheme === "light") {
+            colors["--text-color"] = "#000000";
+            colors["--text-muted"] = "rgba(0, 0, 0, 0.64)";
+            colors["--shadow-color"] = "rgba(15, 23, 42, 0.10)";
+            colors["--shadow-color-strong"] = "rgba(15, 23, 42, 0.18)";
+            colors["--shadow-color-modal"] = "rgba(15, 23, 42, 0.42)";
+        }
+
+        if (scheme !== "dynamic") {
+            colors["--theme-background-image"] = generateThemeAtmosphere(colors, scheme);
+        }
+
+        return {
+            ...theme,
+            scheme,
+            tags: uniqueThemeTags(theme.tags, scheme),
+            colors,
+            recommendedColors: [...new Set((theme.recommendedColors || []).map(normalizeHexColor).filter(Boolean))]
+        };
+    }
+
+    function getThemeDefinition(themeId = resolveActiveThemeId()) {
+        return themeDefinitions.find(t => t.id === themeId) || null;
+    }
+
+    function syncAccentInputs(color = currentAccentColor) {
+        const colorPicker = document.getElementById("customColorPicker");
+        const hexInput = document.getElementById("colorHexInput");
+        if (colorPicker) colorPicker.value = color;
+        if (hexInput) hexInput.value = color.toUpperCase();
+    }
+
+    function persistThemeSnapshot(activeThemeId, themeDef) {
+        if (!themeDef?.colors) return;
+
+        const scheme = getThemeScheme(themeDef);
+        const snapshot = {
+            activeThemeId,
+            scheme,
+            colors: themeDef.colors,
+            updatedAt: Date.now()
+        };
+        localStorage.setItem(STORAGE_KEYS.THEME_SNAPSHOT, JSON.stringify(snapshot));
+    }
+
+    function runVisualThemeTransaction(callback) {
+        const root = document.documentElement;
+        const body = document.body;
+
+        root.classList.add("theme-switching");
+        if (body) body.classList.add("theme-switching");
+
+        callback();
+
+        if (themeSwitchCleanupFrame) cancelAnimationFrame(themeSwitchCleanupFrame);
+        themeSwitchCleanupFrame = requestAnimationFrame(() => {
+            root.classList.remove("theme-switching");
+            if (body) body.classList.remove("theme-switching");
+            themeSwitchCleanupFrame = 0;
+        });
+    }
+
+    function queueCustomizationSync({
+        themeChanged = false,
+        accentChanged = false,
+        refreshRecommendedColors = false,
+        fullSync = true
+    } = {}) {
+        pendingCustomizationWork.themeChanged = pendingCustomizationWork.themeChanged || themeChanged;
+        pendingCustomizationWork.accentChanged = pendingCustomizationWork.accentChanged || accentChanged;
+        pendingCustomizationWork.refreshRecommendedColors = pendingCustomizationWork.refreshRecommendedColors || refreshRecommendedColors;
+        pendingCustomizationWork.fullSync = pendingCustomizationWork.fullSync || fullSync;
+
+        if (deferredCustomizationFrame) return;
+
+        deferredCustomizationFrame = requestAnimationFrame(() => {
+            deferredCustomizationFrame = 0;
+            const work = pendingCustomizationWork;
+            pendingCustomizationWork = {
+                themeChanged: false,
+                accentChanged: false,
+                refreshRecommendedColors: false,
+                fullSync: false
+            };
+
+            if (work.accentChanged) {
+                updateButtonTextColors();
+            }
+
+            updateUISelections();
+
+            if (!work.fullSync) return;
+
+            updateMetaThemeColor(currentAccentColor);
+            updateFavicon(currentAccentColor);
+            checkColorContrast();
+
+            if (work.refreshRecommendedColors) {
+                renderRecommendedColors();
+            }
+
+            if (window.applyAutoTintedText) {
+                window.applyAutoTintedText();
+            }
+        });
+    }
+
+    // Initialize
+    async function init() {
+        await loadThemesFromJSON();
+        loadSettings();
+        applySettings(); // Applies everything
+        setupEventListeners();
+        renderColorPresets();
+        renderRecommendedColors();
+        renderSavedPresets();
+        renderThemeCards();
+        renderGallery();
+        setupGoogleFonts();
+        loadSavedCustomFonts();
+        checkColorContrast();
+        initializeBaseControls();
+        
+        // Initial input sync
+        syncInputs();
+    }
+
+    async function loadThemesFromJSON() {
+        const dataPath = window.DATA_PATH || 'data/';
+        try {
+            const response = await fetch(`${dataPath}themes.json`);
+            const data = await response.json();
+            themeDefinitions = (data.themes || []).map(normalizeThemeDefinition);
+            
+            // Initialize savedPresets with defaults if empty
+            if (localStorage.getItem(STORAGE_KEYS.SAVED_PRESETS) === null) {
+                savedPresets = data.defaultPresets.map(p => ({
+                    ...p,
+                    ui: { ...DEFAULT_UI_SETTINGS },
+                    a11y: { ...DEFAULT_A11Y_SETTINGS },
+                    timestamp: Date.now()
+                }));
+                localStorage.setItem(STORAGE_KEYS.SAVED_PRESETS, JSON.stringify(savedPresets));
+            }
+        } catch (error) {
+            console.error("Error loading themes data:", error);
+        }
+    }
+
+    // Load settings from localStorage
+    function loadSettings() {
+        currentTheme = localStorage.getItem(STORAGE_KEYS.THEME) || "auto";
+        currentAccentColor = normalizeHexColor(localStorage.getItem(STORAGE_KEYS.ACCENT_COLOR) || "#6196ff") || "#6196ff";
+        currentFont = localStorage.getItem(STORAGE_KEYS.FONT) || "'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif";
+
+        const savedColorPresets = localStorage.getItem(STORAGE_KEYS.COLOR_PRESETS);
+        if (savedColorPresets) {
+            try { colorPresets = JSON.parse(savedColorPresets); } catch (e) { colorPresets = [...DEFAULT_COLOR_PRESETS]; }
+        }
+
+        const savedPresetsData = localStorage.getItem(STORAGE_KEYS.SAVED_PRESETS);
+        if (savedPresetsData) {
+            try { savedPresets = JSON.parse(savedPresetsData); } catch (e) { savedPresets = []; }
+        }
+
+        const savedUISettings = localStorage.getItem(STORAGE_KEYS.UI_SETTINGS);
+        if (savedUISettings) {
+             try { uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS, ...JSON.parse(savedUISettings) }); } catch (e) { uiSettings = { ...DEFAULT_UI_SETTINGS }; }
+        }
+
+        const savedA11ySettings = localStorage.getItem(STORAGE_KEYS.A11Y_SETTINGS);
+        if (savedA11ySettings) {
+             try { a11ySettings = { ...DEFAULT_A11Y_SETTINGS, ...JSON.parse(savedA11ySettings) }; } catch (e) { a11ySettings = { ...DEFAULT_A11Y_SETTINGS }; }
+        }
+
+        const savedAdvanced = localStorage.getItem(STORAGE_KEYS.ADVANCED_SETTINGS);
+        if (savedAdvanced) {
+             try { advancedSettings = sanitizeAdvancedSettings({ ...DEFAULT_ADVANCED_SETTINGS, ...JSON.parse(savedAdvanced) }); } catch (e) { advancedSettings = { ...DEFAULT_ADVANCED_SETTINGS }; }
+        }
+    }
+
+    function syncInputs() {
+        // Colors
+        const colorPicker = document.getElementById("customColorPicker");
+        const hexInput = document.getElementById("colorHexInput");
+        if (colorPicker) colorPicker.value = currentAccentColor;
+        if (hexInput) hexInput.value = currentAccentColor.toUpperCase();
+
+        // Font
+        const fontSelect = document.getElementById("fontSelect");
+        if (fontSelect) fontSelect.value = currentFont;
+
+        // UI
+        document.getElementById("uiBorderRadius").value = uiSettings.borderRadius;
+        document.getElementById("uiGlassIntensity").value = uiSettings.glassIntensity;
+        document.getElementById("uiCompactMode").checked = uiSettings.compactMode;
+        document.getElementById("uiMinimalCells").checked = uiSettings.minimalCells;
+        document.getElementById("uiBgImage").value = uiSettings.bgImage;
+        document.getElementById("uiMobileNavScroll").checked = uiSettings.mobileNavScroll || false;
+        document.getElementById("uiHideEmptyDays").checked = uiSettings.hideEmptyDays || false;
+        document.getElementById("uiBgPattern").checked = uiSettings.bgPattern || false;
+        syncLibrarySettingsInputs();
+
+        // A11y
+        document.getElementById("a11yHighContrast").checked = a11ySettings.highContrast;
+        document.getElementById("a11yReducedMotion").checked = a11ySettings.reducedMotion;
+        document.getElementById("a11yFocusIndicators").checked = a11ySettings.focusIndicators;
+        document.getElementById("a11yGrayscale").checked = a11ySettings.grayscale;
+        document.getElementById("a11yTextScale").value = a11ySettings.textScale;
+
+        // Advanced
+        const modeLinkBtn = document.getElementById("modeLinkBtn");
+        const modeMarkBtn = document.getElementById("modeMarkBtn");
+        const modeText = document.getElementById("currentModeText");
+        
+        if (modeLinkBtn && modeMarkBtn) {
+            modeLinkBtn.classList.toggle("active", advancedSettings.interactionMode === 'link');
+            modeMarkBtn.classList.toggle("active", advancedSettings.interactionMode === 'mark');
+        }
+        if (modeText) {
+            modeText.textContent = advancedSettings.interactionMode === 'link' ? "Deschide manual" : "Marcheaza materia";
+        }
+
+        const sc1 = document.getElementById("shortcut1Select");
+        const sc2 = document.getElementById("shortcut2Select");
+        if (sc1) sc1.value = advancedSettings.shortcut1;
+        if (sc2) sc2.value = advancedSettings.shortcut2;
+    }
+
+    function getLibrarySubjectEntries() {
+        const manuals = window.getManualsCatalog ? window.getManualsCatalog() : [];
+        const grouped = new Map();
+
+        manuals.forEach((manual) => {
+            const key = normalizeLibrarySubjectKey(manual.subject || manual.title);
+            if (!key) return;
+
+            if (!grouped.has(key)) {
+                grouped.set(key, {
+                    key,
+                    label: manual.displaySubject || manual.subject || manual.title,
+                    manuals: [],
+                });
+            }
+
+            grouped.get(key).manuals.push({
+                id: manual.id,
+                title: manual.title,
+                type: manual.type,
+                source: manual.source,
+            });
+        });
+
+        const entries = Array.from(grouped.values()).map((entry) => ({
+            ...entry,
+            manuals: entry.manuals.sort((left, right) => {
+                if (left.source !== right.source) {
+                    return left.source === "custom" ? -1 : 1;
+                }
+
+                return left.title.localeCompare(right.title, "ro", { sensitivity: "base" });
+            }),
+        }));
+
+        entries.sort((left, right) => left.label.localeCompare(right.label, "ro", { sensitivity: "base" }));
+        return entries;
+    }
+
+    function renderLibraryCustomPreferenceRows() {
+        const grid = document.getElementById("uiLibraryCustomPrefsGrid");
+        if (!grid) return;
+
+        const subjects = getLibrarySubjectEntries();
+        grid.innerHTML = "";
+
+        if (!subjects.length) {
+            const empty = document.createElement("p");
+            empty.className = "library-pref-empty";
+            empty.textContent = "Materiile vor aparea aici dupa ce se incarca manualele.";
+            grid.appendChild(empty);
+            return;
+        }
+
+        subjects.forEach(({ key, label, manuals }) => {
+            const item = document.createElement("div");
+            item.className = "library-pref-item";
+            item.dataset.librarySubjectRow = key;
+
+            const title = document.createElement("span");
+            title.textContent = label;
+
+            const slots = document.createElement("div");
+            slots.className = "library-pref-slots";
+
+            const selectedManuals = sanitizeLibraryManualList(
+                uiSettings.libraryRecommendedManualMap?.[key],
+            );
+
+            for (let slotIndex = 0; slotIndex < 3; slotIndex += 1) {
+                const wrapper = document.createElement("div");
+                wrapper.className = "custom-select-wrapper library-pref-slot";
+
+                const select = document.createElement("select");
+                select.className = "font-select library-pref-select";
+                select.dataset.librarySubjectPref = key;
+                select.dataset.librarySubjectSlot = String(slotIndex);
+
+                const emptyOption = document.createElement("option");
+                emptyOption.value = "";
+                emptyOption.textContent = `Gol ${slotIndex + 1}`;
+                select.appendChild(emptyOption);
+
+                manuals.forEach((manual) => {
+                    const option = document.createElement("option");
+                    option.value = manual.id;
+                    option.textContent = `${manual.title} (${manual.type.toUpperCase()}${manual.source === "custom" ? ", personalizat" : ""})`;
+                    select.appendChild(option);
+                });
+
+                select.value = selectedManuals[slotIndex] || "";
+
+                const icon = document.createElement("i");
+                icon.className = "fa-solid fa-chevron-down select-arrow";
+
+                wrapper.appendChild(select);
+                wrapper.appendChild(icon);
+                slots.appendChild(wrapper);
+
+                if (slotIndex < 2) {
+                    const separator = document.createElement("span");
+                    separator.className = "library-pref-separator";
+                    separator.setAttribute("aria-hidden", "true");
+                    separator.textContent = "|";
+                    slots.appendChild(separator);
+                }
+            }
+
+            item.appendChild(title);
+            item.appendChild(slots);
+            grid.appendChild(item);
+        });
+    }
+
+    function syncLibrarySettingsInputs() {
+        const openTypeSelect = document.getElementById("uiLibraryPreferredOpenType");
+        const openTypeNote = document.getElementById("uiLibraryOpenTypeNote");
+        const columnsInput = document.getElementById("uiLibraryDesktopColumns");
+        const columnsValue = document.getElementById("uiLibraryDesktopColumnsValue");
+        const behaviorText = document.getElementById("uiLibraryBehaviorText");
+        const customPrefsWrap = document.getElementById("uiLibraryCustomPrefsWrap");
+        const interactionLocked = advancedSettings.interactionMode !== "link";
+
+        if (openTypeSelect) {
+            openTypeSelect.value = uiSettings.libraryPreferredOpenType;
+            openTypeSelect.disabled = interactionLocked;
+            openTypeSelect.closest(".ui-control-card")?.classList.toggle("is-disabled", interactionLocked);
+        }
+
+        if (openTypeNote) {
+            openTypeNote.textContent = interactionLocked
+                ? "Dezactivat pentru ca modul de interactiune este Marcare materie."
+                : "Folosit cand modul de interactiune este Deschide manual.";
+        }
+
+        if (columnsInput) {
+            columnsInput.value = String(uiSettings.libraryDesktopColumns);
+        }
+
+        if (columnsValue) {
+            columnsValue.textContent = `${uiSettings.libraryDesktopColumns} / rand`;
+        }
+
+        document.querySelectorAll("[data-library-open-behavior]").forEach((button) => {
+            button.classList.toggle(
+                "active",
+                button.dataset.libraryOpenBehavior === uiSettings.libraryRecommendedOpenBehavior,
+            );
+        });
+
+        if (behaviorText) {
+            const label = window.getLibraryOpenBehaviorLabel
+                ? window.getLibraryOpenBehaviorLabel(uiSettings.libraryRecommendedOpenBehavior)
+                : "Deschide toate";
+            behaviorText.textContent = label;
+        }
+
+        if (customPrefsWrap) {
+            customPrefsWrap.hidden = false;
+        }
+
+        renderLibraryCustomPreferenceRows();
+    }
+
+    function reloadUISettingsFromStorage() {
+        const savedUISettings = localStorage.getItem(STORAGE_KEYS.UI_SETTINGS);
+        if (!savedUISettings) {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS });
+            return;
+        }
+
+        try {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS, ...JSON.parse(savedUISettings) });
+        } catch (error) {
+            uiSettings = sanitizeUISettings({ ...DEFAULT_UI_SETTINGS });
+        }
+    }
+
+    function notifyLibrarySettingsChanged() {
+        window.dispatchEvent(new CustomEvent("library-settings:updated"));
+    }
+
+    // Apply settings
+    function applySettings() {
+        applyTheme(currentTheme, { persist: false, queueSideEffects: false });
+        applyAccentColor(currentAccentColor, { persist: false, queueSideEffects: false });
+        applyFont(currentFont);
+        applyUISettings();
+        applyA11ySettings();
+        queueCustomizationSync({
+            themeChanged: true,
+            accentChanged: true,
+            refreshRecommendedColors: true,
+            fullSync: true
+        });
+    }
+
+    // --- LOGIC: THEMES ---
+    function applyTheme(themeId, options = {}) {
+        const {
+            persist = true,
+            queueSideEffects = true,
+            fullSync = true
+        } = options;
+
+        currentTheme = themeId;
+        const activeThemeId = resolveActiveThemeId(themeId);
+        const themeDef = getThemeDefinition(activeThemeId);
+        const root = document.documentElement;
+
+        runVisualThemeTransaction(() => {
+            document.body.setAttribute("data-theme", activeThemeId);
+            root.setAttribute("data-theme", activeThemeId);
+            root.style.colorScheme = getThemeScheme(themeDef) === "light" ? "light" : "dark";
+
+            if (themeDef && themeDef.colors) {
+                Object.entries(themeDef.colors).forEach(([variable, value]) => {
+                    root.style.setProperty(variable, value);
+                });
+            }
+            
+            // Re-apply background image if exists, as theme might overwrite bg properties
+            if (uiSettings.bgImage) {
+                document.body.style.backgroundImage = `url('${uiSettings.bgImage}')`;
+                document.body.style.backgroundSize = "cover";
+                document.body.style.backgroundAttachment = "fixed";
+            } else if (themeDef && !themeDef.colors["--bg-image"]) {
+                document.body.style.backgroundImage = "";
+            }
+        });
+
+        if (persist) {
+            localStorage.setItem(STORAGE_KEYS.THEME, currentTheme);
+        }
+
+        persistThemeSnapshot(activeThemeId, themeDef);
+
+        if (queueSideEffects) {
+            queueCustomizationSync({
+                themeChanged: true,
+                refreshRecommendedColors: true,
+                fullSync
+            });
+        }
+    }
+
+    // --- LOGIC: ACCENT COLOR ---
+    function applyAccentColor(color, options = {}) {
+        const normalizedColor = normalizeHexColor(color);
+        if (!normalizedColor) return;
+
+        const {
+            persist = true,
+            queueSideEffects = true,
+            fullSync = true,
+            syncInputs = true
+        } = options;
+
+        currentAccentColor = normalizedColor;
+        const accentTextColor = getAccessibleTextColor(normalizedColor);
+
+        runVisualThemeTransaction(() => {
+            document.documentElement.style.setProperty("--accent-color", normalizedColor);
+            document.documentElement.style.setProperty("--text-on-accent", accentTextColor);
+            if (syncInputs) syncAccentInputs(normalizedColor);
+        });
+
+        if (persist) {
+            localStorage.setItem(STORAGE_KEYS.ACCENT_COLOR, normalizedColor);
+        }
+
+        if (queueSideEffects) {
+            queueCustomizationSync({
+                accentChanged: true,
+                fullSync
+            });
+        }
+    }
+
+    // --- LOGIC: FONT ---
+    function applyFont(font) {
+        currentFont = font;
+        document.documentElement.style.setProperty("--font-family", font);
+        localStorage.setItem(STORAGE_KEYS.FONT, font);
+        
+        const preview = document.getElementById("fontPreview");
+        if (preview) preview.style.fontFamily = font;
+        loadGoogleFont(font);
+    }
+
+    // --- LOGIC: UI SETTINGS ---
+    function applyUISettings() {
+        uiSettings = sanitizeUISettings(uiSettings);
+        const root = document.documentElement;
+        
+        // Border Radius
+        root.style.setProperty("--border-radius", `${uiSettings.borderRadius}px`);
+        
+        // Glass Intensity
+        const glassVal = uiSettings.glassIntensity / 100;
+        const blurVal = 20 * glassVal;
+        root.style.setProperty("--backdrop-blur", `${blurVal}px`);
+        root.style.setProperty("--library-desktop-columns", String(uiSettings.libraryDesktopColumns));
+        
+        // Classes
+        document.body.classList.toggle("compact-timetable", uiSettings.compactMode);
+        document.body.classList.toggle("minimal-cells", uiSettings.minimalCells);
+        document.body.classList.toggle("hide-empty-days", uiSettings.hideEmptyDays);
+        document.body.classList.toggle("bg-pattern", uiSettings.bgPattern);
+        document.body.classList.toggle("mobile-nav-scroll", uiSettings.mobileNavScroll);
+
+        // Background
+        if (uiSettings.bgImage) {
+            document.body.style.backgroundImage = `url('${uiSettings.bgImage}')`;
+            document.body.style.backgroundSize = 'cover';
+            document.body.style.backgroundPosition = 'center';
+            document.body.style.backgroundAttachment = 'fixed';
+        } else {
+            document.body.style.backgroundImage = '';
+        }
+
+        localStorage.setItem(STORAGE_KEYS.UI_SETTINGS, JSON.stringify(uiSettings));
+        if (window.applyAutoTintedText) window.applyAutoTintedText();
+    }
+
+    // --- LOGIC: ACCESSIBILITY ---
+    function applyA11ySettings() {
+        const root = document.documentElement;
+        
+        document.body.classList.toggle("high-contrast", a11ySettings.highContrast);
+        document.body.classList.toggle("reduced-motion", a11ySettings.reducedMotion);
+        document.body.classList.toggle("focus-indicators", a11ySettings.focusIndicators);
+        document.body.classList.toggle("grayscale", a11ySettings.grayscale);
+        
+        root.style.setProperty("--font-scale", a11ySettings.textScale);
+
+        localStorage.setItem(STORAGE_KEYS.A11Y_SETTINGS, JSON.stringify(a11ySettings));
+    }
+
+    // --- LOGIC: ADVANCED ---
+    function applyAdvancedSettings(newSettings) {
+        advancedSettings = sanitizeAdvancedSettings({ ...advancedSettings, ...newSettings });
+        localStorage.setItem(STORAGE_KEYS.ADVANCED_SETTINGS, JSON.stringify(advancedSettings));
+        syncInputs();
+        
+        // Notify Mobile Nav if shortcuts changed
+        if ((newSettings.shortcut1 || newSettings.shortcut2) && window.mobileNav && window.mobileNav.updateShortcutButtons) {
+            window.mobileNav.updateShortcutButtons();
+        }
+    }
+
+    // --- ALGORITHMIC COLORS ---
+    
+    // --- COLOR UTILS ---
+    function hexToHSL(H) {
+        let r = 0, g = 0, b = 0;
+        if (H.length == 4) {
+            r = "0x" + H[1] + H[1];
+            g = "0x" + H[2] + H[2];
+            b = "0x" + H[3] + H[3];
+        } else if (H.length == 7) {
+            r = "0x" + H[1] + H[2];
+            g = "0x" + H[3] + H[4];
+            b = "0x" + H[5] + H[6];
+        }
+        r /= 255; g /= 255; b /= 255;
+        let cmin = Math.min(r,g,b), cmax = Math.max(r,g,b), delta = cmax - cmin;
+        let h = 0, s = 0, l = 0;
+
+        if (delta == 0) h = 0;
+        else if (cmax == r) h = ((g - b) / delta) % 6;
+        else if (cmax == g) h = (b - r) / delta + 2;
+        else h = (r - g) / delta + 4;
+
+        h = Math.round(h * 60);
+        if (h < 0) h += 360;
+
+        l = (cmax + cmin) / 2;
+        s = delta == 0 ? 0 : delta / (1 - Math.abs(2 * l - 1));
+        s = +(s * 100).toFixed(1);
+        l = +(l * 100).toFixed(1);
+
+        return {h, s, l};
+    }
+
+    function HSLToHex(h,s,l) {
+        s /= 100;
+        l /= 100;
+        let c = (1 - Math.abs(2 * l - 1)) * s,
+            x = c * (1 - Math.abs(((h / 60) % 2) - 1)),
+            m = l - c / 2,
+            r = 0, g = 0, b = 0;
+
+        if (0 <= h && h < 60) { r = c; g = x; b = 0; }
+        else if (60 <= h && h < 120) { r = x; g = c; b = 0; }
+        else if (120 <= h && h < 180) { r = 0; g = c; b = x; }
+        else if (180 <= h && h < 240) { r = 0; g = x; b = c; }
+        else if (240 <= h && h < 300) { r = x; g = 0; b = c; }
+        else if (300 <= h && h < 360) { r = c; g = 0; b = x; }
+
+        r = Math.round((r + m) * 255).toString(16);
+        g = Math.round((g + m) * 255).toString(16);
+        b = Math.round((b + m) * 255).toString(16);
+
+        if (r.length == 1) r = "0" + r;
+        if (g.length == 1) g = "0" + g;
+        if (b.length == 1) b = "0" + b;
+
+        return "#" + r + g + b;
+    }
+
+    function getLuminance(hex) {
+        const rgb = parseInt(hex.slice(1), 16);
+        const r = (rgb >> 16) & 0xff;
+        const g = (rgb >>  8) & 0xff;
+        const b = (rgb >>  0) & 0xff;
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+
+    function generateDynamicColors(bgHex) {
+        if (!bgHex) return ["#ff0000", "#00ff00", "#0000ff"]; // Fallback
+        
+        const hsl = hexToHSL(bgHex);
+        const lum = getLuminance(bgHex);
+        const isDark = lum < 128;
+        
+        // 1. Complementary (High saturation, adjusted lightness)
+        // If neutral (S < 10), assume Blue as base for complement -> Orange/Gold
+        let baseH = hsl.s < 10 ? 210 : hsl.h;
+        let compH = (baseH + 180) % 360;
+        let compColor = HSLToHex(compH, 85, isDark ? 60 : 45);
+
+        // 2. Niche (Split Complementary / Shifted Hue)
+        // Shift hue by 150deg
+        let nicheH = (baseH + 150) % 360;
+        let nicheColor = HSLToHex(nicheH, 80, isDark ? 65 : 40);
+
+        // 3. Contrast
+        // If dark bg, bright contrast. If light bg, dark contrast.
+        let contrastH = (baseH + 90) % 360; 
+        let contrastColor = HSLToHex(contrastH, 90, isDark ? 80 : 30);
+
+        return [compColor, nicheColor, contrastColor];
+    }
+
+    function renderRecommendedColors() {
+        const grid = document.getElementById("recommendedColorsGrid");
+        if (!grid) return;
+
+        const activeThemeId = resolveActiveThemeId(currentTheme);
+        const themeDef = getThemeDefinition(activeThemeId);
+        if (!themeDef) return;
+
+        // 1. Curated Theme Colors
+        const curated = themeDef.recommendedColors || [];
+
+        // 2. Algorithmic Colors based on Background
+        const bgColor = themeDef.colors["--bg-color"] || "#ffffff";
+        const dynamic = generateDynamicColors(bgColor);
+
+        const allRecommendations = [...new Set([...curated, ...dynamic])]; // Deduplicate
+
+        grid.innerHTML = "";
+        allRecommendations.forEach(color => {
+            const item = createColorItem(color);
+            grid.appendChild(item);
+        });
+    }
+
+    function createColorItem(color) {
+        const item = document.createElement("div");
+        item.className = "preset-item";
+        item.style.background = color;
+        item.dataset.color = normalizeHexColor(color);
+        if (item.dataset.color === currentAccentColor) item.classList.add("active");
+        item.onclick = () => applyAccentColor(color);
+        return item;
+    }
+
+    // --- PRESETS LOGIC ---
+    function getCurrentPreset() {
+        return {
+            name: "Custom Preset",
+            theme: currentTheme,
+            accentColor: currentAccentColor,
+            font: currentFont,
+            ui: { ...uiSettings },
+            a11y: { ...a11ySettings },
+            timestamp: Date.now(),
+        };
+    }
+
+    function saveCurrentPreset() {
+        const name = prompt("Enter a name for this preset:");
+        if (!name) return;
+
+        const preset = {
+            ...getCurrentPreset(),
+            name: name.trim()
+        };
+
+        savedPresets.push(preset);
+        renderSavedPresets();
+        localStorage.setItem(STORAGE_KEYS.SAVED_PRESETS, JSON.stringify(savedPresets));
+    }
+
+    function applyPreset(preset) {
+        currentTheme = preset.theme;
+        currentAccentColor = normalizeHexColor(preset.accentColor) || "#6196ff";
+        currentFont = preset.font;
+        // Merge with defaults to ensure new fields don't break old presets
+        uiSettings = { ...DEFAULT_UI_SETTINGS, ...preset.ui };
+        a11ySettings = { ...DEFAULT_A11Y_SETTINGS, ...preset.a11y };
+
+        applySettings();
+        syncInputs();
+    }
+
+    // --- GALLERY LOGIC ---
+    function renderGallery() {
+        const grid = document.getElementById("galleryGrid");
+        if (!grid) return;
+
+        // Mock Data
+        const galleryItems = [
+            { name: "Oceanic Depth", author: "DevTeam", theme: "ocean", accent: "#00aaff", font: "'Outfit', sans-serif" },
+            { name: "Neon Cyber", author: "GlitchUser", theme: "cyberpunk", accent: "#00f0ff", font: "'Space Grotesk', sans-serif" },
+            { name: "Forest Hike", author: "NatureLvr", theme: "forest", accent: "#4ade80", font: "'DM Sans', sans-serif" },
+            { name: "Royal Purple", author: "QueenBee", theme: "deep-purple", accent: "#ab47bc", font: "'Playfair Display', serif" },
+            { name: "Minimalist", author: "CleanDesk", theme: "light", accent: "#333333", font: "'Inter', sans-serif" },
+            { name: "Night Owl", author: "Coder123", theme: "midnight", accent: "#f59e0b", font: "'JetBrains Mono', monospace" }
+        ];
+
+        grid.innerHTML = galleryItems.map(item => `
+            <div class="gallery-item" data-theme="${item.theme}" data-accent="${item.accent}" data-font="${item.font}">
+                <div class="gallery-preview" style="--p-bg: var(--bg-color); --p-card: var(--card-bg); --p-accent: ${item.accent}">
+                    <div class="gallery-preview-circle">Aa</div>
+                </div>
+                <div class="gallery-info">
+                    <div class="gallery-name">${item.name}</div>
+                    <div class="gallery-desc">by ${item.author}</div>
+                </div>
+            </div>
+        `).join('');
+
+        grid.querySelectorAll(".gallery-item").forEach((el, idx) => {
+            el.addEventListener("click", () => {
+                const item = galleryItems[idx];
+                applyPreset({
+                    theme: item.theme,
+                    accentColor: item.accent,
+                    font: item.font,
+                    ui: DEFAULT_UI_SETTINGS,
+                    a11y: DEFAULT_A11Y_SETTINGS
+                });
+            });
+        });
+    }
+
+    // --- FILTER THEMES LOGIC ---
+    function formatThemeTagLabel(tag) {
+        if (tag === "all") return "All";
+        if (tag === "dynamic") return "Auto";
+
+        return String(tag || "")
+            .split("-")
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join(" ");
+    }
+
+    function getThemeSearchText(theme) {
+        return [
+            theme.name,
+            theme.description,
+            theme.scheme,
+            ...(theme.tags || [])
+        ].join(" ").toLowerCase();
+    }
+
+    function buildThemeFilterOptions() {
+        const counts = new Map([["all", themeDefinitions.length]]);
+
+        themeDefinitions.forEach((theme) => {
+            uniqueThemeTags(theme.tags, theme.scheme).forEach((tag) => {
+                counts.set(tag, (counts.get(tag) || 0) + 1);
+            });
+        });
+
+        const priority = ["all", "dynamic", "light", "dark"];
+        const ordered = [];
+
+        priority.forEach((tag) => {
+            if (!counts.has(tag)) return;
+            ordered.push({
+                tag,
+                count: counts.get(tag)
+            });
+            counts.delete(tag);
+        });
+
+        Array.from(counts.entries())
+            .sort((left, right) => {
+                if (right[1] !== left[1]) return right[1] - left[1];
+                return left[0].localeCompare(right[0]);
+            })
+            .forEach(([tag, count]) => {
+                ordered.push({ tag, count });
+            });
+
+        return ordered;
+    }
+
+    function getCurrentThemeLabel() {
+        const selectedTheme = themeDefinitions.find((theme) => theme.id === currentTheme);
+        const activeTheme = getThemeDefinition(resolveActiveThemeId(currentTheme));
+
+        if (currentTheme === "auto" && activeTheme) {
+            return `Auto -> ${activeTheme.name}`;
+        }
+
+        return selectedTheme?.name || activeTheme?.name || "Theme";
+    }
+
+    function getThemeCardDescription(theme) {
+        if (theme.id !== "auto") return theme.description || "";
+
+        const activeTheme = getThemeDefinition(resolveActiveThemeId("auto"));
+        return activeTheme
+            ? `Follows your system. Right now it resolves to ${activeTheme.name}.`
+            : (theme.description || "Follows your system.");
+    }
+
+    function getThemeVisibleTags(theme) {
+        return uniqueThemeTags(theme.tags, theme.scheme)
+            .filter((tag) => tag !== theme.scheme)
+            .slice(0, 3);
+    }
+
+    function matchesThemeFilter(theme, searchTerm = currentThemeSearchTerm, tag = activeThemeTag) {
+        const normalizedSearch = String(searchTerm || "").trim().toLowerCase();
+        const matchesSearch = !normalizedSearch || getThemeSearchText(theme).includes(normalizedSearch);
+        const matchesTag = tag === "all"
+            || theme.scheme === tag
+            || (theme.tags || []).includes(tag);
+
+        return matchesSearch && matchesTag;
+    }
+
+    function filterThemes(searchTerm = currentThemeSearchTerm, tag = activeThemeTag) {
+        currentThemeSearchTerm = searchTerm;
+        activeThemeTag = tag;
+        return themeDefinitions.filter((theme) => matchesThemeFilter(theme, searchTerm, tag));
+    }
+
+    function renderThemeFilterTags() {
+        const tagsContainer = document.getElementById("themeTags");
+        if (!tagsContainer) return;
+
+        tagsContainer.innerHTML = "";
+
+        buildThemeFilterOptions().forEach(({ tag, count }) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "theme-tag";
+            button.dataset.tag = tag;
+            button.classList.toggle("active", tag === activeThemeTag);
+            button.setAttribute("aria-pressed", tag === activeThemeTag ? "true" : "false");
+
+            const label = document.createElement("span");
+            label.textContent = formatThemeTagLabel(tag);
+
+            const badge = document.createElement("span");
+            badge.className = "theme-tag-count";
+            badge.textContent = String(count);
+
+            button.append(label, badge);
+            tagsContainer.appendChild(button);
+        });
+    }
+
+    function updateThemeHeader(filteredThemes = filterThemes()) {
+        const countEl = document.getElementById("themeResultsCount");
+        const activeEl = document.getElementById("themeActiveLabel");
+        const metaEl = document.getElementById("themeResultsMeta");
+
+        if (countEl) countEl.textContent = String(filteredThemes.length);
+        if (activeEl) activeEl.textContent = getCurrentThemeLabel();
+
+        if (!metaEl) return;
+
+        const summary = [`${filteredThemes.length} of ${themeDefinitions.length} visible`];
+
+        if (activeThemeTag !== "all") {
+            summary.push(`tag: ${formatThemeTagLabel(activeThemeTag)}`);
+        }
+
+        if (currentThemeSearchTerm.trim()) {
+            summary.push(`search: "${currentThemeSearchTerm.trim()}"`);
+        }
+
+        metaEl.textContent = summary.join(" - ");
+    }
+
+    function createThemeCard(theme) {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "theme-card";
+        card.dataset.theme = theme.id;
+        card.dataset.scheme = theme.scheme;
+        card.classList.toggle("active", theme.id === currentTheme);
+
+        const preview = document.createElement("div");
+        preview.className = "theme-card-preview";
+        preview.style.setProperty("--theme-preview-bg", theme.colors?.["--bg-color"] || "#121212");
+        preview.style.setProperty("--theme-preview-surface", theme.colors?.["--surface-color"] || theme.colors?.["--card-bg"] || "#1e1e1e");
+        preview.style.setProperty("--theme-preview-highlight", theme.colors?.["--highlight-color"] || theme.colors?.["--surface-alt"] || "#2a2a2a");
+        preview.style.setProperty("--theme-preview-atmosphere", theme.colors?.["--theme-background-image"] || "none");
+
+        const windowDots = document.createElement("div");
+        windowDots.className = "theme-card-preview-window";
+        windowDots.innerHTML = "<span></span><span></span><span></span>";
+
+        const layout = document.createElement("div");
+        layout.className = "theme-card-preview-layout";
+        layout.innerHTML = `
+            <div class="theme-card-preview-rail"></div>
+            <div class="theme-card-preview-stack">
+                <span></span>
+                <span></span>
+            </div>
+        `;
+
+        preview.append(windowDots, layout);
+
+        const header = document.createElement("div");
+        header.className = "theme-card-header";
+
+        const icon = document.createElement("div");
+        icon.className = "theme-icon";
+        icon.textContent = theme.icon || " ";
+
+        const badge = document.createElement("span");
+        badge.className = "theme-card-badge";
+        badge.textContent = formatThemeTagLabel(theme.scheme);
+
+        header.append(icon, badge);
+
+        const name = document.createElement("div");
+        name.className = "theme-name";
+        name.textContent = theme.name;
+
+        const description = document.createElement("div");
+        description.className = "theme-description";
+        description.textContent = getThemeCardDescription(theme);
+
+        const footer = document.createElement("div");
+        footer.className = "theme-card-footer";
+
+        const tags = document.createElement("div");
+        tags.className = "theme-card-tags";
+        getThemeVisibleTags(theme).forEach((tag) => {
+            const tagPill = document.createElement("span");
+            tagPill.className = "theme-card-tag";
+            tagPill.textContent = formatThemeTagLabel(tag);
+            tags.appendChild(tagPill);
+        });
+
+        const swatches = document.createElement("div");
+        swatches.className = "theme-card-swatches";
+        (theme.recommendedColors || []).slice(0, 3).forEach((color) => {
+            const swatch = document.createElement("span");
+            swatch.style.background = color;
+            swatches.appendChild(swatch);
+        });
+
+        footer.append(tags, swatches);
+        card.append(preview, header, name, description, footer);
+        card.addEventListener("click", () => applyTheme(theme.id));
+        return card;
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners() {
+        // Overlay Controls
+        const customBtn = document.getElementById("customizationBtn");
+        const sheetBtn = document.getElementById("sheetCustomizationBtn");
+        const closeBtn = document.getElementById("closeCustomization");
+
+        const openFn = () => {
+            if (window.overlayManager) {
+                window.overlayManager.close("sideMenu");
+                window.overlayManager.open("customizationOverlay");
+            }
+        };
+
+        if (customBtn) customBtn.addEventListener("click", openFn);
+        if (sheetBtn) sheetBtn.addEventListener("click", openFn);
+        if (closeBtn) closeBtn.addEventListener("click", () => window.overlayManager.close("customizationOverlay"));
+
+        // Register with Manager
+        if (window.overlayManager) window.overlayManager.register("customizationOverlay");
+
+        // Sidebar Navigation
+        document.querySelectorAll(".sidebar-item").forEach(item => {
+            item.addEventListener("click", () => {
+                document.querySelectorAll(".sidebar-item").forEach(i => i.classList.remove("active"));
+                item.classList.add("active");
+                document.querySelectorAll(".custom-section").forEach(s => s.classList.remove("active"));
+                const section = document.getElementById(item.dataset.section + "Section");
+                if (section) section.classList.add("active");
+            });
+        });
+
+        // Theme Filtering
+        const searchInput = document.getElementById("themeSearch");
+        const tagsContainer = document.getElementById("themeTags");
+
+        if (searchInput) {
+            searchInput.value = currentThemeSearchTerm;
+            searchInput.addEventListener("input", (e) => {
+                currentThemeSearchTerm = e.target.value;
+                renderThemeCards();
+            });
+        }
+
+        if (tagsContainer) {
+            tagsContainer.addEventListener("click", (event) => {
+                const button = event.target.closest(".theme-tag");
+                if (!button) return;
+
+                activeThemeTag = button.dataset.tag || "all";
+                renderThemeCards();
+            });
+        }
+
+        const colorSchemeQuery = window.matchMedia
+            ? window.matchMedia("(prefers-color-scheme: dark)")
+            : null;
+        const syncAutoTheme = () => {
+            if (currentTheme !== "auto") return;
+            applyTheme("auto", { persist: false });
+            renderThemeCards();
+        };
+
+        if (colorSchemeQuery) {
+            if (typeof colorSchemeQuery.addEventListener === "function") {
+                colorSchemeQuery.addEventListener("change", syncAutoTheme);
+            } else if (typeof colorSchemeQuery.addListener === "function") {
+                colorSchemeQuery.addListener(syncAutoTheme);
+            }
+        }
+
+        // Color Inputs
+        document.getElementById("customColorPicker")?.addEventListener("input", (e) => {
+            applyAccentColor(e.target.value, {
+                persist: false,
+                fullSync: false
+            });
+        });
+        document.getElementById("customColorPicker")?.addEventListener("change", (e) => {
+            applyAccentColor(e.target.value);
+        });
+        document.getElementById("colorHexInput")?.addEventListener("change", (e) => {
+             let val = e.target.value;
+             if (!val.startsWith("#")) val = "#" + val;
+             if (/^#[0-9A-F]{6}$/i.test(val)) applyAccentColor(val);
+        });
+        document.getElementById("randomColorBtn")?.addEventListener("click", () => {
+             applyAccentColor("#" + Math.floor(Math.random() * 16777215).toString(16).padStart(6, "0"));
+        });
+        document.getElementById("addColorPreset")?.addEventListener("click", () => addColorPreset(currentAccentColor));
+
+        // Font Input
+        document.getElementById("fontSelect")?.addEventListener("change", (e) => applyFont(e.target.value));
+
+        // UI Inputs
+        document.getElementById("uiBorderRadius")?.addEventListener("input", (e) => {
+            uiSettings.borderRadius = parseInt(e.target.value);
+            applyUISettings();
+        });
+        document.getElementById("uiGlassIntensity")?.addEventListener("input", (e) => {
+            uiSettings.glassIntensity = parseInt(e.target.value);
+            applyUISettings();
+        });
+        document.getElementById("uiCompactMode")?.addEventListener("change", (e) => {
+            uiSettings.compactMode = e.target.checked;
+            applyUISettings();
+        });
+        document.getElementById("uiMinimalCells")?.addEventListener("change", (e) => {
+            uiSettings.minimalCells = e.target.checked;
+            applyUISettings();
+        });
+        document.getElementById("uiBgImage")?.addEventListener("change", (e) => {
+            uiSettings.bgImage = e.target.value;
+            applyUISettings();
+        });
+        document.getElementById("uiBgClear")?.addEventListener("click", () => {
+             uiSettings.bgImage = '';
+             document.getElementById("uiBgImage").value = '';
+             applyUISettings();
+        });
+        document.getElementById("uiMobileNavScroll")?.addEventListener("change", (e) => {
+            uiSettings.mobileNavScroll = e.target.checked;
+            applyUISettings();
+        });
+        document.getElementById("uiHideEmptyDays")?.addEventListener("change", (e) => {
+            uiSettings.hideEmptyDays = e.target.checked;
+            applyUISettings();
+        });
+        document.getElementById("uiBgPattern")?.addEventListener("change", (e) => {
+            uiSettings.bgPattern = e.target.checked;
+            applyUISettings();
+        });
+        document.getElementById("uiLibraryPreferredOpenType")?.addEventListener("change", (e) => {
+            uiSettings.libraryPreferredOpenType = normalizeLibraryOpenType(e.target.value);
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+        document.getElementById("uiLibraryDesktopColumns")?.addEventListener("input", (e) => {
+            uiSettings.libraryDesktopColumns = Math.max(2, Math.min(6, parseInt(e.target.value, 10) || 4));
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+        document.querySelectorAll("[data-library-open-behavior]").forEach((button) => {
+            button.addEventListener("click", () => {
+                uiSettings.libraryRecommendedOpenBehavior = normalizeLibraryOpenBehavior(
+                    button.dataset.libraryOpenBehavior,
+                );
+                applyUISettings();
+                syncLibrarySettingsInputs();
+                notifyLibrarySettingsChanged();
+            });
+        });
+        document.getElementById("uiLibraryCustomPrefsGrid")?.addEventListener("change", (e) => {
+            const select = e.target.closest("[data-library-subject-pref]");
+            if (!select) return;
+
+            const row = select.closest("[data-library-subject-row]");
+            if (!row) return;
+
+            const values = Array.from(
+                row.querySelectorAll("[data-library-subject-pref]")
+            ).map((input) => input.value);
+
+            const sanitizedValues = sanitizeLibraryManualList(values);
+            const nextMap = {
+                ...uiSettings.libraryRecommendedManualMap,
+            };
+
+            if (sanitizedValues.length) {
+                nextMap[select.dataset.librarySubjectPref] = sanitizedValues;
+            } else {
+                delete nextMap[select.dataset.librarySubjectPref];
+            }
+
+            uiSettings.libraryRecommendedManualMap = nextMap;
+            applyUISettings();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+
+        // A11y Inputs
+        document.getElementById("a11yHighContrast")?.addEventListener("change", (e) => {
+            a11ySettings.highContrast = e.target.checked;
+            applyA11ySettings();
+        });
+        document.getElementById("a11yReducedMotion")?.addEventListener("change", (e) => {
+            a11ySettings.reducedMotion = e.target.checked;
+            applyA11ySettings();
+        });
+        document.getElementById("a11yFocusIndicators")?.addEventListener("change", (e) => {
+            a11ySettings.focusIndicators = e.target.checked;
+            applyA11ySettings();
+        });
+        document.getElementById("a11yGrayscale")?.addEventListener("change", (e) => {
+            a11ySettings.grayscale = e.target.checked;
+            applyA11ySettings();
+        });
+        document.getElementById("a11yTextScale")?.addEventListener("input", (e) => {
+            a11ySettings.textScale = parseFloat(e.target.value);
+            applyA11ySettings();
+        });
+
+        // Advanced Inputs
+        document.getElementById("modeLinkBtn")?.addEventListener("click", () => applyAdvancedSettings({ interactionMode: 'link' }));
+        document.getElementById("modeMarkBtn")?.addEventListener("click", () => applyAdvancedSettings({ interactionMode: 'mark' }));
+        
+        document.getElementById("shortcut1Select")?.addEventListener("change", (e) => applyAdvancedSettings({ shortcut1: e.target.value }));
+        document.getElementById("shortcut2Select")?.addEventListener("change", (e) => applyAdvancedSettings({ shortcut2: e.target.value }));
+
+        // Presets Tabs
+        document.querySelectorAll(".preset-tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".preset-tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                document.querySelectorAll(".presets-content-wrapper").forEach(c => c.classList.remove("active"));
+                document.getElementById(btn.dataset.tab + "Content").classList.add("active");
+            });
+        });
+        
+        // UI Tabs (New)
+        document.querySelectorAll(".ui-tab-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                document.querySelectorAll(".ui-tab-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                document.querySelectorAll(".ui-content-wrapper").forEach(c => c.classList.remove("active"));
+                document.getElementById(btn.dataset.tab + "Content").classList.add("active");
+            });
+        });
+
+        window.addEventListener("manuals:updated", () => {
+            reloadUISettingsFromStorage();
+            syncLibrarySettingsInputs();
+            notifyLibrarySettingsChanged();
+        });
+
+        window.addEventListener("library-settings:updated", () => {
+            reloadUISettingsFromStorage();
+            renderLibraryCustomPreferenceRows();
+        });
+
+        document.getElementById("savePresetBtn")?.addEventListener("click", saveCurrentPreset);
+        
+        // Export / Import
+        document.getElementById("exportPresetBtn")?.addEventListener("click", () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getCurrentPreset(), null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "orar-8d-preset.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        });
+
+        document.getElementById("importPresetBtn")?.addEventListener("click", () => {
+            document.getElementById("importPresetFile").click();
+        });
+
+        document.getElementById("importPresetFile")?.addEventListener("change", (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+                try {
+                    const preset = JSON.parse(ev.target.result);
+                    applyPreset(preset);
+                    e.target.value = ''; // Reset
+                } catch (err) {
+                    alert("Invalid preset file.");
+                }
+            };
+            reader.readAsText(file);
+        });
+    }
+
+    // Helper: Render Color Presets
+    function renderColorPresets() {
+        const grid = document.getElementById("colorPresetsGrid");
+        if (!grid) return;
+        grid.innerHTML = "";
+        colorPresets.forEach(color => {
+            const item = createColorItem(color);
+            // Delete logic
+            const del = document.createElement("button");
+            del.className = "preset-delete";
+            del.innerHTML = "<i class='fa-solid fa-trash'></i>";
+            del.onclick = (e) => { e.stopPropagation(); deleteColorPreset(color); };
+            item.appendChild(del);
+            grid.appendChild(item);
+        });
+        localStorage.setItem(STORAGE_KEYS.COLOR_PRESETS, JSON.stringify(colorPresets));
+    }
+
+    function addColorPreset(color) {
+        if (!colorPresets.includes(color.toLowerCase())) {
+            colorPresets.push(color.toLowerCase());
+            renderColorPresets();
+        }
+    }
+
+    function deleteColorPreset(color) {
+        if (colorPresets.length > 1) {
+            colorPresets = colorPresets.filter(c => c !== color);
+            renderColorPresets();
+        }
+    }
+
+    // Helper: Update UI Selections (active states)
+    function updateUISelections() {
+        document.querySelectorAll(".theme-card").forEach(c => c.classList.toggle("active", c.dataset.theme === currentTheme));
+        document.querySelectorAll(".theme-tag").forEach((tagButton) => {
+            const isActive = tagButton.dataset.tag === activeThemeTag;
+            tagButton.classList.toggle("active", isActive);
+            tagButton.setAttribute("aria-pressed", isActive ? "true" : "false");
+        });
+        document.querySelectorAll(".preset-item").forEach(c => c.classList.toggle("active", c.dataset.color === currentAccentColor));
+        updateThemeHeader(themeDefinitions.filter((theme) => matchesThemeFilter(theme)));
+    }
+
+    // Helper: Render Saved Presets
+    function renderSavedPresets() {
+        const grid = document.getElementById("savedPresetsGrid");
+        if (!grid) return;
+        grid.innerHTML = "";
+        
+        savedPresets.forEach((p, idx) => {
+             const card = document.createElement("div");
+             card.className = "preset-card";
+             card.innerHTML = `
+                <div class="preset-card-header">
+                    <div class="preset-card-name">${p.name}</div>
+                    <div class="preset-card-actions">
+                        <button class="preset-card-btn delete"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+                <div class="preset-card-details">
+                    <div class="preset-detail"><span class="preset-color-dot" style="background:${p.accentColor}"></span><span>${p.theme}</span></div>
+                    <div class="preset-detail"><i class="fa-solid fa-font"></i><span>${p.font.split(',')[0]}</span></div>
+                </div>
+             `;
+             card.onclick = (e) => { 
+                 if(e.target.closest('.delete')) return;
+                 applyPreset(p); 
+             };
+             card.querySelector('.delete').onclick = () => {
+                 savedPresets.splice(idx, 1);
+                 renderSavedPresets();
+                 localStorage.setItem(STORAGE_KEYS.SAVED_PRESETS, JSON.stringify(savedPresets));
+             };
+             grid.appendChild(card);
+        });
+    }
+
+    // --- UTILS ---
+    function checkColorContrast() {
+        const warningEl = document.getElementById("contrastWarning");
+        if (!warningEl) return;
+
+        const activeTheme = getThemeDefinition(resolveActiveThemeId(currentTheme));
+        const themeBackground = normalizeHexColor(activeTheme?.colors?.["--bg-color"]) || "#ffffff";
+        const accentTextColor = getAccessibleTextColor(currentAccentColor);
+        const accentToBackground = getContrastRatio(currentAccentColor, themeBackground);
+        const accentToText = getContrastRatio(currentAccentColor, accentTextColor);
+        const warnings = [];
+
+        if (accentToBackground < 2.8) {
+            warnings.push("Accent blends into this theme.");
+        }
+
+        if (accentToText < 4.5) {
+            warnings.push("Filled buttons may be hard to read.");
+        }
+
+        warningEl.style.display = warnings.length ? "block" : "none";
+        warningEl.textContent = warnings.length
+            ? `${warnings.join(" ")} Try a lighter or darker accent.`
+            : "";
+    }
+
+    function updateButtonTextColors() {
+        document.documentElement.style.setProperty("--text-on-accent", getAccessibleTextColor(currentAccentColor));
+    }
+
+    function updateFavicon(color) {
+        const canvas = document.createElement("canvas");
+        canvas.width = 16; canvas.height = 16;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(8, 8, 8, 0, 2 * Math.PI); ctx.fill();
+        const link = document.querySelector("link[rel~='icon']") || document.createElement("link");
+        link.rel = "icon"; link.href = canvas.toDataURL();
+        document.head.appendChild(link);
+    }
+
+    function updateMetaThemeColor(color) {
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute("content", color);
+    }
+    
+    // Theme Card Rendering
+    function renderThemeCards() {
+        const container = document.getElementById("themeOptions") || document.querySelector(".theme-options");
+        if (!container) return;
+
+        const filteredThemes = filterThemes(currentThemeSearchTerm, activeThemeTag);
+        renderThemeFilterTags();
+        updateThemeHeader(filteredThemes);
+
+        container.innerHTML = "";
+
+        if (!filteredThemes.length) {
+            const empty = document.createElement("div");
+            empty.className = "theme-empty-state";
+            empty.textContent = "No themes match that combination yet.";
+            container.appendChild(empty);
+            return;
+        }
+
+        filteredThemes.forEach((theme) => {
+            container.appendChild(createThemeCard(theme));
+        });
+    }
+
+    // Google Fonts
+    function setupGoogleFonts() {
+        if (!googleFontsLink) {
+            googleFontsLink = document.createElement("link");
+            googleFontsLink.rel = "stylesheet";
+            googleFontsLink.href = "https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto:wght@400;500;700&family=Open+Sans:wght@400;600;700&family=Lato:wght@400;700&family=Montserrat:wght@400;600;700&family=Poppins:wght@400;600;700&family=Raleway:wght@400;600;700&family=Ubuntu:wght@400;500;700&family=Nunito:wght@400;600;700&family=Quicksand:wght@400;600;700&family=Outfit:wght@400;600;700&family=DM+Sans:wght@400;500;700&family=Space+Grotesk:wght@400;600;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=JetBrains+Mono:wght@400;600&family=Fira+Code:wght@400;600&display=swap";
+            document.head.appendChild(googleFontsLink);
+        }
+    }
+    
+    function loadGoogleFont(fontFamily) {
+         // Logic to lazy load if not in main bundle (mocked for this scope)
+    }
+
+    function loadSavedCustomFonts() {
+        const fonts = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_FONTS) || "[]");
+        const select = document.getElementById("fontSelect");
+        if(!select) return;
+        fonts.forEach(f => {
+            const opt = document.createElement("option");
+            opt.value = `'${f}', sans-serif`;
+            opt.textContent = f + " (Custom)";
+            select.appendChild(opt);
+        });
+    }
+
+    // Global Access
+    window.addCustomGoogleFont = function() {
+        const name = prompt("Font Name (Google Fonts):");
+        if(name) {
+            const link = document.createElement("link");
+            link.href = `https://fonts.googleapis.com/css2?family=${name.replace(/ /g, '+')}&display=swap`;
+            link.rel = "stylesheet";
+            document.head.appendChild(link);
+            
+            const fonts = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOM_FONTS) || "[]");
+            if(!fonts.includes(name)) {
+                fonts.push(name);
+                localStorage.setItem(STORAGE_KEYS.CUSTOM_FONTS, JSON.stringify(fonts));
+                
+                const select = document.getElementById("fontSelect");
+                const opt = document.createElement("option");
+                opt.value = `'${name}', sans-serif`;
+                opt.textContent = name + " (Custom)";
+                select.appendChild(opt);
+                select.value = opt.value;
+                applyFont(opt.value);
+            }
+        }
+    };
+    
+    document.getElementById("addCustomFont")?.addEventListener("click", window.addCustomGoogleFont);
+
+    // ========================================
+    // DEV MODE
+    // ========================================
+
+    const DEV_MODE_KEY = "dev-mode-enabled";
+    const DEV_TIME_OVERRIDE_KEY = "dev-time-override";
+    const DEV_WEATHER_OVERRIDE_KEY = "dev-weather-override";
+    const DEV_DAY_OVERRIDE_KEY = "dev-day-override";
+
+    let devModeEnabled = localStorage.getItem(DEV_MODE_KEY) === "true";
+    let devTimeOverride = localStorage.getItem(DEV_TIME_OVERRIDE_KEY) ? new Date(localStorage.getItem(DEV_TIME_OVERRIDE_KEY)) : null;
+    let devWeatherOverride = localStorage.getItem(DEV_WEATHER_OVERRIDE_KEY) || null;
+    let devDayOverride = localStorage.getItem(DEV_DAY_OVERRIDE_KEY) ? parseInt(localStorage.getItem(DEV_DAY_OVERRIDE_KEY), 10) : null;
+
+    // Initialize dev mode
+    function initDevMode() {
+        const devModeToggle = document.getElementById("devModeToggle");
+        const devModeControls = document.getElementById("devModeControls");
+        const devApplyTimeBtn = document.getElementById("devApplyTimeBtn");
+        const devResetTimeBtn = document.getElementById("devResetTimeBtn");
+        const devApplyWeatherBtn = document.getElementById("devApplyWeatherBtn");
+        const devResetWeatherBtn = document.getElementById("devResetWeatherBtn");
+        const devApplyDayBtn = document.getElementById("devApplyDayBtn");
+        const devResetDayBtn = document.getElementById("devResetDayBtn");
+        const devRefreshHighlightBtn = document.getElementById("devRefreshHighlightBtn");
+        const devReloadDataBtn = document.getElementById("devReloadDataBtn");
+        const devViewTodayBtn = document.getElementById("devViewTodayBtn");
+        const devResetAllBtn = document.getElementById("devResetAllBtn");
+        const devTimeInput = document.getElementById("devTimeInput");
+        const devDaySelect = document.getElementById("devDaySelect");
+
+        if (!devModeToggle) return;
+
+        // Set initial state
+        devModeToggle.checked = devModeEnabled;
+        if (devModeEnabled && devModeControls) {
+            devModeControls.style.display = "block";
+        }
+        // Show/hide base tab when dev mode is enabled
+        const baseTabItem = document.querySelector('.sidebar-item[data-section="base"]');
+        const baseSection = document.getElementById("baseSection");
+
+        function updateBaseTabVisibility() {
+            if (baseTabItem) {
+                baseTabItem.style.display = devModeEnabled ? "flex" : "none";
+            }
+        }
+
+        updateBaseTabVisibility();
+
+        // Toggle dev mode
+        devModeToggle.addEventListener("change", (e) => {
+            devModeEnabled = e.target.checked;
+            localStorage.setItem(DEV_MODE_KEY, devModeEnabled);
+            if (devModeControls) {
+                devModeControls.style.display = devModeEnabled ? "block" : "none";
+            }
+            // Show/hide base tab when toggling dev mode
+            updateBaseTabVisibility();
+            updateDevInfo();
+        });
+
+        // Time controls
+        if (devApplyTimeBtn) {
+            devApplyTimeBtn.addEventListener("click", () => {
+                const timeStr = devTimeInput?.value;
+                if (!timeStr) {
+                    alert("Please select a time");
+                    return;
+                }
+                const [hours, minutes] = timeStr.split(":").map(Number);
+                const overrideDate = new Date();
+                overrideDate.setHours(hours, minutes, 0, 0);
+                devTimeOverride = overrideDate;
+                localStorage.setItem(DEV_TIME_OVERRIDE_KEY, overrideDate.toISOString());
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.updateRecommendedManual) window.updateRecommendedManual();
+                const timeInfoEl = document.getElementById("devTimeInfo");
+                if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}</strong>`;
+            });
+        }
+
+        if (devResetTimeBtn) {
+            devResetTimeBtn.addEventListener("click", () => {
+                devTimeOverride = null;
+                localStorage.removeItem(DEV_TIME_OVERRIDE_KEY);
+                devTimeInput.value = "";
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.updateRecommendedManual) window.updateRecommendedManual();
+                const timeInfoEl = document.getElementById("devTimeInfo");
+                if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+            });
+        }
+
+        // Weather controls
+        if (devApplyWeatherBtn) {
+            devApplyWeatherBtn.addEventListener("click", () => {
+                const weatherSelect = document.getElementById("devWeatherSelect");
+                const code = weatherSelect?.value;
+                if (!code) {
+                    alert("Please select a weather condition");
+                    return;
+                }
+                devWeatherOverride = code;
+                localStorage.setItem(DEV_WEATHER_OVERRIDE_KEY, code);
+                updateDevWeather(parseInt(code, 10));
+                const weatherInfoEl = document.getElementById("devWeatherInfo");
+                const weatherDesc = getWeatherDescriptionForCode(parseInt(code, 10));
+                if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>${weatherDesc}</strong>`;
+            });
+        }
+
+        if (devResetWeatherBtn) {
+            devResetWeatherBtn.addEventListener("click", () => {
+                devWeatherOverride = null;
+                localStorage.removeItem(DEV_WEATHER_OVERRIDE_KEY);
+                const weatherSelect = document.getElementById("devWeatherSelect");
+                if (weatherSelect) weatherSelect.value = "";
+                const weatherInfoEl = document.getElementById("devWeatherInfo");
+                if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+                // Refetch real weather
+                if (window.getWeather) window.getWeather();
+            });
+        }
+
+        // Day controls
+        if (devApplyDayBtn) {
+            devApplyDayBtn.addEventListener("click", () => {
+                if (!devDaySelect) {
+                    alert("Day select element not found");
+                    return;
+                }
+                const dayValue = devDaySelect.value;
+                if (dayValue === "") {
+                    alert("Please select a day");
+                    return;
+                }
+                const dayNum = parseInt(dayValue, 10);
+                devDayOverride = dayNum;
+                localStorage.setItem(DEV_DAY_OVERRIDE_KEY, dayNum.toString());
+                const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                const dayInfoEl = document.getElementById("devDayInfo");
+                if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>${dayNames[dayNum]}</strong>`;
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.fillToday) window.fillToday();
+            });
+        }
+
+        if (devResetDayBtn) {
+            devResetDayBtn.addEventListener("click", () => {
+                devDayOverride = null;
+                localStorage.removeItem(DEV_DAY_OVERRIDE_KEY);
+                if (devDaySelect) devDaySelect.value = "";
+                const dayInfoEl = document.getElementById("devDayInfo");
+                if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>None</strong>`;
+                updateDevInfo();
+                // Trigger refresh of highlighting
+                if (window.highlightCurrent) window.highlightCurrent();
+                if (window.fillToday) window.fillToday();
+            });
+        }
+
+        // Quick actions
+        if (devRefreshHighlightBtn) {
+            devRefreshHighlightBtn.addEventListener("click", () => {
+                if (window.highlightCurrent) window.highlightCurrent();
+                devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-check"></i> Refreshed!';
+                setTimeout(() => {
+                    devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh Highlighting';
+                }, 1500);
+            });
+        }
+
+        if (devReloadDataBtn) {
+            devReloadDataBtn.addEventListener("click", () => {
+                if (window.loadTimetableData) window.loadTimetableData();
+                devReloadDataBtn.innerHTML = '<i class="fa-solid fa-check"></i> Reloaded!';
+                setTimeout(() => {
+                    devReloadDataBtn.innerHTML = '<i class="fa-solid fa-reload"></i> Reload Timetable Data';
+                }, 1500);
+            });
+        }
+
+        if (devViewTodayBtn) {
+            devViewTodayBtn.addEventListener("click", () => {
+                if (window.timetableData) {
+                    const now = new Date();
+                    const dayOfWeek = devDayOverride !== null ? devDayOverride : now.getDay();
+                    const dayKeys = [null, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+                    const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+                    const currentDayKey = dayKeys[dayOfWeek];
+                    
+                    if (currentDayKey) {
+                        const todayClasses = window.timetableData.schedule
+                            .map(row => ({ ...row, dayClass: row[currentDayKey] }))
+                            .filter(row => row.dayClass)
+                            .map(row => `${row.time}: ${row.dayClass.name}`)
+                            .join("\n");
+                        
+                        if (todayClasses) {
+                            const dayDisplayName = devDayOverride !== null ? `${dayNames[dayOfWeek]} (OVERRIDE)` : dayNames[dayOfWeek];
+                            alert(`${dayDisplayName}'s Classes:\n\n${todayClasses}`);
+                        } else {
+                            alert("No classes on this day!");
+                        }
+                    } else {
+                        alert("No classes on weekends!");
+                    }
+                } else {
+                    alert("Timetable data not loaded");
+                }
+            });
+        }
+
+        if (devResetAllBtn) {
+            devResetAllBtn.addEventListener("click", () => {
+                if (confirm("Are you sure you want to reset ALL customization settings?")) {
+                    // Reset all storage
+                    Object.values(STORAGE_KEYS).forEach(key => localStorage.removeItem(key));
+                    localStorage.removeItem(DEV_MODE_KEY);
+                    localStorage.removeItem(DEV_TIME_OVERRIDE_KEY);
+                    localStorage.removeItem(DEV_WEATHER_OVERRIDE_KEY);
+                    localStorage.removeItem(DEV_DAY_OVERRIDE_KEY);
+                    // Reload page
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Restore overrides if they exist
+        if (devTimeOverride && devTimeInput) {
+            const hours = devTimeOverride.getHours();
+            const minutes = devTimeOverride.getMinutes();
+            devTimeInput.value = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}`;
+            const timeInfoEl = document.getElementById("devTimeInfo");
+            if (timeInfoEl) timeInfoEl.innerHTML = `Current override: <strong>${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}</strong>`;
+        }
+
+        if (devWeatherOverride) {
+            const weatherSelect = document.getElementById("devWeatherSelect");
+            if (weatherSelect) weatherSelect.value = devWeatherOverride;
+            const weatherDesc = getWeatherDescriptionForCode(parseInt(devWeatherOverride, 10));
+            const weatherInfoEl = document.getElementById("devWeatherInfo");
+            if (weatherInfoEl) weatherInfoEl.innerHTML = `Current override: <strong>${weatherDesc}</strong>`;
+        }
+
+        if (devDayOverride !== null && devDaySelect) {
+            devDaySelect.value = devDayOverride.toString();
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayInfoEl = document.getElementById("devDayInfo");
+            if (dayInfoEl) dayInfoEl.innerHTML = `Current override: <strong>${dayNames[devDayOverride]}</strong>`;
+        }
+
+        // Update dev info every second
+        setInterval(updateDevInfo, 1000);
+        updateDevInfo(); // Initial update
+    }
+
+    function updateDevInfo() {
+        const realTimeEl = document.getElementById("devInfoRealTime");
+        const overrideTimeEl = document.getElementById("devInfoOverrideTime");
+        const dayOfWeekEl = document.getElementById("devInfoDayOfWeek");
+        const currentClassEl = document.getElementById("devInfoCurrentClass");
+
+        const now = devTimeOverride || new Date();
+        const realNow = new Date();
+
+        if (realTimeEl) {
+            const h = realNow.getHours().toString().padStart(2, "0");
+            const m = realNow.getMinutes().toString().padStart(2, "0");
+            const s = realNow.getSeconds().toString().padStart(2, "0");
+            realTimeEl.textContent = `${h}:${m}:${s}`;
+        }
+
+        if (overrideTimeEl) {
+            if (devTimeOverride) {
+                const h = now.getHours().toString().padStart(2, "0");
+                const m = now.getMinutes().toString().padStart(2, "0");
+                overrideTimeEl.textContent = `${h}:${m}`;
+            } else {
+                overrideTimeEl.textContent = "None";
+            }
+        }
+
+        if (dayOfWeekEl) {
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            const dayIndex = devDayOverride !== null ? devDayOverride : now.getDay();
+            dayOfWeekEl.textContent = days[dayIndex];
+        }
+
+        if (currentClassEl && window.timetableData) {
+            const dayOfWeek = devDayOverride !== null ? devDayOverride : now.getDay();
+            const currentMinutes = now.getHours() * 60 + now.getMinutes();
+            const dayKeys = [null, 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
+            const currentDayKey = dayKeys[dayOfWeek];
+            
+            let currentClass = "None";
+            if (currentDayKey) {
+                for (const row of window.timetableData.schedule) {
+                    const m = row.time.match(/^(\d{1,2}):(\d{2})/);
+                    if (m) {
+                        const start = parseInt(m[1], 10) * 60 + parseInt(m[2], 10);
+                        const windowStart = start - 10;
+                        const windowEnd = start + 50;
+                        if (currentMinutes >= windowStart && currentMinutes < windowEnd) {
+                            const subject = row[currentDayKey];
+                            if (subject) currentClass = subject.name;
+                            break;
+                        }
+                    }
+                }
+            }
+            currentClassEl.textContent = currentClass;
+        }
+    }
+
+    // Initialize Base Controls
+    function initializeBaseControls() {
+        // Number Input Increment/Decrement
+        const numberInputField = document.querySelector('.number-input-field');
+        const numberBtns = document.querySelectorAll('.number-btn');
+        if (numberInputField && numberBtns.length === 2) {
+            numberBtns[0].addEventListener('click', () => {
+                const current = parseInt(numberInputField.value) || 0;
+                const min = parseInt(numberInputField.min) || 0;
+                if (current > min) {
+                    numberInputField.value = current - 1;
+                }
+            });
+            
+            numberBtns[1].addEventListener('click', () => {
+                const current = parseInt(numberInputField.value) || 0;
+                const max = parseInt(numberInputField.max) || 100;
+                if (current < max) {
+                    numberInputField.value = current + 1;
+                }
+            });
+        }
+        
+        // Range Slider Value Display
+        const rangeSlider = document.querySelector('.range-slider-demo');
+        const rangeValue = document.querySelector('#rangeValue');
+        if (rangeSlider && rangeValue) {
+            const updateRangeValue = () => {
+                rangeValue.textContent = rangeSlider.value;
+            };
+            rangeSlider.addEventListener('input', updateRangeValue);
+        }
+        
+        // Color Picker Hex Display
+        const colorPicker = document.getElementById('demoColorPicker');
+        const colorValue = document.getElementById('demoColorValue');
+        if (colorPicker && colorValue) {
+            const updateColorValue = () => {
+                colorValue.textContent = colorPicker.value.toUpperCase();
+            };
+            colorPicker.addEventListener('input', updateColorValue);
+            colorPicker.addEventListener('change', updateColorValue);
+        }
+    }
+
+    function getWeatherDescriptionForCode(code) {
+        if (code === 0) return "☀️ Clear";
+        if ([1, 2].includes(code)) return "🌤️ Partially Cloudy";
+        if (code === 3) return "☁️ Cloudy";
+        if ([45, 48].includes(code)) return "🌫️ Fog";
+        if ([51, 53, 55, 56, 57].includes(code)) return "🌦️ Drizzle";
+        if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️ Rain";
+        if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️ Snow";
+        if ([95, 96, 99].includes(code)) return "⛈️ Thunderstorm";
+        return "Unknown";
+    }
+
+    function updateDevWeather(code) {
+        const emoji = getWeatherEmoji(code);
+        const description = getWeatherDescriptionForCode(code);
+
+        // Update menu button
+        const menuEmoji = document.getElementById("menuWeatherEmoji");
+        const menuTemp = document.getElementById("menuWeatherTemp");
+        if (menuEmoji) menuEmoji.textContent = emoji;
+        if (menuTemp) menuTemp.textContent = "DEV";
+
+        // Update overlay
+        const overlayEmoji = document.getElementById("overlayWeatherEmoji");
+        const overlayDesc = document.getElementById("overlayWeatherDesc");
+        if (overlayEmoji) overlayEmoji.textContent = emoji;
+        if (overlayDesc) overlayDesc.textContent = description + " (Dev Override)";
+    }
+
+    function getWeatherEmoji(code) {
+        if (code === 0) return "☀️";
+        if ([1, 2].includes(code)) return "🌤️";
+        if (code === 3) return "☁️";
+        if ([45, 48].includes(code)) return "🌫️";
+        if ([51, 53, 55, 56, 57].includes(code)) return "🌦️";
+        if ([61, 63, 65, 66, 67, 80, 81, 82].includes(code)) return "🌧️";
+        if ([71, 73, 75, 77, 85, 86].includes(code)) return "❄️";
+        if ([95, 96, 99].includes(code)) return "⛈️";
+        return "❓";
+    }
+
+    // Export dev mode time override getter for use in other scripts
+    window.getDevTimeOverride = function() {
+        return devTimeOverride;
+    };
+
+    // Export dev mode day override getter for use in other scripts
+    window.getDevDayOverride = function() {
+        return devDayOverride;
+    };
+
+    // ========================================
+    // AUTO-TINT TEXT IN COLORED CONTAINERS
+    // ========================================
+
+    function getColorBrightness(color) {
+        // Handle hex color format
+        if (!color || color === 'transparent') return 128;
+        
+        let hex = color;
+        if (color.startsWith('rgb')) {
+            // Convert rgb to hex
+            const match = color.match(/\d+/g);
+            if (match && match.length >= 3) {
+                const r = parseInt(match[0]);
+                const g = parseInt(match[1]);
+                const b = parseInt(match[2]);
+                hex = '#' + [r, g, b].map(x => x.toString(16).padStart(2, '0')).join('');
+            }
+        }
+        
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return ((r * 299) + (g * 587) + (b * 114)) / 1000;
+    }
+
+    function applyAutoTintedText() {
+        // Apply accent color text with auto-tinting to elements with background colors
+        const selectors = [
+            '.setting-group',
+            '.dev-time-control',
+            '.dev-weather-control',
+            '.dev-quick-actions',
+            '.dev-info-panel',
+            '.ui-control-card',
+            '.font-group',
+            '.ui-controls-grid',
+            '.preset-action-btn',
+            '.mode-toggle-container'
+        ];
+
+        selectors.forEach(selector => {
+            document.querySelectorAll(selector).forEach(el => {
+                const bgColor = window.getComputedStyle(el).backgroundColor;
+                const brightness = getColorBrightness(bgColor);
+                
+                // For light backgrounds, use dark text; for dark backgrounds, use light text
+                const textColor = brightness > 150 ? '#000000' : '#ffffff';
+                
+                // Apply to all text children
+                const textElements = el.querySelectorAll('h4, h3, h2, p, label, span, button');
+                textElements.forEach(textEl => {
+                    if (textEl.textContent && textEl.tagName !== 'BUTTON') {
+                        textEl.style.color = textColor;
+                    }
+                });
+            });
+        });
+    }
+
+    // Initialize dev mode
+    initDevMode();
+
+    // Apply auto-tinted text on load and expose for deferred customization syncs
+    window.applyAutoTintedText = applyAutoTintedText;
+    requestAnimationFrame(applyAutoTintedText);
+
+    // Bootstrap
+    if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+    else init();
+
+})();
