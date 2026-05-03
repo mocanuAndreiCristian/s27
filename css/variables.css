@@ -10,8 +10,6 @@
     --bg-color: #f9f9f9;
 
     /* === Surface Colors === */
-    --surface-color: #ffffff;
-    --surface-alt: #fafafa;
     --card-bg: #ffffff;
     --input-bg: #f5f5f5;
     --highlight-color: #f5f5f5;
@@ -135,5 +133,3 @@
     --z-bottom-sheet-overlay: 2500;
     --z-bottom-sheet: 2600;
 }
-
-/* Theme atmospheres are generated dynamically per theme and applied through --theme-background-image. */
