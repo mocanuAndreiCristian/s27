@@ -74,19 +74,6 @@ import { initTimetable } from "./timetable/timetable-controller.js";
 
 initTimetable();
 
-import { FOLDER_ICONS, PRIORITY_COLORS } from "./todo/todo-constants.js";
-import { filterTodoTasks, sortTodoTasks } from "./todo/todo-filters.js";
-import { renderTodoCalendar } from "./todo/todo-calendar.js";
-import {
-  requestNotificationPermission as requestTodoNotificationPermission,
-  startTodoNotificationCheck,
-} from "./todo/todo-notifications.js";
-import {
-  generateTodoId,
-  loadTodoData,
-  saveTodoData,
-} from "./todo/todo-store.js";
-
 import { openLibraryOverlay } from "./library/library-controller.js";
 
 window.openLibraryOverlay = openLibraryOverlay;
@@ -95,6 +82,7 @@ import "./ui/touch-guard.js";
 import "./ui/scrollbars.js";
 import "./overlays/info-overlay.js";
 import "./ui/release-notes.js";
+import "./todo/todo-controller.js";
 
 import { initClock } from "./weather/clock-controller.js";
 import { initWeather, getWeather } from "./weather/weather-controller.js";

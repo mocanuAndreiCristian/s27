@@ -1,6 +1,6 @@
 
 /* ========================================
-   ADVANCED TODO SYSTEM - COMPLETE REWRITE
+   TODO
    ======================================== */
 
 (function() {

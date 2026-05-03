@@ -167,24 +167,14 @@ a {
 a:hover {
     color: var(--accent-secondary);
 }
+
 mark {
-    background: linear-gradient(135deg, var(--mark-color), color-mix(in srgb, var(--mark-color), white 20%));
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    background-color: var(--accent-color);
+    border-radius: var(--border-radius-sm);
     color: var(--bg-color);
-    opacity: var(--mark-opacity);
-    padding: 0.1em 0.3em;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
-    transition: background-color var(--transition-speed), box-shadow var(--transition-speed);
+    transition: background-color var(--transition-speed);
 }
 
-mark:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
-
-mark:hover {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-}
 
 
 /* Generic Components */
