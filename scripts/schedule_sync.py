@@ -6,9 +6,9 @@
 
 # Usage:
 #   python scripts/schedule_sync.py --class-id 8d                    # Fetch and update schedule JSON
-#   python scripts/schedule_sync.py --class-id 8a --build-html       # Build HTML file from template
-#   python scripts/schedule_sync.py --class-id 8a --build-html --template 8d/index.html  # Custom template
-
+#   python scripts/schedule_sync.py --class-id 8a --build-html       # Build HTML file from shared template
+#   python scripts/schedule_sync.py --class-id 8a --build-html --template .templates/class-page.template.html  # Custom template
+#   --force can be added to skip confirmation prompt and update automatically if changes are detected.
 from __future__ import annotations
 
 import argparse
@@ -24,6 +24,7 @@ from urllib.request import Request, urlopen
 
 # Days of the week in order (Monday-Friday)
 DAY_KEYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
+CLASS_IDS = ["8a", "8b", "8c", "8d", "8e"]
 
 # Common placeholder tokens that indicate empty/no subject
 PLACEHOLDER_TOKENS = {"", "-", "--", "---", "—", "–", "n/a", "na"}
@@ -377,18 +378,32 @@ def replace_inline_app_config(html_content: str, class_id: str) -> str:
     return html_content
 
 
+def apply_class_template_placeholders(html_content: str, class_id: str) -> str:
+    display_id = class_id.upper()
+    replacements = {
+        "{{CLASS_ID_LOWER}}": class_id,
+        "{{CLASS_ID_UPPER}}": display_id,
+        "{{CLASS_URL}}": f"https://s27.ro/{class_id}",
+    }
+
+    rendered = html_content
+    for token, value in replacements.items():
+        rendered = rendered.replace(token, value)
+    return rendered
+
+
 def build_class_html(class_id: str, template_path: Path = None) -> Path:
     """Build HTML file for a class by copying template and replacing class ID.
     
     Args:
         class_id: The class identifier (e.g., "8a", "8b", "8c")
-        template_path: Path to the template HTML file (default: 8d/index.html)
+        template_path: Path to the template HTML file (default: templates/class-page.template.html)
     
     Returns:
         Path to the newly created HTML file
     """
     if template_path is None:
-        template_path = Path("8d/index.html")
+        template_path = Path("templates/class-page.template.html")
     
     if not template_path.exists():
         raise FileNotFoundError(f"Template file not found: {template_path}")
@@ -397,46 +412,37 @@ def build_class_html(class_id: str, template_path: Path = None) -> Path:
     with template_path.open("r", encoding="utf-8") as f:
         html_content = f.read()
     
-    # Create class ID with capital letter for display (e.g., "8D" from "8d")
-    display_id = class_id.upper()
-    
-    # Replace inline app config script with the simplified AppConfig shape
-    html_content = replace_inline_app_config(html_content, class_id)
-
-    # Replace title text "Orar 8D" -> "Orar 8A" etc.
-    html_content = re.sub(
-        r'<title>Orar 8D</title>',
-        f'<title>Orar {display_id}</title>',
-        html_content
-    )
-    
-    # Replace mobile header title "Orar 8D"
-    html_content = re.sub(
-        r'class="mobile-app-title">Orar 8D</h1>',
-        f'class="mobile-app-title">Orar {display_id}</h1>',
-        html_content
-    )
-    
-    # Replace main title "Orar 8D"
-    html_content = re.sub(
-        r'class="main-title">Orar 8D</h1>',
-        f'class="main-title">Orar {display_id}</h1>',
-        html_content
-    )
-    
-    # Replace "About Orar 8D" in info overlay
-    html_content = re.sub(
-        r'About Orar 8D',
-        f'About Orar {display_id}',
-        html_content
-    )
-    
-    # Replace URL references to 8d (e.g., https://s27.ro/8d)
-    html_content = re.sub(
-        r'https://s27\.ro/8d',
-        f'https://s27.ro/{class_id}',
-        html_content
-    )
+    if "{{CLASS_ID_" in html_content or "{{CLASS_URL}}" in html_content:
+        html_content = apply_class_template_placeholders(html_content, class_id)
+    else:
+        # Backward-compatible fallback for older templates copied from 8D.
+        display_id = class_id.upper()
+        html_content = replace_inline_app_config(html_content, class_id)
+        html_content = re.sub(
+            r'<title>Orar 8D</title>',
+            f'<title>Orar {display_id}</title>',
+            html_content
+        )
+        html_content = re.sub(
+            r'class="mobile-app-title">Orar 8D</h1>',
+            f'class="mobile-app-title">Orar {display_id}</h1>',
+            html_content
+        )
+        html_content = re.sub(
+            r'class="main-title">Orar 8D</h1>',
+            f'class="main-title">Orar {display_id}</h1>',
+            html_content
+        )
+        html_content = re.sub(
+            r'About Orar 8D',
+            f'About Orar {display_id}',
+            html_content
+        )
+        html_content = re.sub(
+            r'https://s27\.ro/8d',
+            f'https://s27.ro/{class_id}',
+            html_content
+        )
     
     # Create output directory
     output_dir = Path(class_id)
@@ -450,6 +456,49 @@ def build_class_html(class_id: str, template_path: Path = None) -> Path:
     return output_path
 
 
+def process_class(class_id: str, template_path: Path = None, force: bool = False) -> int:
+    """Process a single class: fetch schedule, save JSON, build HTML."""
+    url = f"https://s27.ro/{class_id}"
+    out_path = Path("data") / f"{class_id}.json"
+    
+    print(f"\n{'='*50}")
+    print(f"Processing class {class_id.upper()}...")
+    print('='*50)
+    
+    try:
+        # Fetch and parse schedule
+        html_text = fetch_html(url)
+        rows = parse_schedule_table(html_text)
+        if not rows:
+            print(f"No schedule table found for {class_id}")
+            return 1
+        
+        new_data = build_schedule(rows)
+        
+        # Check if changed
+        changed = True
+        if out_path.exists():
+            old_data = load_json(out_path)
+            changed = has_changed(old_data, new_data)
+        print(f"Schedule changed: {changed}")
+        
+        # Save JSON if changed or forced
+        if changed or force:
+            save_json(out_path, new_data)
+            print(f"Saved schedule JSON to {out_path}")
+        elif not changed:
+            print("No changes detected, skipping save")
+        
+        # Build HTML
+        output_path = build_class_html(class_id, template_path)
+        print(f"Built HTML: {output_path}")
+        return 0
+        
+    except Exception as e:
+        print(f"Error processing {class_id}: {e}")
+        return 1
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Fetch class schedule and output JSON format.")
     parser.add_argument("--url", help="Schedule URL (default: https://s27.ro/<class-id>)")
@@ -457,12 +506,30 @@ def main() -> int:
     parser.add_argument("--out", help="Output path (default: data/<class-id>.json)")
     parser.add_argument("--check", action="store_true", help="Only check if schedule changed")
     parser.add_argument("--build-html", action="store_true", help="Build HTML file for class from template")
-    parser.add_argument("--template", help="Template HTML file path (default: 8d/index.html)")
+    parser.add_argument("--template", help="Template HTML file path (default: templates/class-page.template.html)")
     parser.add_argument("--force", action="store_true", help="Skip confirmation prompt and update automatically")
+    parser.add_argument("--build-all", action="store_true", help="Build HTML files for all classes (8a-8e)")
 
     args = parser.parse_args()
 
-    # Build URL and output path
+    # Build all classes if flag is set
+    if args.build_all:
+        template_path = Path(args.template) if args.template else None
+        results = []
+        for class_id in CLASS_IDS:
+            result = process_class(class_id, template_path, args.force)
+            results.append((class_id, result))
+        
+        print(f"\n{'='*50}")
+        print("Summary:")
+        print('='*50)
+        for class_id, result in results:
+            status = "OK" if result == 0 else "FAILED"
+            print(f"{class_id.upper()}: {status}")
+        
+        return 0 if all(r == 0 for _, r in results) else 1
+
+    # Single class processing
     class_id = args.class_id.strip()
     url = args.url or f"https://s27.ro/{class_id}"
     out_path = Path(args.out) if args.out else Path("data") / f"{class_id}.json"

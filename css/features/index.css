@@ -1,0 +1,8 @@
+@import "./overlays/index.css";
+@import "./timetable/index.css";
+@import "./manuals/index.css";
+@import "./library/index.css";
+@import "./weather/index.css";
+@import "./mobile/index.css";
+@import "./settings/index.css";
+@import "./todo/index.css";

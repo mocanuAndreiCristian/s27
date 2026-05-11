@@ -1,0 +1,45 @@
+﻿/* Custom Scrollbar Styles (OverlayScrollbars Theme) */
+.os-theme-custom {
+    --os-size: var(--scrollbar-size);
+    --os-padding-perpendicular: var(--spacing-xs);
+    --os-padding-axis: var(--spacing-xs);
+    --os-track-bg: transparent;
+    --os-track-bg-hover: transparent;
+    --os-track-bg-active: transparent;
+    --os-track-border-radius: 0;
+    --os-handle-bg: var(--accent-color);
+    --os-handle-bg-hover: var(--accent-secondary);
+    --os-handle-bg-active: var(--accent-secondary);
+    --os-handle-border-radius: 999px;
+    --os-handle-min-size: 20px;
+    --os-handle-max-size: none;
+    --os-handle-perpendicular-size: 100%;
+    --os-handle-hover-opacity: 0.8;
+    --os-handle-active-opacity: 1;
+}
+
+/* Ensure the scrollbar doesn't conflict with layout */
+.os-viewport {
+    scroll-behavior: smooth;
+}
+
+/* Fallback for standard scrollbars if JS fails or mobile */
+/* Forced mobile scrollbar visibility */
+@media (pointer: coarse) {
+    ::-webkit-scrollbar {
+        width: var(--scrollbar-size-mobile);
+        height: var(--scrollbar-size-mobile);
+        -webkit-appearance: none;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background-color: color-mix(in srgb, var(--text-muted) 50%, transparent);
+        border-radius: var(--scrollbar-thumb-radius);
+    }
+    /* Ensure body allows scrolling */
+    body {
+        -webkit-overflow-scrolling: touch;
+    }
+}

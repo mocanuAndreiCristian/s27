@@ -1,0 +1,73 @@
+﻿/* Background Pattern */
+body.bg-pattern::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background-image: radial-gradient(var(--text-muted) 1.5px, transparent 1.5px);
+    background-size: var(--spacing-2xl) var(--spacing-2xl);
+    opacity: 0.15;
+    pointer-events: none;
+}
+
+/* Accessibility Modes */
+body.high-contrast {
+    --bg-color: #000000 !important;
+    --text-color: #ffffff !important;
+    --card-bg: #000000 !important;
+    --accent-color: #ffff00 !important;
+    --highlight-color: #1a1a1a !important;
+    --border-color: #ffffff !important;
+    --text-muted: #dddddd !important;
+    background-image: none !important;
+}
+body.high-contrast.bg-pattern::before {
+    display: none;
+}
+
+body.grayscale {
+    filter: grayscale(100%);
+}
+
+body.reduced-motion *,
+body.reduced-motion *::before,
+body.reduced-motion *::after {
+    animation-duration: var(--duration-instant) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--duration-instant) !important;
+    scroll-behavior: auto !important;
+}
+
+body.focus-indicators *:focus {
+    outline: var(--focus-outline-width) solid var(--accent-color) !important;
+    outline-offset: var(--focus-outline-offset) !important;
+}
+
+::selection {
+    background-color: var(--text-color);
+    color: var(--bg-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .title-container,
+    .main-title,
+    .time-display {
+        animation: none;
+    }
+
+    .main-title::before {
+        animation: none;
+    }
+
+    .time-display::after {
+        display: none;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}

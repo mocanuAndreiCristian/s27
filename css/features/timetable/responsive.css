@@ -1,0 +1,67 @@
+body.layout-standard-landscape .timetable-wrapper {
+    overflow-x: auto;
+}
+
+body.layout-standard-landscape .timetable {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+}
+
+@media (max-width: 768px) {
+    .timetable-wrapper {
+        order: 1;
+        width: 100%;
+        border-radius: var(--border-radius-xs);
+        margin: 0 0 2rem;
+        box-shadow: 0 4px 12px var(--shadow-color);
+    }
+
+    .timetable {
+        border-radius: 0;
+    }
+
+    .timetable th,
+    .timetable td {
+        padding: 0.75rem;
+        font-size: var(--font-size-lg);
+        width: 50rem;
+    }
+
+    #emojis {
+        font-size: var(--font-size-xl);
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    body.layout-standard-landscape .timetable th,
+    body.layout-standard-landscape .timetable td {
+        width: auto;
+        min-width: 0;
+        padding: 0.35rem 0.4rem;
+        font-size: 0.92rem;
+        white-space: normal;
+        line-height: 1.2;
+    }
+
+    body.layout-standard-landscape .timetable th:first-child,
+    body.layout-standard-landscape .timetable td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 2;
+        min-width: 4.2rem;
+        background: color-mix(in srgb, var(--card-bg) 96%, transparent);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    body.layout-standard-landscape .timetable th:not(:first-child),
+    body.layout-standard-landscape .timetable td:not(:first-child) {
+        min-width: 6.8rem;
+    }
+}
+
+@media (max-width: 480px) {
+    #emojis {
+        font-size: var(--font-size-xl);
+    }
+}

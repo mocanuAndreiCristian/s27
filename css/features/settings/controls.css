@@ -1,0 +1,504 @@
+﻿/* Color Picker */
+.color-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+.custom-color-picker-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.custom-color-picker-area h4 {
+    font-size: 1.05rem;
+    color: var(--accent-color);
+    margin: 0;
+    font-weight: 700;
+}
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.color-input-box {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-sm);
+    border: 3px solid var(--border-color);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    overflow: hidden;
+}
+.color-input-box:hover {
+    transform: scale(1.05);
+    border-color: var(--accent-color);
+}
+.color-input-box input[type="color"] {
+    position: absolute;
+    inset: -10px;
+    width: calc(100% + 20px);
+    height: calc(100% + 20px);
+    border: none;
+    cursor: pointer;
+}
+.color-hex-input {
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: var(--highlight-color);
+    color: var(--text-color);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family);
+    width: 150px;
+    text-transform: uppercase;
+}
+.color-hex-input:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+.add-preset-btn, .randomize-btn {
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background: var(--accent-color);
+    color: var(--text-on-accent);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: 600;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.add-preset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-hover);
+}
+.color-presets-area, .recommended-colors-area {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.color-presets-area h4, .recommended-colors-area h4 {
+    font-size: 1.05rem;
+    color: var(--accent-color);
+    margin: 0;
+    font-weight: 700;
+}
+.color-presets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 1rem;
+}
+.preset-item {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    border: 3px solid var(--border-color);
+    transition: all var(--transition-speed) ease;
+}
+.preset-item:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+.preset-item.active {
+    border-color: var(--text-color);
+    box-shadow: 0 0 0 2px var(--accent-color);
+}
+.preset-delete {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 24px;
+    height: 24px;
+    background: var(--danger-color);
+    color: var(--text-on-danger);
+    border: 2px solid var(--card-bg);
+    border-radius: var(--border-radius-pill);
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xs);
+    transition: all var(--transition-speed) ease;
+    z-index: 100;
+    pointer-events: auto;
+}
+.preset-item:hover .preset-delete {
+    display: flex;
+}
+.preset-delete:hover {
+    transform: scale(1.2);
+    background: var(--danger-hover);
+}
+
+/* Contrast Warning */
+.contrast-warning {
+    background: linear-gradient(135deg, var(--warning-bg) 0%, var(--danger-bg) 100%);
+    border: 2px solid var(--warning-border);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-md) var(--spacing-lg);
+    margin-bottom: var(--spacing-lg);
+    color: var(--warning-text);
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    display: none;
+    animation: warningPulse 2s ease-in-out infinite;
+}
+[data-theme="dark"] .contrast-warning,
+[data-theme="space"] .contrast-warning,
+[data-theme="midnight"] .contrast-warning,
+[data-theme="forest"] .contrast-warning,
+[data-theme="ocean"] .contrast-warning {
+    background: linear-gradient(135deg, #7f1d1d 0%, var(--warning-text) 100%);
+    color: var(--warning-text-dark);
+    border-color: var(--danger-hover);
+}
+
+/* Font Section */
+.font-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.font-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+.font-group label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    font-size: var(--font-size-lg);
+}
+.custom-select-wrapper {
+    position: relative;
+    width: 100%;
+}
+.custom-select-wrapper .select-arrow {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--accent-color);
+    transition: transform var(--transition-speed) ease;
+}
+.font-select {
+    padding: 0.85rem 2.5rem 0.85rem var(--spacing-md);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: var(--highlight-color);
+    color: var(--text-color);
+    font-size: var(--font-size-base);
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    min-height: 3.5rem;
+}
+.font-select:hover {
+    border-color: var(--accent-color);
+    background: var(--card-bg);
+}
+.font-select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: var(--focus-ring);
+}
+.font-select:focus~.select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+}
+.font-select option{
+    padding: 0.5rem;
+    transition: background var(--transition-speed) ease;
+}
+.font-select option:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+}
+.font-preview {
+    background: var(--highlight-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    padding: var(--spacing-lg);
+    margin-top: 1rem;
+    max-height: 200px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--card-bg);
+}
+.font-preview p {
+    margin: 0;
+    line-height: 1.6;
+}
+.add-custom-font-btn {
+    width: 100%;
+    padding: 0.85rem var(--spacing-lg);
+    background: var(--highlight-color);
+    color: var(--text-color);
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius-sm);
+    cursor: pointer;
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-base);
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1rem;
+}
+.add-custom-font-btn:hover {
+    background: var(--accent-color);
+    color: var(--bg-color);
+    border-color: var(--accent-color);
+    border-style: solid;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
+
+/* UI Controls Grid (used in UI and A11y sections) */
+.ui-controls-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+.ui-control-card {
+    background: var(--highlight-color);
+    padding: var(--spacing-lg);
+    border-radius: var(--border-radius-sm);
+    border: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    overflow-x: auto;
+    max-width: 100%;
+}
+.ui-control-card label {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+    font-size: var(--font-size-sm);
+}
+.ui-control-card.checkbox-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+.checkbox-info h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--accent-color);
+}
+.checkbox-info p {
+    margin: var(--spacing-xs) 0 0 0;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Switches */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 28px;
+    flex-shrink: 0;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-color);
+    transition: 0.4s;
+    border-radius: var(--border-radius-pill);
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: var(--text-muted);
+    transition: 0.4s;
+    border-radius: var(--border-radius-pill);
+}
+input:checked + .slider {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+input:checked + .slider:before {
+    transform: translateX(22px);
+    background-color: var(--text-on-accent);
+}
+
+/* Ranges */
+input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent-color);
+}
+.range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+/* Input with button group */
+.input-with-btn {
+    display: flex;
+    gap: 0.5rem;
+}
+.input-with-btn input {
+    flex: 1;
+    padding: 0.65rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: var(--card-bg);
+    color: var(--text-color);
+}
+.clear-btn {
+    background: var(--danger-color);
+    color: var(--text-on-danger);
+    border: none;
+    border-radius: var(--border-radius-sm);
+    width: 40px;
+    cursor: pointer;
+}
+
+/* Custom Tabs (Shared between Presets and UI) */
+.custom-tabs {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.5rem;
+    overflow-x: auto; /* allow horizontal scrolling when many tabs exist */
+    overflow-y: none;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+    min-height: 4rem;
+}
+
+/* Ensure tab buttons don't wrap and can scroll horizontally */
+.custom-tabs .preset-tab-btn, .custom-tabs .ui-tab-btn { display: inline-block; }
+.custom-tabs::-webkit-scrollbar { height: var(--scrollbar-size); }
+.custom-tabs::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent-color) 40%, var(--border-color)); border-radius: var(--border-radius-sm); }
+
+/* Highlight controls: stacked rows layout and scrollable options area */
+.highlight-grid .highlight-grid-rows { display: flex; flex-direction: row; gap: 1rem; }
+.highlight-row { display: flex; gap: 1rem; align-items: flex-start; }
+.highlight-col { flex: 1; min-width: 0; }
+
+.highlight-options-wrapper {
+    max-height: calc(4 * 48px + 0.6rem * 3); /* approx 4 rows */
+    overflow-x: auto; /* allow horizontal scrolling */
+    overflow-y: hidden;
+    padding-bottom: 0.4rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--card-bg);
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+}
+.highlight-options-wrapper::after { /* hidden by default; only shown when overflowing */
+    content: none;
+}
+
+.highlight-options-wrapper.overflowing::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 36px;
+    pointer-events: none;
+    background: linear-gradient(to right, rgba(255,255,255,0), var(--card-bg));
+}
+/* Add horizontal scrollbar styling (WebKit) */
+.highlight-options-wrapper::-webkit-scrollbar { height: var(--scrollbar-size); }
+.highlight-options-wrapper::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--accent-color) 40%, var(--border-color)); border-radius: var(--border-radius-sm); }
+
+/* Adjust the options grid to flow by column so there are 4 rows visible and it scrolls horizontally as needed */
+.highlight-options-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 320px); /* bigger columns for clearer labels */
+    grid-template-rows: repeat(4, minmax(48px, 1fr)); /* slightly taller rows */
+    gap: 0.6rem;
+    align-items: start;
+    /* ensure the grid cannot compress columns below their min size and will overflow the wrapper */
+    min-width: max-content;
+}
+
+/* Stronger rule to override other layout rules (applies inside the overlay) */
+#customizationOverlay .highlight-options-grid {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(220px, 320px);
+    grid-template-rows: repeat(4, minmax(48px, 1fr));
+    gap: 0.6rem;
+    align-items: start;
+    min-width: max-content;
+}
+
+/* Ensure option buttons are consistent size and labels don't wrap */
+.hl-option { min-width: 200px; min-height: 48px; box-sizing: border-box; padding: 0.6rem 0.8rem; }
+.hl-option .hl-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: calc(100% - 3rem); }
+
+
+/* Ensure individual option buttons have a consistent height for row counting */
+.hl-option { min-height: 44px; align-items: center; }
+
+/* Specific button styles for tabs */
+.preset-tab-btn, .ui-tab-btn {
+    background: transparent;
+    border: none;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -0.65rem;
+    border-radius: 0;
+}
+.preset-tab-btn.active, .ui-tab-btn.active {
+    color: var(--accent-color);
+    border-bottom-color: var(--accent-color);
+}
+.presets-content-wrapper, .ui-content-wrapper {
+    display: none;
+}
+.presets-content-wrapper.active, .ui-content-wrapper.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.ui-control-card.is-disabled {
+    opacity: 0.62;
+}
+
+.ui-control-card.is-disabled select,
+.ui-control-card.is-disabled input,
+.ui-control-card.is-disabled button {
+    cursor: not-allowed;
+}

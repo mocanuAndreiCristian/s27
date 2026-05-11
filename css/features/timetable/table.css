@@ -1,4 +1,4 @@
-/* ========================================
+﻿/* ========================================
    TIMETABLE
    ======================================== */
 
@@ -38,6 +38,10 @@
 
 .timetable.is-loading thead th:first-child::after {
     width: 4.75rem;
+}
+
+.timetable th, .timetable td {
+    text-align: left !important;
 }
 
 .timetable {
@@ -165,37 +169,3 @@ body.minimal-cells .timetable td:not(:first-child):hover {
     border-radius: var(--border-radius-xs);
 }
 
-/* Highlighting uses the accent color for clear visual emphasis */
-.timetable thead th.current-day {
-    color: var(--accent-color);
-    border-bottom: 3px solid var(--accent-color);
-    background: color-mix(in srgb, var(--accent-color) 8%, var(--card-bg));
-} 
-.timetable th.current-hour, .timetable td.current-hour {
-    color: var(--accent-color);
-    /* stronger contrast so the current hour is clearly visible */
-    background: color-mix(in srgb, var(--accent-color) 28%, var(--card-bg));
-    font-weight: 600;
-    border-right: 4px solid var(--accent-color);
-}
-
-.timetable th.current-cell, .timetable td.current-cell {
-    color: var(--accent-color);
-    /* stronger contrast so the subject cell stands out */
-    background: color-mix(in srgb, var(--accent-color) 30%, var(--card-bg));
-    font-weight: 600;
-}
-
-
-/* Generic highlight tag for theming/customization (applied to the header/time/subject cells) */
-.timetable th.current-highlight, .timetable td.current-highlight, .timetable thead th.current-highlight {
-    border-radius: 0;
-    transition: background-color var(--transition-speed), color var(--transition-speed);
-    color: var(--accent-color);
-    background: color-mix(in srgb, var(--accent-color) 6%, var(--card-bg));
-}
-
-#timetable th.selected,
-#timetable td.selected {
-    background: color-mix(in srgb, var(--text-muted) 12%, transparent);
-}

@@ -417,7 +417,7 @@
 .lib-card-cover {
     width: 100%;
     aspect-ratio: 3 / 4;
-    background: var(--input-bg);
+    background: var(--surface-alt);
     overflow: hidden;
     display: flex;
     align-items: center;

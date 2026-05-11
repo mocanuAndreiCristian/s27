@@ -297,6 +297,7 @@ canvas {
     padding: var(--spacing-md);
     background: var(--card-bg);
     border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-md);
     text-align: center;
 }
 .recommended-manual h3 {

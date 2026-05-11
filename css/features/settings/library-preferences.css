@@ -1,0 +1,115 @@
+﻿.library-settings-note {
+    margin: 0.65rem 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+.library-settings-note-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.library-settings-note-icon {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: var(--border-radius-pill);
+    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    color: var(--accent-color);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+}
+
+.library-pref-custom {
+    margin-top: 1.25rem;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius);
+    background: color-mix(in srgb, var(--highlight-color) 82%, var(--card-bg) 18%);
+}
+
+.library-pref-custom-header {
+    margin-bottom: 1rem;
+}
+
+.library-pref-custom-header h4 {
+    margin: 0 0 0.35rem;
+    color: var(--accent-color);
+}
+
+.library-pref-custom-header p,
+.library-pref-empty {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.library-pref-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+}
+
+.library-pref-item {
+    display: grid;
+    gap: 0.65rem;
+    padding: 0.9rem;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    border-radius: var(--border-radius-sm);
+    background: color-mix(in srgb, var(--card-bg) 88%, transparent);
+}
+
+.library-pref-item > span {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+}
+
+.library-pref-slots {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    flex-wrap: wrap;
+}
+
+.library-pref-slot {
+    flex: 1 1 180px;
+}
+
+.library-pref-separator {
+    color: var(--accent-color);
+    font-weight: var(--font-weight-bold);
+    opacity: 0.75;
+}
+
+.library-mode-toggle {
+    margin-top: 0.85rem;
+}
+
+.library-mode-toggle .mode-btn {
+    width: auto;
+    min-width: 0;
+    height: auto;
+    min-height: 5.5rem;
+}
+
+@media (max-width: 768px) {
+    .library-pref-slots {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .library-pref-slot {
+        width: 100%;
+    }
+
+    .library-pref-separator {
+        display: none;
+    }
+
+    .library-mode-toggle {
+        flex-direction: column;
+    }
+}

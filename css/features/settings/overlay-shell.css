@@ -1,0 +1,129 @@
+﻿
+
+/* ========================================
+   CUSTOMIZATION
+   ======================================== */
+
+#customizationOverlay {
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(var(--overlay-blur));
+    z-index: 10000;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease;
+    border-radius: 0;
+}
+#customizationOverlay.active {
+    display: flex;
+    opacity: 1;
+}
+
+#customizationOverlay .customization-container {
+    width: 92%;
+    max-width: 1400px;
+    height: 89vh;
+    max-height: 78vh;   
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-modal);
+    backdrop-filter: blur(var(--backdrop-blur));
+    -webkit-backdrop-filter: blur(var(--backdrop-blur)) ;  
+    display: flex;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Responsive adjustments to avoid tiny containers on narrow screens */
+@media (max-width: 900px) {
+    #customizationOverlay .customization-container { width: 96%; max-width: 960px; min-width: 0; height: 88vh; max-height: 88vh; }
+    #customizationOverlay .custom-sidebar { width: 220px; }
+    #customizationOverlay .highlight-options-grid { grid-auto-columns: minmax(160px, 240px); }
+    #customizationOverlay .hl-option { min-width: 160px; }
+}
+
+@media (max-width: 560px) {
+    #customizationOverlay .customization-container { width: 100%; max-width: 100%; border-radius: 0; height: 100vh; max-height: 100vh; }
+    #customizationOverlay .custom-sidebar { display: none; }
+    #customizationOverlay .custom-content { padding: 16px; }
+    #customizationOverlay .highlight-options-grid { grid-auto-columns: minmax(140px, 220px); grid-template-rows: repeat(4, minmax(44px, 1fr)); }
+    #customizationOverlay .hl-option { min-width: 140px; }
+}
+
+#customizationOverlay .custom-sidebar {
+    width: 280px;
+    background: var(--highlight-color);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--card-bg);
+    min-width: 220px;
+    border-radius: var(--border-radius);
+} 
+
+#customizationOverlay .sidebar-header {
+    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-md);
+    border-bottom: 1px solid var(--border-color);
+}
+#customizationOverlay .sidebar-header h2 {
+    font-size: var(--font-size-xl);
+    color: var(--accent-color);
+    margin: 0;
+    text-align: left;
+}
+#customizationOverlay .sidebar-nav {
+    padding: 1rem 0;
+}
+#customizationOverlay .sidebar-item {
+    padding: 1rem 1.5rem;
+    cursor: pointer;
+    transition: all var(--transition-speed) ease;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: var(--text-color);
+    border-left: 3px solid transparent;
+    border-radius: 0;
+}
+#customizationOverlay .sidebar-item i {
+    font-size: var(--font-size-lg);
+    width: 24px;
+    color: var(--accent-color);
+}
+#customizationOverlay .sidebar-item:hover {
+    background: var(--card-bg);
+}
+#customizationOverlay .sidebar-item.active {
+    background: var(--card-bg);
+    border-left-color: var(--accent-color);
+    font-weight: 600;
+    border-radius: 0;
+}
+
+#customizationOverlay .custom-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) var(--highlight-color);
+}
+
+#customizationOverlay .custom-section {
+    display: none;
+}
+#customizationOverlay .custom-section.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+#customizationOverlay .custom-section h3 {
+    font-size: var(--font-size-2xl);
+    color: var(--accent-color);
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+

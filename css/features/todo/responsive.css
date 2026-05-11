@@ -1,0 +1,183 @@
+@media (max-width: 768px) {
+    .advanced-todo-container {
+        width: 100vw;
+        height: 100dvh;
+        border-radius: 0;
+        flex-direction: column;
+    }
+
+    .advanced-todo-container .todo-sidebar {
+        width: 100%;
+        height: auto;
+        max-height: none;
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        overflow-y: visible;
+        margin-top: 4rem;
+    }
+
+    .advanced-todo-container .todo-sidebar.collapsed {
+        height: 60px;
+    }
+
+    .advanced-todo-container .todo-sidebar.collapsed .todo-stats-compact,
+    .advanced-todo-container .todo-sidebar.collapsed .sidebar-section {
+        display: none;
+    }
+
+    .advanced-todo-container .sidebar-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .advanced-todo-container .todo-stats-compact {
+        padding: 0.75rem 1rem;
+        gap: 0.35rem;
+    }
+
+    .advanced-todo-container .stat-compact {
+        padding: 0.5rem 0.25rem;
+    }
+
+    .advanced-todo-container .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .advanced-todo-container .stat-label {
+        font-size: var(--font-size-xs);
+    }
+
+    .advanced-todo-container .sidebar-section {
+        padding: 0.75rem 1rem;
+    }
+
+    .advanced-todo-container .todo-content-header {
+        padding: 1rem 1.5rem;
+        flex-direction: column;
+        align-items: stretch;
+        margin-top: 0;
+    }
+
+    .close-btn-todo {
+        top: 1rem;
+        right: 1rem;
+    }
+
+    .advanced-todo-container .header-left {
+        order: 1;
+    }
+
+    .advanced-todo-container .header-left h1 {
+        font-size: 1.5rem;
+    }
+
+    .advanced-todo-container .header-actions {
+        order: 2;
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .advanced-todo-container .search-container,
+    .advanced-todo-container .view-switcher,
+    .advanced-todo-container .dropdown-container,
+    .advanced-todo-container .add-task-btn {
+        width: 100%;
+    }
+
+    .advanced-todo-container #taskSearch,
+    .advanced-todo-container #taskSearch:focus {
+        width: 100%;
+    }
+
+    .advanced-todo-container .view-switcher {
+        justify-content: center;
+    }
+
+    .advanced-todo-container .list-view,
+    .advanced-todo-container .calendar-view {
+        padding: 1rem;
+    }
+
+    .advanced-todo-container .task-edit-container,
+    .advanced-todo-container .folder-edit-container {
+        width: 100%;
+        max-width: 100%;
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
+        padding-top: 4rem;
+    }
+
+    .advanced-todo-container .task-edit-content,
+    .advanced-todo-container .folder-edit-content {
+        padding: 1rem 1.5rem;
+    }
+
+    .advanced-todo-container .form-row {
+        grid-template-columns: 1fr;
+    }
+
+    .advanced-todo-container .priority-flags {
+        flex-wrap: wrap;
+    }
+
+    .advanced-todo-container .priority-flag {
+        flex: 1;
+        min-width: 60px;
+    }
+
+    .advanced-todo-container .color-picker-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .advanced-todo-container .icon-picker-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+
+    .advanced-todo-container .calendar-grid {
+        gap: 0.5rem;
+    }
+
+    .advanced-todo-container .calendar-day {
+        min-height: 60px;
+        padding: 0.35rem;
+    }
+
+    .advanced-todo-container .calendar-day-number {
+        font-size: var(--font-size-xs);
+    }
+
+    .advanced-todo-container .task-edit-footer,
+    .advanced-todo-container .folder-edit-footer {
+        flex-direction: column-reverse;
+    }
+
+    .advanced-todo-container .btn-primary,
+    .advanced-todo-container .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .advanced-todo-container .task-item {
+        padding: 1rem;
+    }
+
+    .advanced-todo-container .folder-item {
+        padding: 0.5rem 0.65rem;
+    }
+
+    .advanced-todo-container .quick-filter {
+        font-size: var(--font-size-sm);
+        padding: 0.5rem 0.65rem;
+    }
+}
+
+@media (max-width: 768px) and (orientation: landscape) {
+    .advanced-todo-overlay .task-modal-content,
+    .advanced-todo-container .task-modal-content {
+        width: 90%;
+        max-width: 700px;
+        height: 90%;
+        max-height: 90vh;
+        border-radius: var(--border-radius);
+    }
+}

@@ -23,11 +23,6 @@ body {
     font-weight: var(--font-weight-normal);
     line-height: var(--line-height);
     background-color: var(--bg-color);
-    background-image: var(--theme-background-image);
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
-    background-attachment: fixed;
     color: var(--text-color);
     overflow-x: hidden;
     min-height: 100vh;
@@ -167,15 +162,13 @@ a {
 a:hover {
     color: var(--accent-secondary);
 }
-
 mark {
     background-color: var(--accent-color);
     border-radius: var(--border-radius-sm);
     color: var(--bg-color);
+    padding: 0.1em 0.3em;
     transition: background-color var(--transition-speed);
 }
-
-
 
 /* Generic Components */
 .btn, .modal-btn, .preset-card-btn {
