@@ -8,6 +8,7 @@ body {
 
 .container { max-width: 980px; margin: 0 auto; padding: 2rem; }
 .site-header { text-align: center; padding: 2rem 0 1rem; }
+.site-header .container { position: relative; }
 .site-header .lead { margin-top: .25rem; color: var(--text-muted); }
 .back-link { position: absolute; left: 1rem; top: 1rem; color: var(--accent-color); text-decoration: none; display: inline-block; }
 

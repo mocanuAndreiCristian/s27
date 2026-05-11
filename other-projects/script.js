@@ -1,44 +1,8 @@
 (function(){
     "use strict";
 
-    const STORAGE = {
-        THEME: 'customization-theme',
-        ACCENT: 'customization-accent-color',
-        FONT: 'customization-font'
-    };
-
     let allProjects = [];
     let activeFilters = new Set();
-
-    async function applySavedCustomization(){
-        const themeId = localStorage.getItem(STORAGE.THEME) || 'auto';
-        const accent = localStorage.getItem(STORAGE.ACCENT) || '#6196ff';
-        const font = localStorage.getItem(STORAGE.FONT) || getComputedStyle(document.documentElement).getPropertyValue('--font-family') || "'Segoe UI', system-ui, sans-serif";
-
-        document.documentElement.style.setProperty('--accent-color', accent);
-        document.documentElement.style.setProperty('--font-family', font);
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', accent);
-
-        let activeTheme = themeId;
-        if (themeId === 'auto') {
-            activeTheme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-
-        try {
-            const resp = await fetch('../data/themes.json');
-            const data = await resp.json();
-            const themeDef = (data.themes || []).find(t => t.id === activeTheme) || null;
-            if (themeDef && themeDef.colors) {
-                Object.entries(themeDef.colors).forEach(([k,v]) => {
-                    document.documentElement.style.setProperty(k, v);
-                });
-            }
-            document.documentElement.setAttribute('data-theme', activeTheme);
-        } catch (e) {
-            console.warn('Could not load themes.json', e);
-            document.documentElement.setAttribute('data-theme', activeTheme);
-        }
-    }
 
     async function loadProjects(){
         try {
@@ -177,7 +141,6 @@
 
     // Init
     document.addEventListener('DOMContentLoaded', () => {
-        applySavedCustomization();
         loadProjects();
 
         // Setup search
