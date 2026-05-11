@@ -1,0 +1,152 @@
+﻿/* Mobile Weekly View (Full tab on mobile) */
+.mobile-weekly-view {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 5rem;
+    z-index: 100;
+    padding: 1rem;
+    padding-top: calc(4.5rem + max(0.75rem, env(safe-area-inset-top)));
+    background: var(--bg-color);
+    overflow-y: auto;
+}
+
+.mobile-weekly-view.active {
+    display: block;
+}
+
+.mobile-weekly-days {
+    display: grid;
+    gap: 0.9rem;
+}
+
+.mobile-weekly-day-card {
+    background: color-mix(in srgb, var(--card-bg) 95%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-color) 75%, transparent);
+    border-radius: var(--border-radius);
+    padding: 0.8rem;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.mobile-weekly-day-card.is-today {
+    border-color: color-mix(in srgb, var(--accent-color) 70%, var(--border-color));
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+.mobile-weekly-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.65rem;
+}
+
+.mobile-weekly-day-header h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    color: var(--text-color);
+}
+
+.mobile-weekly-day-header span {
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+}
+
+.mobile-weekly-rows {
+    display: grid;
+    gap: 0.5rem;
+}
+
+.mobile-weekly-row {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    border-radius: var(--border-radius-sm);
+    background: var(--card-bg);
+    color: var(--text-color);
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.65rem;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.mobile-weekly-row:active {
+    transform: scale(0.985);
+}
+
+.mobile-weekly-row.current {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 30%, transparent) inset;
+}
+
+.mobile-weekly-row-left {
+    display: flex;
+    flex-direction: column;
+    min-width: 3.3rem;
+}
+
+.mobile-weekly-row-period {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    line-height: 1;
+}
+
+.mobile-weekly-row-time {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--accent-color);
+}
+
+.mobile-weekly-row-emoji {
+    font-size: 1.1rem;
+    line-height: 1;
+    min-width: 1.4rem;
+    text-align: center;
+}
+
+.mobile-weekly-row-subject {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.mobile-weekly-row.marked-subject {
+    background: color-mix(in srgb, var(--accent-color) 14%, var(--card-bg));
+    border-color: var(--accent-color);
+}
+
+.mobile-weekly-empty {
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-muted);
+    padding: 0.9rem;
+    text-align: center;
+    font-size: var(--font-size-sm);
+}
+
+body.compact-timetable .mobile-weekly-day-card {
+    padding: 0.55rem;
+}
+
+body.compact-timetable .mobile-weekly-row {
+    padding: 0.45rem 0.5rem;
+}
+
+body.minimal-cells .mobile-weekly-day-card {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--border-color) 45%, transparent);
+    box-shadow: none;
+}
+
+body.minimal-cells .mobile-weekly-row {
+    background: transparent;
+    border-color: color-mix(in srgb, var(--divider-color) 95%, transparent);
+}
+
+body.hide-empty-days .mobile-weekly-empty {
+    display: none;
+}
+

@@ -1,0 +1,42 @@
+﻿/* Time Overlay specific overrides if needed */
+.time-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--bg-color);
+    color: var(--text-color);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: inherit;
+    transition: opacity var(--transition-speed) ease;
+    border-radius: 0;
+    backdrop-filter: blur(8px);
+}
+.time-overlay.active {
+    display: flex;
+}
+#time {
+    font-size: clamp(var(--spacing-3xl), 10vw, 10rem);
+    font-weight: var(--font-weight-bold);
+    color: var(--accent-color);
+    text-align: center;
+    margin-bottom: var(--spacing-sm);
+}
+#date {
+    font-size: clamp(1.2rem, 2vw, var(--font-size-2xl));
+    color: var(--accent-secondary);
+    opacity: 0.9;
+    text-align: center;
+}
+
+@media (max-width: 768px) {
+    #time {
+        font-size: clamp(4rem, 15vw, 8rem);
+    }
+
+    #date {
+        font-size: clamp(1.3rem, 4vw, 2rem);
+    }
+}

@@ -1,0 +1,442 @@
+﻿/* ========================================
+   FULL LAYOUT MODES (Mobile + Shared)
+   ======================================== */
+
+.full-layout-host {
+    display: none;
+    width: 100%;
+    margin-top: 0.5rem;
+    padding-bottom: 1rem;
+    animation: fadeInUp 0.35s ease;
+}
+
+.full-day-panel,
+.kanban-column,
+.timeline-day,
+.split-column {
+    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-sm);
+}
+
+.full-day-header,
+.kanban-column > header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 65%, transparent);
+}
+
+.full-day-header h3,
+.kanban-column > header h3,
+.timeline-day > header h3,
+.split-column > h3 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    color: var(--text-color);
+}
+
+.full-day-header span,
+.kanban-column > header span {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+}
+
+.full-day-cards,
+.kanban-cards,
+.timeline-list {
+    display: grid;
+    gap: 0.6rem;
+    padding: 0.75rem;
+}
+
+.full-subject-card {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    border-radius: var(--border-radius-sm);
+    background: var(--card-bg);
+    color: var(--text-color);
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.65rem;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.full-subject-card.is-skeleton,
+.timeline-item.is-skeleton,
+.accordion-day.is-skeleton,
+.day-chip.is-skeleton,
+.swipe-nav.is-skeleton {
+    cursor: default;
+    pointer-events: none;
+}
+
+.full-subject-card.is-skeleton,
+.timeline-item.is-skeleton {
+    transform: none;
+}
+
+.full-subject-card.is-skeleton .full-card-subject,
+.timeline-item.is-skeleton .timeline-main,
+.full-day-panel.is-skeleton h3,
+.kanban-column.is-skeleton h3,
+.timeline-day.is-skeleton h3,
+.split-column.is-skeleton h3,
+.day-chip.is-skeleton {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.full-day-panel.is-skeleton .full-day-header,
+.kanban-column.is-skeleton > header,
+.timeline-day.is-skeleton > header,
+.split-column.is-skeleton > h3 {
+    color: transparent;
+}
+
+.mobile-accordion-skeleton {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem;
+}
+
+.mobile-layout-message {
+    display: grid;
+    place-items: center;
+    gap: 0.5rem;
+    min-height: 10rem;
+    padding: 1.25rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+
+.mobile-layout-message i {
+    font-size: 2rem;
+    color: var(--accent-color);
+}
+
+.mobile-layout-error {
+    margin-top: 0.5rem;
+}
+
+.swipe-nav.is-skeleton {
+    border-style: solid;
+}
+
+.swipe-dot.is-skeleton {
+    opacity: 0.6;
+}
+
+.full-subject-card:active,
+.timeline-item:active {
+    transform: scale(0.985);
+}
+
+.full-subject-card.current,
+.timeline-item.current {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-color) 28%, transparent) inset;
+}
+
+.full-subject-card.past,
+.timeline-item.past {
+    opacity: 0.65;
+}
+
+.full-subject-card.marked-subject,
+.timeline-item.marked-subject {
+    background: color-mix(in srgb, var(--accent-color) 14%, var(--card-bg));
+    border-color: var(--accent-color);
+}
+
+.full-card-time {
+    display: flex;
+    flex-direction: column;
+    min-width: 3.4rem;
+}
+
+.full-card-time .time {
+    color: var(--accent-color);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-sm);
+}
+
+.full-card-time .period {
+    color: var(--text-muted);
+    font-size: 0.72rem;
+    line-height: 1;
+}
+
+.full-card-emoji {
+    min-width: 1.3rem;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.full-card-subject {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.full-day-empty {
+    border: 1px dashed var(--border-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    text-align: center;
+    padding: 0.9rem;
+}
+
+.layout-cards-scroll-wrap,
+.layout-accordion-wrap,
+.layout-timeline-stack-wrap {
+    display: grid;
+    gap: 0.85rem;
+}
+
+.accordion-day {
+    background: color-mix(in srgb, var(--card-bg) 94%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-color) 72%, transparent);
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.accordion-day summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.9rem;
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-color);
+}
+
+.accordion-day summary::-webkit-details-marker {
+    display: none;
+}
+
+.accordion-content {
+    padding: 0 0.75rem 0.75rem;
+}
+
+.layout-tabs-wrap {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.full-day-tabs {
+    display: flex;
+    gap: 0.4rem;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.2rem;
+}
+
+.full-day-tab {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    border-radius: var(--border-radius-sm);
+    padding: 0.5rem 0.7rem;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.full-day-tab.active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.layout-tabs-wrap.tabs-pill .full-day-tab {
+    border-radius: var(--border-radius-pill);
+    padding-inline: 0.9rem;
+}
+
+.layout-tabs-wrap.tabs-pill .full-day-tab.active {
+    background: color-mix(in srgb, var(--accent-color) 18%, var(--card-bg));
+}
+
+.layout-kanban-scroll-wrap {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(14rem, 78vw);
+    gap: 0.8rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding-bottom: 0.25rem;
+}
+
+.kanban-column {
+    scroll-snap-align: start;
+}
+
+.kanban-card {
+    grid-template-columns: auto 1fr;
+}
+
+.kanban-card .full-card-emoji {
+    order: 2;
+    justify-self: end;
+}
+
+.kanban-card .full-card-subject {
+    order: 1;
+}
+
+.layout-cards-swipe-wrap,
+.layout-kanban-swipe-wrap {
+    display: grid;
+    gap: 0.65rem;
+}
+
+.swipe-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+}
+
+.swipe-head h3 {
+    margin: 0;
+    color: var(--accent-color);
+}
+
+.swipe-nav {
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-pill);
+    background: var(--card-bg);
+    color: var(--text-color);
+    cursor: pointer;
+}
+
+.swipe-body {
+    min-height: 8rem;
+}
+
+.swipe-dots {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+}
+
+.swipe-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border: 0;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--text-muted) 65%, transparent);
+    cursor: pointer;
+}
+
+.swipe-dot.active {
+    background: var(--accent-color);
+}
+
+.layout-split-columns-wrap {
+    display: grid;
+    gap: 0.8rem;
+}
+
+.split-column {
+    padding: 0.75rem;
+    display: grid;
+    gap: 0.65rem;
+}
+
+.split-column > h3 {
+    color: var(--accent-color);
+    font-size: var(--font-size-base);
+}
+
+.timeline-day {
+    padding: 0.75rem;
+}
+
+.timeline-list {
+    gap: 0.55rem;
+    padding: 0.35rem 0 0;
+}
+
+.timeline-item {
+    width: 100%;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    border-radius: var(--border-radius-sm);
+    background: var(--card-bg);
+    color: var(--text-color);
+    padding: 0.6rem;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.6rem;
+    text-align: left;
+    cursor: pointer;
+}
+
+.timeline-dot {
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    background: var(--accent-color);
+    margin-top: 0.15rem;
+}
+
+.timeline-main {
+    display: grid;
+    gap: 0.12rem;
+}
+
+.timeline-time {
+    color: var(--accent-color);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+}
+
+.timeline-subject {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.timeline-empty {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    padding: 0.5rem 0;
+}
+
+.layout-day-chips-wrap {
+    display: grid;
+    gap: 0.7rem;
+}
+
+.day-chips-row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.45rem;
+}
+
+.day-chip {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-muted);
+    border-radius: var(--border-radius-pill);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    padding: 0.45rem 0.2rem;
+    cursor: pointer;
+}
+
+.day-chip.active {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 15%, var(--card-bg));
+}

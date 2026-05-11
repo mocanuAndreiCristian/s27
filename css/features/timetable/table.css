@@ -1,0 +1,171 @@
+﻿/* ========================================
+   TIMETABLE
+   ======================================== */
+
+.timetable-wrapper {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    border-radius: var(--border-radius);
+    margin-top: -3rem;
+    scrollbar-width: thin;
+}
+.timetable-wrapper::-webkit-scrollbar {
+    height: var(--scrollbar-size);
+}
+
+.timetable-wrapper.is-loading .timetable {
+    pointer-events: none;
+}
+
+.timetable.is-loading thead th {
+    color: transparent;
+    animation: none;
+}
+
+.timetable.is-loading thead th::after {
+    content: "";
+    display: block;
+    width: 72%;
+    height: 1.45rem;
+    margin: 0 auto;
+    border-radius: var(--border-radius-pill);
+    background: linear-gradient(90deg, var(--highlight-color) 25%, var(--card-bg) 50%, var(--highlight-color) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+}
+
+.timetable.is-loading thead th:first-child::after {
+    width: 4.75rem;
+}
+
+.timetable th, .timetable td {
+    text-align: left !important;
+}
+
+.timetable {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+}
+
+.timetable th,
+.timetable td {
+    padding: var(--spacing-md);
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid var(--border-color);
+    position: relative;
+    transition: background-color var(--transition-speed);
+    font-size: var(--font-size-2xl);
+    border-radius: 0;
+    width: 70rem;
+    white-space: nowrap;
+}
+
+/* Compact Mode */
+body.compact-timetable .timetable th,
+body.compact-timetable .timetable td {
+    padding: var(--spacing-sm);
+    font-size: calc(var(--font-size-2xl) * 0.85);
+}
+
+/* Minimal Cell Style */
+body.minimal-cells .timetable th,
+body.minimal-cells .timetable td {
+    border: 1px solid transparent;
+    border-bottom: 1px solid var(--divider-color);
+    background: transparent;
+}
+body.minimal-cells .timetable th:not(:first-child):hover, 
+body.minimal-cells .timetable td:not(:first-child):hover {
+    box-shadow: none;
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    border-radius: var(--border-radius-xs);
+}
+
+
+.timetable th {
+    background-color: var(--card-bg);
+    color: var(--text-color);
+    font-weight: var(--font-weight-semibold);
+    text-transform: none;
+    letter-spacing: 1px;
+    animation: none;
+}
+
+.timetable td {
+    background-color: var(--card-bg);
+}
+
+.timetable-skeleton-row th {
+    animation: none;
+}
+
+.timetable-skeleton-cell {
+    cursor: default;
+}
+
+.timetable-skeleton-block {
+    display: block;
+    width: 72%;
+    height: 2.75rem;
+    margin: 0 auto;
+    border-radius: var(--border-radius-pill);
+}
+
+.timetable-skeleton-time .timetable-skeleton-block {
+    width: 4.75rem;
+}
+
+.timetable-message-cell {
+    padding: var(--spacing-lg);
+    color: var(--text-muted);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    text-align: center;
+}
+
+.timetable.has-error .timetable-message-cell {
+    background: color-mix(in srgb, var(--danger-color) 6%, var(--card-bg));
+    color: var(--text-color);
+}
+
+.timetable td.subject,
+.timetable th.subject {
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-speed);
+}
+.timetable th:not(:first-child),
+.timetable td:not(:first-child) {
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.timetable td.subject:hover,
+.timetable th.subject:hover,
+.timetable th:not(:first-child):hover,
+.timetable td:not(:first-child):hover {
+    z-index: var(--z-tooltip);
+    transform: scale(1.05);
+    cursor: pointer;
+    border-radius: var(--border-radius-xs);
+    background: var(--highlight-color);
+    box-shadow: var(--box-shadow-md);
+}
+
+.timetable.is-loading .timetable-skeleton-cell:hover,
+.timetable.is-loading .timetable-skeleton-row th:hover {
+    transform: none;
+    box-shadow: none;
+    background: var(--card-bg);
+}
+
+#emojis {
+    font-size: var(--font-size-xl);
+    border-radius: var(--border-radius-xs);
+}
+

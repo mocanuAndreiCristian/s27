@@ -1,0 +1,162 @@
+{
+    "schedule": [
+        {
+            "time": "12:00",
+            "monday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            },
+            "tuesday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "wednesday": {
+                "name": "Muzică",
+                "emoji": "🎵"
+            },
+            "thursday": null,
+            "friday": {
+                "name": "Arte",
+                "emoji": "🎨"
+            }
+        },
+        {
+            "time": "13:00",
+            "monday": {
+                "name": "Religie",
+                "emoji": "☦️"
+            },
+            "tuesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "wednesday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "thursday": {
+                "name": "Dirigenție",
+                "emoji": "📰"
+            },
+            "friday": {
+                "name": "Istorie",
+                "emoji": "📜"
+            }
+        },
+        {
+            "time": "14:00",
+            "monday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "tuesday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "wednesday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "thursday": {
+                "name": "Fizică",
+                "emoji": "💡"
+            },
+            "friday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            }
+        },
+        {
+            "time": "15:00",
+            "monday": {
+                "name": "Mate",
+                "emoji": "📏"
+            },
+            "tuesday": {
+                "name": "Opt Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "wednesday": {
+                "name": "Chimie",
+                "emoji": "🧪"
+            },
+            "thursday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "friday": {
+                "name": "Mate",
+                "emoji": "📏"
+            }
+        },
+        {
+            "time": "16:00",
+            "monday": {
+                "name": "Informatică",
+                "emoji": "💻"
+            },
+            "tuesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "wednesday": {
+                "name": "Geografie",
+                "emoji": "🌍"
+            },
+            "thursday": {
+                "name": "Tehnologică",
+                "emoji": "🧰"
+            },
+            "friday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            }
+        },
+        {
+            "time": "17:00",
+            "monday": {
+                "name": "Civică",
+                "emoji": "🏛️"
+            },
+            "tuesday": {
+                "name": "Sport",
+                "emoji": "⚽"
+            },
+            "wednesday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            },
+            "thursday": {
+                "name": "Engleză",
+                "emoji": "",
+                "flag": "fi fi-gb"
+            },
+            "friday": {
+                "name": "Română",
+                "emoji": "",
+                "flag": "fi fi-ro"
+            }
+        },
+        {
+            "time": "18:00",
+            "monday": null,
+            "tuesday": null,
+            "wednesday": null,
+            "thursday": {
+                "name": "Franceză",
+                "emoji": "",
+                "flag": "fi fi-fr"
+            },
+            "friday": {
+                "name": "Biologie",
+                "emoji": "🧬"
+            }
+        }
+    ]
+}

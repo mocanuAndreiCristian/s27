@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+<html lang="ro">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#6196ff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Orar 8B</title>
+    <script src="../js/theme-bootstrap.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://kit.webawesome.com/45396e3eb4054c87.js" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/lipis/flag-icons@7.3.2/css/flag-icons.min.css" />
+    <base target="_blank">
+    <link rel="stylesheet" href="../css/app.css">
+    
+
+    <script>
+        window.AppConfig = { classId: "8b", dataPath: "../data/" };
+    </script>
+</head>
+
+<body>
+    <!-- New Sticky Mobile Header -->
+    <header id="mobileHeader" class="mobile-header">
+        <div class="mobile-header-content">
+            <h1 class="mobile-app-title">Orar 8B</h1>
+            <div class="mobile-header-info">
+                <span id="mobileHeaderTime">--:--</span>
+                <span id="mobileHeaderDate">-- --</span>
+            </div>
+        </div>
+    </header>
+
+    <button id="menuToggle" class="menu-toggle" aria-label="Toggle Menu">
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </button>
+    <div class="title-container">
+        <h1 class="main-title">Orar 8B</h1>
+        <div class="header-info-wrapper">
+            <div class="time-display" id="titleTime">00:00:00</div>
+            <div class="date-display" id="titleDate"></div>
+        </div>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="scroll-indicator-bg">
+        <div id="scroll-indicator"></div>
+    </div>
+    <div class="biggest-container">
+        <div class="header">
+            <div id="sideMenu" class="side-menu">
+
+                <h1 class="menu-title">Menu</h1>
+
+                <button id="customizationBtn" class="menu-btn">
+                    <i class="fa-solid fa-sliders"></i>
+                    <span>Customization</span>
+                </button>
+
+                <button id="weatherBtn" class="menu-btn weather-menu-btn">
+                    <div class="weather-btn-content">
+                        <span id="menuWeatherEmoji" class="menu-weather-emoji">☁️</span>
+                        <div class="weather-btn-text">
+                            <span class="weather-btn-label">Weather</span>
+                            <span id="menuWeatherTemp" class="menu-weather-temp">--°C</span>
+                        </div>
+                    </div>
+                </button>
+
+                <button id="clockBtn" class="menu-btn">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Clock</span>
+                </button>
+
+                <button id="todoBtn" class="menu-btn">
+                    <i class="fa-solid fa-list-check"></i>
+                    <span>My Tasks</span>
+                </button>
+
+                <button id="libraryBtn" class="menu-btn">
+                    <i class="fa-solid fa-book-open"></i>
+                    <span>Biblioteca</span>
+                </button>
+
+                <button id="infoBtn" class="menu-btn">
+                    <i class="fa-solid fa-circle-info"></i>
+                    <span>Info</span>
+                </button>
+                <div id="recommendedManual" class="recommended-manual">
+                    <h3>Manuale recomandate</h3>
+                    <div class="manual-card">
+                        <p>Niciun manual disponibil</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="big-container">
+            <!-- Full View Header (Mobile Only) - Moved out for sticky positioning -->
+            <div class="full-view-header" id="fullViewHeader">
+                <h2 class="full-view-title"><i class="fa-solid fa-table-cells"></i> Weekly Schedule</h2>
+            </div>
+
+            <div class="timetable-wrapper">
+                <table class="timetable" id="timetable">
+                    <thead>
+                        <tr>
+                            <th class="no-hover" style="width: 10rem !important; height: 3rem !important;"></th>
+                            <th class="no-hover" style="text-transform: uppercase;">Luni</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Marți</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Miercuri</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Joi</th>
+                            <th class="no-hover" style="text-transform: uppercase;">Vineri</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <!-- Time Overlay -->
+            <div id="timeOverlay" class="time-overlay">
+                <div class="overlay-content">
+                    <button id="closeOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                    <div id="clockDisplay">
+                        <div id="time"></div>
+                        <div id="date"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!--menu overlay-->
+            <div id="overlay"></div>
+
+            <!-- Todo Overlay -->
+            <div id="todoOverlay" class="todo-overlay">
+                <div class="todo-container">
+                    <button id="closeTodoOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                    <div class="construction-placeholder">
+                        <i class="fa-solid fa-hammer"></i>
+                        <h2>This area is under Construction</h2>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <!-- Info Overlay -->
+            <div id="infoOverlay" class="overlay">
+                <div class="info-overlay-container">
+
+
+                    <div class="info-overlay-header">
+                        <h2><i class="fas fa-info-circle"></i> About Orar 8B</h2>
+                        <button id="closeInfoOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <div class="info-content" data-simplebar>
+                        <h2>Schedules - Secondary School No. 27 from Bucharest</h2>
+                        <h2>2025-2026</h2>
+                        <h3></h3>
+                        <p>
+                            Here you can quickly and easily find the complete timetable for several classes
+                            from Secondary School No. 27 - always just one click away. The site comes with both
+                            a light and a dark theme, so you can choose what you like best, plus a color picker
+                            for extra customization. It's designed to be simple, useful, and elegant - so you
+                            don't waste time looking through crumpled papers or random photos.
+                        </p>
+                        <p>
+                            Keep in mind that this website isn't fully optimized for mobile devices yet.
+                        </p>
+                        <p>Controls:</p>
+                        <ul>
+                            <li>Click on a subject = highlight it</li>
+                            <li>Click outside the subject = remove highlight</li>
+                            <li>Menu button = open/close side menu</li>
+                            <li>Theme button = switch between light and dark mode</li>
+                            <li>Color picker = choose a custom accent color</li>
+                            <li>Clock = view current time and date</li>
+                            <li>My Tasks = open the to-do list</li>
+                        </ul>
+
+                        <div class="release-notes-section">
+                            <h2><i class="fa-solid fa-rocket"></i> Release Notes</h2>
+
+                            <div class="release-note">
+                                <div class="release-header">
+                                    <span class="release-version">v2.5.0</span>
+                                    <span class="release-date">November 2025</span>
+                                </div>
+                                <h4>Advanced Customization System</h4>
+                                <ul>
+                                    <li>🎨 New customization overlay with sidebar navigation</li>
+                                    <li>🌈 12 beautiful theme presets (Space, Midnight, Sunset, Forest, Ocean, Lavender,
+                                        Rose,
+                                        and more)</li>
+                                    <li>🎨 Custom color presets with hex input and randomizer</li>
+                                    <li>⚠️ Color contrast warnings for better accessibility</li>
+                                    <li>🔤 Font customization with 18+ Google Fonts</li>
+                                    <li>➕ Add custom Google Fonts feature</li>
+                                    <li>💾 Save, export, and import customization presets</li>
+                                    <li>✨ Smooth transitions and animations throughout</li>
+                                </ul>
+                            </div>
+
+                            <div class="release-note">
+                                <div class="release-header">
+                                    <span class="release-version">v2.0.0</span>
+                                    <span class="release-date">October 2025</span>
+                                </div>
+                                <h4>Advanced To-Do System</h4>
+                                <ul>
+                                    <li>✅ Complete task management with priorities (High, Medium, Low)</li>
+                                    <li>📁 Custom categories for organization</li>
+                                    <li>📅 Deadline tracking with notifications</li>
+                                    <li>🔍 Filter and sort tasks by multiple criteria</li>
+                                    <li>📊 Task statistics dashboard</li>
+                                    <li>💾 Persistent storage across sessions</li>
+                                </ul>
+                            </div>
+
+                            <div class="release-note">
+                                <div class="release-header">
+                                    <span class="release-version">v1.5.0</span>
+                                    <span class="release-date">September 2025</span>
+                                </div>
+                                <h4>Enhanced Features</h4>
+                                <ul>
+                                    <li>📚 Recommended textbook based on current class</li>
+                                    <li>⏰ Live clock overlay</li>
+                                    <li>🌤️ Weather information with location</li>
+                                    <li>📱 Improved mobile responsiveness</li>
+                                    <li>🎯 Better timetable highlighting</li>
+                                </ul>
+                            </div>
+
+                            <div class="release-note">
+                                <div class="release-header">
+                                    <span class="release-version">v1.0.0</span>
+                                    <span class="release-date">August 2025</span>
+                                </div>
+                                <h4>Initial Release</h4>
+                                <ul>
+                                    <li>📅 Interactive timetable display</li>
+                                    <li>🌓 Light and dark theme support</li>
+                                    <li>🎨 Accent color customization</li>
+                                    <li>📍 Current class highlighting</li>
+                                    <li>🔄 Real-time updates</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <h3><a href="https://s27.ro/8b" target="_blank">Original 8B Schedule Website</a></h3>
+                        <h3><a href="https://manuale.edu.ro/" target="_blank">More Textbooks</a></h3>
+                        <h3><a href="../other-projects/index.html" target="_blank">Other projects by us</a></h3>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <!-- Customization Overlay -->
+        <div id="customizationOverlay" class="customization-overlay">
+            <div class="customization-container">
+                <button id="closeCustomization" class="close-btn" aria-label="Close"><i
+                        class="fa-solid fa-xmark"></i></button>
+
+                <!-- Sidebar -->
+                <div class="custom-sidebar">
+                    <div class="sidebar-header">
+                        <h2><i class="fa-solid fa-sliders"></i> Customize</h2>
+                    </div>
+                    <nav class="sidebar-nav">
+                        <div class="sidebar-item active" data-section="theme">
+                            <i class="fa-solid fa-moon"></i>
+                            <span>Theme</span>
+                        </div>
+                        <div class="sidebar-item" data-section="color">
+                            <i class="fa-solid fa-droplet"></i>
+                            <span>Accent Color</span>
+                        </div>
+                        <div class="sidebar-item" data-section="font">
+                            <i class="fa-solid fa-font"></i>
+                            <span>Font</span>
+                        </div>
+                        <div class="sidebar-item" data-section="ui">
+                            <i class="fa-solid fa-desktop"></i>
+                            <span>Interface</span>
+                        </div>
+                        <div class="sidebar-item" data-section="a11y">
+                            <i class="fa-solid fa-universal-access"></i>
+                            <span>Access</span>
+                        </div>
+                        <div class="sidebar-item" data-section="advanced">
+                            <i class="fa-solid fa-cog"></i>
+                            <span>Advanced</span>
+                        </div>
+                        <div class="sidebar-item" data-section="presets">
+                            <i class="fa-solid fa-bookmark"></i>
+                            <span>Presets</span>
+                        </div>
+                        <div class="sidebar-item dev-mode-only" data-section="base" style="display: none;">
+                            <i class="fa-solid fa-paintbrush"></i>
+                            <span>Base</span>
+                        </div>
+                    </nav>
+                </div>
+
+                <!-- Content -->
+                <div class="custom-content" data-simplebar>
+                    <!-- Theme Section -->
+                    <div class="custom-section active" id="themeSection">
+                        <div class="section-header-custom theme-section-hero">
+                            <div class="theme-hero-copy">
+                                <span class="theme-kicker">Theme Studio</span>
+                                <h3><i class="fa-solid fa-swatchbook"></i> Pick a base mood</h3>
+                                <p>Search by vibe, skim tags, and preview every palette before you lock it in.</p>
+                            </div>
+                            <div class="theme-hero-stats">
+                                <div class="theme-hero-stat">
+                                    <strong id="themeResultsCount">0</strong>
+                                    <span>Visible</span>
+                                </div>
+                                <div class="theme-hero-stat">
+                                    <strong id="themeActiveLabel">Auto</strong>
+                                    <span>Active</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="theme-filters">
+                            <label class="theme-search-shell" for="themeSearch">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="themeSearch" placeholder="Search themes, moods, or tags..."
+                                    class="theme-search-input">
+                            </label>
+                            <div class="theme-tags" id="themeTags"></div>
+                        </div>
+                        <p class="theme-results-meta" id="themeResultsMeta">0 of 0 visible</p>
+                        <div class="theme-options" id="themeOptions">
+                            <!-- Theme cards will be rendered here dynamically from themes.json -->
+                        </div>
+                    </div>
+                    <!-- Color Section -->
+                    <div class="custom-section" id="colorSection">
+                        <h3><i class="fa-solid fa-droplet"></i> Accent Color</h3>
+
+                        <!-- NEW: Contrast Warning -->
+                        <div id="contrastWarning" class="contrast-warning" style="display: none;">
+                            Warning message will appear here
+                        </div>
+
+                        <div class="color-section-content">
+                            <div class="custom-color-picker-area">
+                                <h4>Custom Color</h4>
+                                <div class="color-picker-wrapper">
+                                    <div class="color-input-box">
+                                        <input type="color" id="customColorPicker" value="#6196ff">
+                                    </div>
+                                    <input type="text" id="colorHexInput" class="color-hex-input" placeholder="#6196FF"
+                                        maxlength="7">
+                                    <button class="add-preset-btn" id="addColorPreset">
+                                        <i class="fa-solid fa-plus"></i>
+                                        Add as Preset
+                                    </button>
+
+                                    <!-- Randomize accent color -->
+                                    <button class="add-preset-btn randomize-btn" id="randomColorBtn"
+                                        title="Randomize accent color">
+                                        <i class="fa-solid fa-dice"></i> Randomize
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="recommended-colors-area">
+                                <h4>Recommended Colors</h4>
+                                <div class="color-presets-grid" id="recommendedColorsGrid">
+                                    <!-- Generated JS -->
+                                </div>
+                            </div>
+
+                            <div class="color-presets-area">
+                                <h4>Color Presets</h4>
+                                <div class="color-presets-grid" id="colorPresetsGrid">
+                                    <!-- Presets will be rendered here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Font Section -->
+                    <div class="custom-section" id="fontSection">
+                        <h3><i class="fa-solid fa-font"></i> Font Settings</h3>
+                        <div class="font-options">
+                            <div class="font-group">
+                                <label for="fontSelect">Choose Font Family</label>
+                                <div class="custom-select-wrapper">
+                                    <select id="fontSelect" class="font-select">
+                                        <option value="'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif">Default
+                                            (Segoe
+                                            UI)</option>
+                                        <option value="'Inter', sans-serif">Inter</option>
+                                        <option value="'Roboto', sans-serif">Roboto</option>
+                                        <option value="'Open Sans', sans-serif">Open Sans</option>
+                                        <option value="'Lato', sans-serif">Lato</option>
+                                        <option value="'Montserrat', sans-serif">Montserrat</option>
+                                        <option value="'Poppins', sans-serif">Poppins</option>
+                                        <option value="'Raleway', sans-serif">Raleway</option>
+                                        <option value="'Ubuntu', sans-serif">Ubuntu</option>
+                                        <option value="'Nunito', sans-serif">Nunito</option>
+                                        <option value="'Quicksand', sans-serif">Quicksand</option>
+                                        <option value="'Outfit', sans-serif">Outfit</option>
+                                        <option value="'DM Sans', sans-serif">DM Sans</option>
+                                        <option value="'Space Grotesk', sans-serif">Space Grotesk</option>
+                                        <option value="'Merriweather', serif">Merriweather</option>
+                                        <option value="'Playfair Display', serif">Playfair Display</option>
+                                        <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+                                        <option value="'Fira Code', monospace">Fira Code</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down select-arrow"></i>
+                                </div>
+                            </div>
+
+                            <!-- NEW: Add Custom Font Button -->
+                            <button class="add-custom-font-btn" id="addCustomFont">
+                                <i class="fa-solid fa-plus"></i>
+                                Add Google Font
+                            </button>
+
+                            <div class="font-preview" id="fontPreview">
+                                <p style="font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem;">The Quick Brown
+                                    Fox
+                                </p>
+                                <p style="font-size: 1rem;">Jumps over the lazy dog. 0123456789</p>
+                                <p style="font-size: 0.9rem; opacity: 0.8;">
+                                    AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- UI Section (Refactored to Tabs) -->
+                    <div class="custom-section" id="uiSection">
+                        <h3><i class="fa-solid fa-desktop"></i> Interface Settings</h3>
+
+                        <div class="custom-tabs ui-tabs">
+                            <button class="ui-tab-btn active" data-tab="uiLayout">Layout</button>
+                            <button class="ui-tab-btn" data-tab="uiTimetable">Timetable</button>
+                            <button class="ui-tab-btn" data-tab="uiBackground">Background</button>
+                            <button class="ui-tab-btn" data-tab="uiLibrary">Biblioteca</button>
+                        </div>
+
+                        <div class="ui-content-wrapper active" id="uiLayoutContent">
+                            <div class="ui-controls-grid">
+                                <div class="ui-control-card">
+                                    <label>Border Radius</label>
+                                    <input type="range" id="uiBorderRadius" min="0" max="24" step="1" value="16">
+                                    <div class="range-labels">
+                                        <span>Square</span>
+                                        <span>Round</span>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label>Glass Intensity</label>
+                                    <input type="range" id="uiGlassIntensity" min="0" max="100" step="10" value="80">
+                                    <div class="range-labels">
+                                        <span>Solid</span>
+                                        <span>Glass</span>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Hide Nav on Scroll</h4>
+                                        <p>Auto-hide mobile navigation</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="uiMobileNavScroll">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui-content-wrapper" id="uiTimetableContent">
+                            <div class="ui-controls-grid">
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Compact Timetable</h4>
+                                        <p>Reduce padding for smaller screens</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="uiCompactMode">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Minimal Cell Style</h4>
+                                        <p>Remove borders from timetable cells</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="uiMinimalCells">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Hide Empty Days</h4>
+                                        <p>Hide days with no classes</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="uiHideEmptyDays">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui-content-wrapper" id="uiBackgroundContent">
+                            <div class="ui-controls-grid">
+                                <div class="ui-control-card full-width">
+                                    <label>Background Image URL</label>
+                                    <div class="input-with-btn">
+                                        <input type="text" id="uiBgImage" placeholder="https://example.com/image.jpg">
+                                        <button id="uiBgClear" class="clear-btn"><i
+                                                class="fa-solid fa-trash"></i></button>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card full-width">
+                                    <div class="checkbox-info">
+                                        <h4>Pattern Overlay</h4>
+                                        <p>Add subtle pattern to background</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="uiBgPattern">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ui-content-wrapper" id="uiLibraryContent">
+                            <div class="ui-controls-grid">
+                                <div class="ui-control-card full-width">
+                                    <label for="uiLibraryPreferredOpenType">Tip manual preferat</label>
+                                    <div class="custom-select-wrapper">
+                                        <select id="uiLibraryPreferredOpenType" class="font-select">
+                                            <option value="link">Link</option>
+                                            <option value="pdf">PDF</option>
+                                            <option value="app">Aplicatie</option>
+                                        </select>
+                                        <i class="fa-solid fa-chevron-down select-arrow"></i>
+                                    </div>
+                                    <p class="library-settings-note" id="uiLibraryOpenTypeNote">
+                                        Folosit cand modul de interactiune este Deschide manual.
+                                    </p>
+                                </div>
+
+                                <div class="ui-control-card">
+                                    <label for="uiLibraryDesktopColumns">Manuale pe rand</label>
+                                    <input type="range" id="uiLibraryDesktopColumns" min="2" max="6" step="1" value="4">
+                                    <div class="range-labels">
+                                        <span>2</span>
+                                        <span id="uiLibraryDesktopColumnsValue">4 / rand</span>
+                                        <span>6</span>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card checkbox-card full-width library-settings-note-card">
+                                    <div class="checkbox-info">
+                                        <h4>Pe mobil</h4>
+                                        <p>Pe telefoane grila se adapteaza automat, asa ca aceasta setare afecteaza doar desktopul si tabletele late.</p>
+                                    </div>
+                                    <div class="library-settings-note-icon">
+                                        <i class="fa-solid fa-mobile-screen-button"></i>
+                                    </div>
+                                </div>
+
+                                <div class="ui-control-card full-width">
+                                    <label>Manuale multiple pe materie</label>
+                                    <p class="library-settings-note">
+                                        Alege cum se deschid manualele cand o materie are 2 sau 3 selectii salvate.
+                                    </p>
+                                    <div class="mode-toggle-container library-mode-toggle">
+                                        <button type="button" class="mode-btn active" data-library-open-behavior="open-all" id="uiLibraryBehaviorOpenAll">
+                                            <i class="fa-solid fa-layer-group"></i>
+                                            <span>Toate</span>
+                                        </button>
+                                        <button type="button" class="mode-btn" data-library-open-behavior="buttons" id="uiLibraryBehaviorButtons">
+                                            <i class="fa-solid fa-grip"></i>
+                                            <span>Butoane</span>
+                                        </button>
+                                        <button type="button" class="mode-btn" data-library-open-behavior="both" id="uiLibraryBehaviorBoth">
+                                            <i class="fa-solid fa-up-right-and-down-left-from-center"></i>
+                                            <span>Ambele</span>
+                                        </button>
+                                    </div>
+                                    <div class="mode-indicator">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        <span>Mod curent: <strong id="uiLibraryBehaviorText">Deschide toate</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="library-pref-custom" id="uiLibraryCustomPrefsWrap">
+                                <div class="library-pref-custom-header">
+                                    <h4>Manuale exacte pe materie</h4>
+                                    <p>Alege pana la 3 manuale in ordinea in care vrei sa fie deschise. Selectiile sunt impartite prin bare.</p>
+                                </div>
+                                <div class="library-pref-grid" id="uiLibraryCustomPrefsGrid"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accessibility Section (New) -->
+                    <div class="custom-section" id="a11ySection">
+                        <h3><i class="fa-solid fa-universal-access"></i> Accessibility</h3>
+
+                        <div class="ui-controls-grid">
+                            <div class="ui-control-card checkbox-card">
+                                <div class="checkbox-info">
+                                    <h4>High Contrast</h4>
+                                    <p>Maximum visibility colors</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="a11yHighContrast">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="ui-control-card checkbox-card">
+                                <div class="checkbox-info">
+                                    <h4>Reduced Motion</h4>
+                                    <p>Disable non-essential animations</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="a11yReducedMotion">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="ui-control-card checkbox-card">
+                                <div class="checkbox-info">
+                                    <h4>Focus Indicators</h4>
+                                    <p>Highlight focused elements</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="a11yFocusIndicators">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="ui-control-card checkbox-card">
+                                <div class="checkbox-info">
+                                    <h4>Grayscale Mode</h4>
+                                    <p>Remove all colors</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="a11yGrayscale">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div class="ui-control-card full-width">
+                                <label>Text Scaling</label>
+                                <input type="range" id="a11yTextScale" min="0.8" max="1.5" step="0.1" value="1">
+                                <div class="range-labels">
+                                    <span>Small</span>
+                                    <span>Normal</span>
+                                    <span>Large</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Presets Section -->
+                    <div class="custom-section" id="presetsSection">
+                        <h3><i class="fa-solid fa-bookmark"></i> Customization Presets</h3>
+
+                        <div class="presets-tabs custom-tabs">
+                            <button class="preset-tab-btn active" data-tab="myPresets">My Presets</button>
+                            <button class="preset-tab-btn" data-tab="gallery">Gallery</button>
+                        </div>
+
+                        <div class="presets-content-wrapper active" id="myPresetsContent">
+                            <div class="presets-actions">
+                                <button class="preset-action-btn" id="savePresetBtn">
+                                    <i class="fa-solid fa-floppy-disk"></i>
+                                    Save Current
+                                </button>
+                                <button class="preset-action-btn secondary" id="exportPresetBtn">
+                                    <i class="fa-solid fa-download"></i>
+                                    Export
+                                </button>
+                                <button class="preset-action-btn secondary" id="importPresetBtn">
+                                    <i class="fa-solid fa-upload"></i>
+                                    Import
+                                </button>
+                                <input type="file" id="importPresetFile" accept=".json" style="display: none;">
+                            </div>
+
+                            <div class="saved-presets" id="savedPresetsGrid">
+                                <!-- Saved presets will appear here -->
+                            </div>
+                        </div>
+
+                        <div class="presets-content-wrapper" id="galleryContent">
+                            <div class="gallery-grid" id="galleryGrid">
+                                <!-- JS generated -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Base Section (Dev Mode Only) -->
+                    <div class="custom-section" id="baseSection">
+                        <h3><i class="fa-solid fa-paintbrush"></i> Base Input Styles</h3>
+                        <p style="opacity: 0.7; margin-bottom: 2rem;">All available input styles for reference</p>
+
+                        <div class="base-inputs-grid">
+                            <!-- Text Inputs -->
+                            <div class="base-input-group">
+                                <h4>Text Input</h4>
+                                <input type="text" placeholder="Text input..." class="base-demo-input">
+                            </div>
+
+                            <!-- Number Input -->
+                            <div class="base-input-group">
+                                <h4>Number Input</h4>
+                                <div class="number-input-wrapper">
+                                    <button class="number-btn">−</button>
+                                    <input type="number" placeholder="Enter number..." class="base-demo-input number-input-field" value="42" min="0" max="100">
+                                    <button class="number-btn">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Custom Color Picker -->
+                            <div class="base-input-group">
+                                <h4>Custom Color Picker</h4>
+                                <div class="custom-color-picker-container">
+                                    <input type="color" value="#6196ff" class="base-demo-input custom-color-input" id="demoColorPicker">
+                                    <div class="color-value-display" id="demoColorValue">#6196FF</div>
+                                </div>
+                            </div>
+
+                            <!-- Range Slider -->
+                            <div class="base-input-group">
+                                <h4>Range Slider</h4>
+                                <input type="range" min="0" max="100" value="50" class="base-demo-input range-slider-demo">
+                                <div class="range-value-display"><span id="rangeValue">50</span>%</div>
+                            </div>
+
+                            <!-- Select Dropdown -->
+                            <div class="base-input-group">
+                                <h4>Select Dropdown</h4>
+                                <select class="base-demo-input">
+                                    <option>Option 1</option>
+                                    <option selected>Option 2</option>
+                                    <option>Option 3</option>
+                                </select>
+                            </div>
+
+                            <!-- Radio Button Range Control -->
+                            <div class="base-input-group">
+                                <h4>Radio Range Control</h4>
+                                <div class="radio-range-group">
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="low" checked>
+                                        <span>Low</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="medium">
+                                        <span>Medium</span>
+                                    </label>
+                                    <label class="radio-option">
+                                        <input type="radio" name="demo-radio-range" value="high">
+                                        <span>High</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Switch Toggle -->
+                            <div class="base-input-group">
+                                <h4>Switch Toggle</h4>
+                                <label class="switch">
+                                    <input type="checkbox" checked>
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <!-- Button Styles -->
+                            <div class="base-input-group">
+                                <h4>Primary Button</h4>
+                                <button class="preset-action-btn">Primary Button</button>
+                            </div>
+
+                            <!-- Secondary Button -->
+                            <div class="base-input-group">
+                                <h4>Secondary Button</h4>
+                                <button class="preset-action-btn secondary">Secondary Button</button>
+                            </div>
+
+                            <!-- Danger Button -->
+                            <div class="base-input-group">
+                                <h4>Danger Button</h4>
+                                <button class="dev-action-btn danger">Danger Button</button>
+                            </div>
+
+                            <!-- Mode Button -->
+                            <div class="base-input-group">
+                                <h4>Mode Button</h4>
+                                <button class="mode-btn active">
+                                    <i class="fa-solid fa-check"></i>
+                                    <span>Active Mode</span>
+                                </button>
+                            </div>
+
+                            <!-- Settings Control Card -->
+                            <div class="base-input-group full-width">
+                                <h4>UI Control Card</h4>
+                                <div class="ui-control-card">
+                                    <label>Range Control Example</label>
+                                    <input type="range" min="0" max="24" value="16">
+                                    <div class="range-labels">
+                                        <span>Min</span>
+                                        <span>Max</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Checkbox Card -->
+                            <div class="base-input-group full-width">
+                                <h4>Checkbox Card</h4>
+                                <div class="ui-control-card checkbox-card">
+                                    <div class="checkbox-info">
+                                        <h4>Toggle Setting</h4>
+                                        <p>Description of the setting</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" checked>
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Color Preset Item -->
+                            <div class="base-input-group">
+                                <h4>Color Preset</h4>
+                                <div class="preset-item" style="background: #6196ff; border: 2px solid var(--accent-color);"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Section -->
+                    <div class="custom-section" id="advancedSection">
+                        <h3><i class="fa-solid fa-cog"></i> Advanced Settings</h3>
+
+                        <div class="setting-group">
+                            <h4><i class="fa-solid fa-hand-pointer"></i> Subject Interaction Mode</h4>
+                            <p class="setting-description">Choose what happens when you click on a subject in the
+                                timetable.
+                            </p>
+                            <div class="mode-toggle-container">
+                                <button class="mode-btn active" data-mode="link" id="modeLinkBtn">
+                                    <i class="fa-solid fa-external-link"></i>
+                                    <span>Deschide manual</span>
+                                </button>
+                                <button class="mode-btn" data-mode="mark" id="modeMarkBtn">
+                                    <i class="fa-solid fa-highlighter"></i>
+                                    <span>Marcheaza materia</span>
+                                </button>
+                            </div>
+                            <div class="mode-indicator" id="modeIndicator">
+                                <i class="fa-solid fa-circle-info"></i>
+                                <span>Mod curent: <strong id="currentModeText">Deschide manual</strong></span>
+                            </div>
+                        </div>
+
+                        <div class="setting-group">
+                            <h4><i class="fa-solid fa-mobile-screen"></i> Bottom Navbar Shortcuts</h4>
+                            <p class="setting-description">Customize the two shortcut buttons on the mobile navigation
+                                bar.
+                            </p>
+                            <div class="shortcut-config">
+                                <div class="shortcut-item">
+                                    <label for="shortcut1Select"> Shortcut 1</label>
+                                    <select id="shortcut1Select" class="shortcut-select">
+                                        <option value="customization" selected>Customization</option>
+                                        <option value="weather">Weather</option>
+                                        <option value="clock">Clock</option>
+                                        <option value="tasks">My Tasks</option>
+                                        <option value="info">Info</option>
+                                        <option value="library">Biblioteca</option>
+                                    </select>
+                                </div>
+                                <div class="shortcut-item">
+                                    <label for="shortcut2Select"> Shortcut 2</label>
+                                    <select id="shortcut2Select" class="shortcut-select">
+                                        <option value="customization">Customization</option>
+                                        <option value="weather" selected>Weather</option>
+                                        <option value="clock">Clock</option>
+                                        <option value="tasks">My Tasks</option>
+                                        <option value="info">Info</option>
+                                        <option value="library">Biblioteca</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dev Mode -->
+                        <div class="dev-mode-container">
+                            <div class="setting-group">
+                                <h4><i class="fa-solid fa-toggle-on"></i> Enable Dev Mode</h4>
+                                <label class="switch">
+                                    <input type="checkbox" id="devModeToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
+
+                            <div id="devModeControls" style="display: none;">
+                                <!-- Time Manipulation -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-clock"></i> Override System Time</h4>
+                                    <p class="setting-description">Set a custom time for testing current class highlighting.</p>
+                                    <div class="dev-time-control">
+                                        <div class="time-input-group">
+                                            <label for="devTimeInput">Time (HH:MM)</label>
+                                            <input type="time" id="devTimeInput">
+                                        </div>
+                                        <button class="dev-action-btn" id="devApplyTimeBtn">
+                                            <i class="fa-solid fa-check"></i>
+                                            Apply & Refresh
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetTimeBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset to Real Time
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devTimeInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Day Override -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-calendar"></i> Override Day of Week</h4>
+                                    <p class="setting-description">Select a specific day for testing timetable views.</p>
+                                    <div class="dev-day-control">
+                                        <select id="devDaySelect" class="font-select">
+                                            <option value="">-- Use Real Day --</option>
+                                            <option value="1">Monday</option>
+                                            <option value="2">Tuesday</option>
+                                            <option value="3">Wednesday</option>
+                                            <option value="4">Thursday</option>
+                                            <option value="5">Friday</option>
+                                            <option value="6">Saturday</option>
+                                            <option value="0">Sunday</option>
+                                        </select>
+                                        <button class="dev-action-btn" id="devApplyDayBtn">
+                                            <i class="fa-solid fa-check"></i>
+                                            Apply & Refresh
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetDayBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset to Real Day
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devDayInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Weather Control -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-cloud"></i> Override Weather</h4>
+                                    <p class="setting-description">Simulate different weather conditions for testing.</p>
+                                    <div class="dev-weather-control">
+                                        <select id="devWeatherSelect" class="font-select" aria-placeholder="Select Weather">
+                                            <option value="">-- Select Weather --</option>
+                                            <option value="0">☀️ Clear Sky</option>
+                                            <option value="1">🌤️ Mainly Clear</option>
+                                            <option value="2">🌤️ Partly Cloudy</option>
+                                            <option value="3">☁️ Overcast</option>
+                                            <option value="45">🌫️ Fog</option>
+                                            <option value="48">🌫️ Foggy</option>
+                                            <option value="51">🌦️ Light Drizzle</option>
+                                            <option value="61">🌧️ Slight Rain</option>
+                                            <option value="65">🌧️ Heavy Rain</option>
+                                            <option value="71">❄️ Slight Snow</option>
+                                            <option value="85">❄️ Heavy Snow</option>
+                                            <option value="95">⛈️ Slight Thunderstorm</option>
+                                            <option value="99">⛈️ Severe Thunderstorm</option>
+                                        </select>
+                                        <button class="dev-action-btn" id="devApplyWeatherBtn">
+                                            <i class="fa-solid fa-cloud-sun"></i>
+                                            Apply Weather
+                                        </button>
+                                        <button class="dev-action-btn secondary" id="devResetWeatherBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Restore Real Weather
+                                        </button>
+                                    </div>
+                                    <div class="dev-info" id="devWeatherInfo">
+                                        Current override: <strong>None</strong>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-bolt"></i> Quick Actions</h4>
+                                    <div class="dev-quick-actions">
+                                        <button class="dev-action-btn" id="devRefreshHighlightBtn">
+                                            <i class="fa-solid fa-rotate"></i>
+                                            Refresh Highlighting
+                                        </button>
+                                        <button class="dev-action-btn" id="devReloadDataBtn">
+                                            <i class="fa-solid fa-reload"></i>
+                                            Reload Timetable Data
+                                        </button>
+                                        <button class="dev-action-btn" id="devViewTodayBtn">
+                                            <i class="fa-solid fa-calendar-day"></i>
+                                            View Today's Classes
+                                        </button>
+                                        <button class="dev-action-btn danger" id="devResetAllBtn">
+                                            <i class="fa-solid fa-rotate-left"></i>
+                                            Reset All Settings
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dev Info -->
+                                <div class="setting-group">
+                                    <h4><i class="fa-solid fa-info"></i> Dev Information</h4>
+                                    <div class="dev-info-panel">
+                                        <div class="dev-info-item">
+                                            <span>Real Time:</span>
+                                            <strong id="devInfoRealTime">--:--:--</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Override Time:</span>
+                                            <strong id="devInfoOverrideTime">None</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Day of Week:</span>
+                                            <strong id="devInfoDayOfWeek">--</strong>
+                                        </div>
+                                        <div class="dev-info-item">
+                                            <span>Current Class:</span>
+                                            <strong id="devInfoCurrentClass">None</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Library Overlay -->
+        <div id="libraryOverlay" class="overlay">
+            <!-- Sticky head: title + toolbar -->
+            <div class="library-content">
+            <div class="library-head">
+                <div class="library-header">
+                    <div class="library-header-text">
+                        <h2><i class="fa-solid fa-book-open"></i> Bibliotecă</h2>
+                        <p>Toate manualele clasei în același loc</p>
+                    </div>
+                    <div class="library-header-actions">
+                        <button id="libraryFab" class="library-fab" title="Adaugă manual">
+                            <i class="fa-solid fa-plus"></i>
+                            <span>Adaugă manual</span>
+                        </button>
+                        <button id="closeLibraryOverlay" class="close-btn">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="library-toolbar">
+                    <div class="library-search-wrap">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="librarySearch" placeholder="Caută manual..." autocomplete="off" spellcheck="false">
+                    </div>
+                    <div class="library-filter-wrap">
+                        <i class="fa-solid fa-filter"></i>
+                        <select id="libraryTypeFilter">
+                            <option value="all">Toate</option>
+                            <option value="link">Link</option>
+                            <option value="pdf">PDF</option>
+                            <option value="app">Aplicatie</option>
+                        </select>
+                    </div>
+                    <div class="library-sort">
+                        <button class="lib-sort-btn active" data-sort="az">A–Z</button>
+                        <button class="lib-sort-btn" data-sort="za">Z–A</button>
+                    </div>
+                </div>
+            </div>
+            <!-- Scrollable body -->
+            <div class="library-body" id="libraryBody">
+
+                <div class="library-count-row">
+                    <div class="library-count" id="libraryCount"></div>
+                    <p class="library-status" id="libraryStatus" aria-live="polite" hidden></p>
+                </div>
+                <div class="library-grid" id="libraryGrid"></div>
+                <div class="library-empty" id="libraryEmpty">
+                    <i class="fa-solid fa-book"></i>
+                    <p>Niciun manual găsit</p>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <!-- Weather Overlay -->
+        <div id="weatherOverlay" class="overlay">
+            <div class="weather-overlay-container">
+                <button id="closeWeatherOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+
+                <div class="weather-overlay-header">
+                    <h2><i class="fas fa-cloud-sun"></i> Weather Information</h2>
+                </div>
+
+                <div class="weather-overlay-content">
+                    <div class="weather-main-info">
+                        <div class="weather-large-emoji" id="overlayWeatherEmoji">☁️</div>
+                        <div class="weather-large-temp" id="overlayWeatherTemp">--°C</div>
+                        <div class="weather-large-desc" id="overlayWeatherDesc">Loading...</div>
+                    </div>
+
+                    <div class="weather-location-info">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span id="overlayWeatherLocation">Detecting location...</span>
+                    </div>
+
+                    <div class="weather-details-grid">
+                        <div class="weather-detail-card">
+                            <i class="fa-solid fa-sun"></i>
+                            <div class="weather-detail-label">Sunrise</div>
+                            <div class="weather-detail-value" id="overlaySunrise">--:--</div>
+                        </div>
+                        <div class="weather-detail-card">
+                            <i class="fa-solid fa-moon"></i>
+                            <div class="weather-detail-label">Sunset</div>
+                            <div class="weather-detail-value" id="overlaySunset">--:--</div>
+                        </div>
+                        <div class="weather-detail-card">
+                            <i class="fa-solid fa-clock"></i>
+                            <div class="weather-detail-label">Current Time</div>
+                            <div class="weather-detail-value" id="overlayCurrentTime">--:--</div>
+                        </div>
+                        <div class="weather-detail-card">
+                            <i class="fa-solid fa-calendar"></i>
+                            <div class="weather-detail-label">Date</div>
+                            <div class="weather-detail-value" id="overlayCurrentDate">--/--/----</div>
+                        </div>
+                    </div>
+
+                    <div class="weather-refresh">
+                        <button id="refreshWeatherBtn" class="refresh-weather-btn">
+                            <i class="fa-solid fa-rotate"></i> Refresh Weather
+                        </button>
+                        <div class="weather-last-update">
+                            Last updated: <span id="lastWeatherUpdate">Never</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Manual Overlay -->
+        <div id="libraryAddManualOverlay" class="overlay add-manual-overlay">
+            <div class="add-manual-modal">
+                <button id="closeLibraryAddManualOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h2>Adaugă un manual</h2>
+                
+                <form id="libraryAddManualForm" class="add-manual-form">
+                    <div class="form-group">
+                        <label for="libraryAddTitle">Titlu</label>
+                        <input type="text" id="libraryAddTitle" required placeholder="Ex: Algebra Notes">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddSubject">Materie</label>
+                        <input type="text" id="libraryAddSubject" required placeholder="Ex: Mate">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddType">Tip</label>
+                        <select id="libraryAddType" required>
+                            <option value="link">Link</option>
+                            <option value="pdf">PDF</option>
+                            <option value="app">Aplicatie</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="libraryAddUrlWrap">
+                        <label id="libraryAddUrlLabel" for="libraryAddUrl">URL</label>
+                        <input type="url" id="libraryAddUrl" placeholder="https://...">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="libraryAddImage">Imagine copertă (opțional)</label>
+                        <input type="url" id="libraryAddImage" placeholder="https://example.com/cover.png">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">Salvează manualul</button>
+                        <button type="button" id="libraryAddCancelBtn" class="btn-secondary">Renunță</button>
+                    </div>
+
+                    <p id="libraryAddStatus" class="form-status" aria-live="polite" hidden></p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Manual Choice Overlay -->
+        <div id="manualChoiceOverlay" class="overlay manual-choice-overlay">
+            <div class="manual-choice-modal">
+                <button id="closeManualChoiceOverlay" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+                <h2 id="manualChoiceTitle">Manuale</h2>
+                <p id="manualChoiceDescription"></p>
+                <div id="manualChoiceActions" class="manual-choice-actions"></div>
+            </div>
+        </div>
+
+        <!-- Today View (Card Layout) -->
+        <div class="today-view" id="todayView">
+            <div class="today-view-header">
+                <h2 class="today-title"><i class="fa-solid fa-calendar-day"></i> Today's Schedule</h2>
+                <div class="today-date" id="todayDate"></div>
+            </div>
+
+            <!-- Mobile Recommended Textbook -->
+            <div id="mobileRecommendedManual" class="mobile-recommended-manual">
+                <!-- Populated by JS -->
+            </div>
+
+            <div class="today-cards" id="todayCards">
+                <!-- Cards will be populated via JS -->
+            </div>
+            <div class="today-empty" id="todayEmpty">
+                <i class="fa-solid fa-umbrella-beach"></i>
+                <p>No classes today!</p>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation Bar (Mobile Only) -->
+        <nav class="bottom-navbar" id="bottomNavbar">
+            <button class="nav-item active" data-view="today" id="navToday">
+                <i class="fa-solid fa-calendar-day"></i>
+                <span>Today</span>
+            </button>
+            <button class="nav-item" data-view="full" id="navFull">
+                <i class="fa-solid fa-table-cells"></i>
+                <span>Full</span>
+            </button>
+            <button class="nav-item nav-menu-btn" id="bottomMenuBtn">
+                <i class="fa-solid fa-grip-lines"></i>
+                <span>Menu</span>
+            </button>
+            <button class="nav-item nav-shortcut" data-shortcut="1" id="navShortcut1">
+                <i class="fa-solid fa-sliders"></i>
+                <span>Custom</span>
+            </button>
+            <button class="nav-item nav-shortcut" data-shortcut="2" id="navShortcut2">
+                <i class="fa-solid fa-cloud-sun"></i>
+                <span>Weather</span>
+            </button>
+        </nav>
+
+        <!-- Bottom Sheet Menu (Mobile) -->
+        <div class="bottom-sheet-overlay" id="bottomSheetOverlay"></div>
+        <div class="bottom-sheet" id="bottomSheet">
+            <div class="bottom-sheet-handle-container">
+                <div class="bottom-sheet-handle"></div>
+            </div>
+            <div class="bottom-sheet-header-actions">
+<button class="bottom-sheet-close" id="bottomSheetCloseBtn">
+    <i class="fa-solid fa-chevron-down"></i>
+</button>
+            </div>
+            <div class="bottom-sheet-content">
+                <h2 class="bottom-sheet-title">Menu</h2>
+                <div class="bottom-sheet-grid">
+                    <button class="sheet-menu-btn" id="sheetCustomizationBtn">
+                        <i class="fa-solid fa-sliders"></i>
+                        <span>Customization</span>
+                    </button>
+
+                    <button class="sheet-menu-btn" id="sheetWeatherBtn">
+                        <div class="weather-btn-content">
+                            <span id="sheetWeatherEmoji" class="sheet-weather-emoji">☁️</span>
+                            <div class="weather-btn-text">
+                                <span class="weather-btn-label">Weather</span>
+                                <span id="sheetWeatherTemp" class="sheet-weather-temp">--°C</span>
+                            </div>
+                        </div>
+                    </button>
+
+                    <button class="sheet-menu-btn" id="sheetClockBtn">
+                        <i class="fa-solid fa-clock"></i>
+                        <span>Clock</span>
+                    </button>
+
+                    <button class="sheet-menu-btn" id="sheetTodoBtn">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>My Tasks</span>
+                    </button>
+
+                    <button class="sheet-menu-btn" id="sheetLibraryBtn">
+                        <i class="fa-solid fa-book-open"></i>
+                        <span>Biblioteca</span>
+                    </button>
+
+                    <button class="sheet-menu-btn" id="sheetInfoBtn">
+                        <i class="fa-solid fa-circle-info"></i>
+                        <span>Info</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <script type="module" src="../js/app.js"></script>
+</body>
+</html>

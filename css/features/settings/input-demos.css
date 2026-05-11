@@ -1,0 +1,266 @@
+﻿/* ========================================
+   BASE SECTION - INPUT STYLES SHOWCASE
+   ======================================== */
+
+.base-inputs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.base-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.base-input-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.base-input-group h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    opacity: 0.7;
+    margin: 0;
+}
+
+.base-demo-input {
+    padding: var(--input-padding, 0.75rem 1rem);
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: all var(--transition-speed) ease;
+    cursor: pointer;
+}
+
+.base-demo-checkbox,
+.base-demo-radio {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+}
+
+.base-demo-checkbox input,
+.base-demo-radio input {
+    cursor: pointer;
+}
+
+.base-demo-checkbox span,
+.base-demo-radio span {
+    font-size: 0.95rem;
+}
+
+.base-color-picker-demo {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.base-color-picker-demo input[type="color"] {
+    width: 60px;
+    height: 40px;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    border: 1px solid var(--input-border);
+}
+
+/* ========================================
+   IMPROVED INPUT CONTROLS STYLING
+   ======================================== */
+
+/* Number Input with Increment/Decrement Buttons */
+.number-input-wrapper {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background: var(--input-bg);
+    padding: 0.25rem;
+}
+
+.number-btn {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 0.75rem;
+    font-size: 1.1rem;
+    color: var(--text);
+    transition: all var(--transition-speed) ease;
+    border-radius: calc(var(--border-radius) - 2px);
+    flex-shrink: 0;
+}
+
+.number-btn:hover {
+    background: var(--accent-color);
+    color: var(--text-on-accent);
+}
+
+.number-btn:active {
+    transform: scale(0.95);
+}
+
+.number-input-field {
+    flex: 1;
+    border: none;
+    background: transparent;
+    text-align: center;
+    padding: 0.5rem;
+    font-size: 1rem;
+    color: var(--text);
+}
+
+.number-input-field:focus {
+    outline: none;
+    color: var(--accent-color);
+}
+
+/* Range Slider with Value Display */
+.range-slider-demo {
+    width: 100%;
+}
+
+.range-slider-demo::-webkit-slider-track {
+    background: var(--input-border);
+    height: 6px;
+    border-radius: 3px;
+}
+
+.range-slider-demo::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    margin-top: -6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all var(--transition-speed) ease;
+}
+
+.range-slider-demo::-webkit-slider-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 12px var(--accent-color);
+}
+
+.range-slider-demo::-moz-range-track {
+    background: var(--input-border);
+    height: 6px;
+    border-radius: 3px;
+    border: none;
+}
+
+.range-slider-demo::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    transition: all var(--transition-speed) ease;
+}
+
+.range-slider-demo::-moz-range-thumb:hover {
+    transform: scale(1.15);
+    box-shadow: 0 2px 12px var(--accent-color);
+}
+
+.range-value-display {
+    margin-top: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    font-weight: 600;
+    text-align: center;
+}
+
+/* Radio Button Range Control */
+.radio-range-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border: 2px solid var(--input-border);
+    border-radius: var(--border-radius);
+    transition: all var(--transition-speed) ease;
+    background: transparent;
+}
+
+.radio-option input[type="radio"] {
+    cursor: pointer;
+    accent-color: var(--accent-color);
+    width: 18px;
+    height: 18px;
+}
+
+.radio-option:hover {
+    border-color: var(--accent-color);
+    background: rgba(97, 150, 255, 0.1);
+}
+
+.radio-option input[type="radio"]:checked + span {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.radio-option input[type="radio"]:checked {
+    accent-color: var(--accent-color);
+}
+
+/* Custom Color Picker */
+.custom-color-picker-container {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.custom-color-input {
+    width: 70px;
+    height: 50px;
+    cursor: pointer;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--input-border);
+    transition: all var(--transition-speed) ease;
+    padding: 2px;
+}
+
+.custom-color-input:hover {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 12px var(--accent-color);
+}
+
+.color-value-display {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    min-width: 80px;
+    text-align: center;
+    padding: 0.5rem;
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius);
+    background: var(--input-bg);
+}
+
+/* Textarea min/max height */
+textarea.base-demo-input {
+    min-height: 80px;
+    max-height: 200px;
+    resize: vertical;
+}

@@ -1,0 +1,41 @@
+@media (max-width: 768px) {
+    .mobile-header {
+        display: block;
+    }
+
+    .full-view-header {
+        display: block;
+    }
+
+    .bottom-navbar {
+        display: flex;
+    }
+
+    .full-layout-host {
+        margin-bottom: 5.5rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .layout-split-columns-wrap {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .split-column {
+        max-height: calc(100vh - 16rem);
+        overflow: auto;
+    }
+
+    .split-day .full-day-cards {
+        padding: 0.6rem;
+    }
+
+    .split-day .full-subject-card {
+        grid-template-columns: auto 1fr;
+    }
+
+    .split-day .full-card-time {
+        min-width: 4rem;
+    }
+}

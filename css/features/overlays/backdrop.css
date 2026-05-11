@@ -1,0 +1,90 @@
+﻿/* ========================================
+   OVERLAYS
+   ======================================== */
+
+/* Global Backdrop (for Side Menu and general use) */
+#overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background-color: var(--overlay-bg);
+    z-index: calc(var(--z-side-menu) - 1);
+    opacity: 0;
+    transition: opacity var(--transition-speed) ease;
+    backdrop-filter: blur(var(--overlay-blur-light));
+    -webkit-backdrop-filter: blur(var(--overlay-blur-light));
+}
+
+#overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* Generic Overlay Class (for modals like Info, Weather) */
+.overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: var(--overlay-bg);
+    color: var(--text-color);
+    z-index: 9999;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-family: inherit;
+    transition: opacity var(--transition-speed) ease;
+    border-radius: 0;
+    backdrop-filter: blur(8px);
+}
+.overlay.active {
+    display: flex;
+}
+
+/* Unified Close Button Styling */
+.close-btn,
+.close-btn-modal,
+.clock-close-btn,
+.weather-close-btn,
+.close-btn-todo,
+#closeCustomization,
+#closeInfoOverlay,
+#closeTimeOverlay,
+#closeWeatherOverlay,
+#closeTodoOverlay,
+#closeTaskEdit,
+#closeFolderEdit {
+    position: absolute;
+    top: 1.25rem;
+    right: var(--spacing-lg);
+    background: var(--highlight-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--accent-color);
+    font-size: var(--font-size-xl);
+    cursor: pointer;
+    z-index: var(--z-close-btn);
+    transition: all var(--transition-speed) ease;
+    width: var(--close-btn-size);
+    height: var(--close-btn-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--box-shadow-sm);
+}
+
+.close-btn:hover,
+.close-btn-modal:hover,
+.clock-close-btn:hover,
+.weather-close-btn:hover,
+.close-btn-todo:hover,
+#closeCustomization:hover,
+#closeInfoOverlay:hover,
+#closeTimeOverlay:hover,
+#closeWeatherOverlay:hover,
+#closeTodoOverlay:hover,
+#closeTaskEdit:hover,
+#closeFolderEdit:hover {
+    transform: scale(1.08);
+    background: var(--highlight-color);
+    color: var(--text-color);
+    box-shadow: var(--box-shadow-md);
+}

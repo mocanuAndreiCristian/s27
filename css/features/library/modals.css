@@ -1,0 +1,186 @@
+.add-manual-overlay,
+.manual-choice-overlay {
+    padding: 1.5rem;
+}
+
+.add-manual-modal,
+.manual-choice-modal {
+    width: min(100%, 640px);
+    max-height: min(88vh, 860px);
+    overflow-y: auto;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow-modal);
+    padding: 1.5rem;
+    position: relative;
+    border: 1px solid color-mix(in srgb, var(--border-color) 80%, transparent);
+}
+
+.add-manual-modal h2,
+.manual-choice-modal h2 {
+    margin: 0 3rem 0.35rem 0;
+    color: var(--accent-color);
+    font-size: var(--font-size-xl);
+}
+
+.manual-choice-modal p,
+.add-manual-modal > p {
+    color: var(--text-muted);
+}
+
+.add-manual-form {
+    display: grid;
+    gap: 1rem;
+    margin-top: 1.25rem;
+}
+
+.add-manual-modal .form-group,
+.manual-choice-modal .form-group {
+    display: grid;
+    gap: 0.45rem;
+}
+
+.add-manual-modal .form-group label,
+.manual-choice-modal .form-group label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-muted);
+}
+
+.add-manual-modal .form-group input,
+.add-manual-modal .form-group select,
+.manual-choice-modal .form-group input,
+.manual-choice-modal .form-group select {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.7rem 0.9rem;
+    border: 1.5px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    background: var(--input-bg);
+    color: var(--text-color);
+    font: inherit;
+    box-sizing: border-box;
+}
+
+.add-manual-modal .form-group input:focus,
+.add-manual-modal .form-group select:focus,
+.manual-choice-modal .form-group input:focus,
+.manual-choice-modal .form-group select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: var(--focus-ring);
+}
+
+.add-manual-modal .source-toggle,
+.manual-choice-modal .source-toggle {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.add-manual-modal .source-toggle-btn,
+.manual-choice-modal .source-toggle-btn {
+    flex: 1;
+    min-height: 3rem;
+    padding: 0.75rem 1rem;
+    border-radius: var(--border-radius-sm);
+    border: 1.5px solid var(--border-color);
+    background: var(--highlight-color);
+    color: var(--text-muted);
+    font: inherit;
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: transform var(--transition-speed) ease,
+        border-color var(--transition-speed) ease,
+        color var(--transition-speed) ease,
+        background var(--transition-speed) ease;
+}
+
+.add-manual-modal .source-toggle-btn:hover,
+.add-manual-modal .source-toggle-btn.active,
+.manual-choice-modal .source-toggle-btn:hover,
+.manual-choice-modal .source-toggle-btn.active {
+    border-color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 12%, var(--card-bg));
+    color: var(--accent-color);
+}
+
+.add-manual-modal .source-toggle-btn:hover,
+.manual-choice-modal .source-toggle-btn:hover {
+    transform: translateY(-1px);
+}
+
+.add-manual-modal .form-hint,
+.manual-choice-modal .form-hint {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    color: var(--text-muted);
+}
+
+.add-manual-modal .form-actions,
+.manual-choice-modal .form-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.add-manual-modal .btn-primary,
+.add-manual-modal .btn-secondary,
+.manual-choice-modal .btn-primary,
+.manual-choice-modal .btn-secondary {
+    min-height: 2.85rem;
+    border-radius: var(--border-radius-sm);
+    font: inherit;
+    font-weight: var(--font-weight-semibold);
+    cursor: pointer;
+    transition: transform var(--transition-speed) ease,
+        box-shadow var(--transition-speed) ease,
+        border-color var(--transition-speed) ease,
+        background var(--transition-speed) ease,
+        color var(--transition-speed) ease;
+}
+
+.add-manual-modal .btn-primary,
+.manual-choice-modal .btn-primary {
+    border: none;
+    background: var(--accent-color);
+    color: var(--text-on-accent);
+    padding: 0.75rem 1rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.add-manual-modal .btn-secondary,
+.manual-choice-modal .btn-secondary {
+    border: 1.5px solid var(--border-color);
+    background: transparent;
+    color: var(--text-color);
+    padding: 0.75rem 1rem;
+}
+
+.add-manual-modal .btn-primary:hover,
+.add-manual-modal .btn-secondary:hover,
+.manual-choice-modal .btn-primary:hover,
+.manual-choice-modal .btn-secondary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--box-shadow-hover);
+}
+
+.add-manual-modal .form-status,
+.manual-choice-modal .form-status {
+    margin: 0;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+}
+
+.add-manual-modal .form-status[data-tone="success"],
+.manual-choice-modal .form-status[data-tone="success"] {
+    color: var(--success-color);
+}
+
+.add-manual-modal .form-status[data-tone="error"],
+.manual-choice-modal .form-status[data-tone="error"] {
+    color: var(--danger-color);
+}

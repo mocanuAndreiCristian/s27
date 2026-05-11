@@ -1,0 +1,119 @@
+{
+  "projects": [
+    {
+      "id": "accidentele-sistemului-locomotor",
+      "title": "Accidentele sistemului locomotor",
+      "description": "Biology project file.",
+      "thumbnail": "assets/accidentele-sistemului-locomotor.svg",
+      "file": "projects/Accidentele sistemului locomotor.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "subject": "biologie"
+    },
+    {
+      "id": "california",
+      "title": "California",
+      "description": "Geography project about California.",
+      "thumbnail": "assets/california.svg",
+      "file": "projects/California.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "subject": "geografie"
+    },
+    {
+      "id": "india",
+      "title": "India - proiect geografie",
+      "description": "Geography project about India.",
+      "thumbnail": "assets/india.svg",
+      "file": "projects/India - proiect geografie pt 9.12.2024.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "date": "2024-12-09",
+      "subject": "geografie"
+    },
+    {
+      "id": "energia-si-puterea-electrica",
+      "title": "Energia și puterea electrica",
+      "description": "Physics project about electrical energy and power.",
+      "thumbnail": "assets/energia-si-puterea-electrica.svg",
+      "file": "projects/Energia și puterea electrica.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "subject": "fizica"
+    },
+    {
+      "id": "famous-tourist-destinations-paris",
+      "title": "Famous tourist destinations — Paris",
+      "description": "English project about Paris tourist spots.",
+      "thumbnail": "assets/famous-tourist-destinations-paris.svg",
+      "file": "projects/Famous tourist destinations _ Paris _ - proiect engleza pt 5.02.2025.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "date": "2025-02-05",
+      "subject": "engleza"
+    },
+    {
+      "id": "fisa-tehnologica-inel-de-argint",
+      "title": "Fisa Tehnologica — Inel de argint",
+      "description": "Technology education project.",
+      "thumbnail": "assets/fisa-tehnologica-inel-de-argint.svg",
+      "file": "projects/Fisa Tehnologica _ Inel de argint _ - proiect educatie tehnologica pt (posibil) 5.02.2025.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "date": "2025-02-05",
+      "subject": "ed. tehnologica"
+    },
+    {
+      "id": "casuta",
+      "title": "Casuta",
+      "description": "Informatics project (ODT).",
+      "thumbnail": "assets/casuta.svg",
+      "file": "projects/casuta.odt",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "odt",
+      "subject": "informatica"
+    },
+    {
+      "id": "presentation1",
+      "title": "Presentation1",
+      "description": "Music presentation file.",
+      "thumbnail": "assets/presentation1.svg",
+      "file": "projects/Presentation1.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "subject": "muzica"
+    },
+    {
+      "id": "serbare-de-craciun",
+      "title": "Serbare de Craciun",
+      "description": "Music project for Christmas celebration.",
+      "thumbnail": "assets/serbare-de-craciun.svg",
+      "file": "projects/Serbare de Craciun - proiect muzica pt 11.12.2024.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "date": "2024-12-11",
+      "subject": "muzica"
+    },
+    {
+      "id": "proiect-isaac-newton",
+      "title": "Proiect Isaac Newton",
+      "description": "Optional math project.",
+      "thumbnail": "assets/proiect-isaac-newton.svg",
+      "file": "projects/Proiect Isaac Newton - pt 14.04.2025.pptx",
+      "page": "#",
+      "madeBy": "Petrescu Matei",
+      "format": "pptx",
+      "date": "2025-04-14",
+      "subject": "optional mate"
+    }
+  ]
+}

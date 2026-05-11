@@ -1,0 +1,80 @@
+﻿
+
+/* ========================================
+   BASE STYLES & COMPONENTS
+   ======================================== */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    font-size: var(--root-font-size);
+    color-scheme: light dark;
+    background-color: var(--bg-color);
+}
+
+body {
+    font-family: var(--font-family);
+    font-size: calc(var(--font-size-base) * var(--font-scale));
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height);
+    background-color: var(--bg-color);
+    background-image: var(--theme-background-image);
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-attachment: fixed;
+    color: var(--text-color);
+    overflow-x: hidden;
+    min-height: 100vh;
+    padding: var(--spacing-md);
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+body.no-scroll,
+body.no-scroll-info,
+body.no-scroll-custom {
+    overflow: hidden;
+}
+
+html.theme-switching,
+html.theme-switching *,
+html.theme-switching *::before,
+html.theme-switching *::after,
+body.theme-switching,
+body.theme-switching *,
+body.theme-switching *::before,
+body.theme-switching *::after {
+    transition: none !important;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: var(--font-weight-bold);
+    line-height: var(--line-height-tight);
+}
+h2 {
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-md);
+    text-align: center;
+    font-size: calc(var(--font-size-2xl) * var(--font-scale));
+}
+a {
+    text-decoration: none;
+    color: var(--accent-color);
+    transition: color var(--transition-speed);
+}
+a:hover {
+    color: var(--accent-secondary);
+}
+
+mark {
+    background-color: var(--accent-color);
+    border-radius: var(--border-radius-sm);
+    color: var(--bg-color);
+    transition: background-color var(--transition-speed);
+}
