@@ -1,5 +1,8 @@
 import { getAppConfig } from "../core/config.js";
+import { getCachedTimetableData, getSharedTimetableData } from "../core/app-data.js";
+import { onAppEvent } from "../core/events.js";
 import { getDevDayOverride, getDevTimeOverride } from "../core/time.js";
+import { overlayManager } from "../overlays/overlay-manager.js";
 import { buildSearchUrl } from "./manuals-model.js";
 import { openManualEntries, openManualEntry } from "./manual-actions.js";
 import { getLibrarySettings, getManualSetForSubject } from "./manuals-store.js";
@@ -50,7 +53,7 @@ function createManualActionButton(manual, subjectText, options = {}) {
         event.stopPropagation();
         openManualEntry(manual, buildSearchUrl(subjectText));
         if (options.closeOverlay !== false) {
-            window.overlayManager?.close("manualChoiceOverlay");
+            overlayManager.close("manualChoiceOverlay");
         }
     });
 
@@ -74,7 +77,7 @@ function createOpenAllButton(subjectText, manuals, options = {}) {
         event.stopPropagation();
         openManualEntries(manuals, buildSearchUrl(subjectText));
         if (options.closeOverlay !== false) {
-            window.overlayManager?.close("manualChoiceOverlay");
+            overlayManager.close("manualChoiceOverlay");
         }
     });
     return button;
@@ -124,7 +127,7 @@ function showManualChoiceOverlay({ subjectText, manuals, includeOpenAll = false 
     };
 
     populateChoiceOverlay(currentChoiceState);
-    window.overlayManager?.open("manualChoiceOverlay");
+    overlayManager.open("manualChoiceOverlay");
     return true;
 }
 
@@ -279,15 +282,12 @@ export async function updateRecommendedManual() {
     }
 
     let schedule = [];
-    if (window.timetableData?.schedule) {
-        schedule = window.timetableData.schedule;
+    const cachedTimetable = getCachedTimetableData(getAppConfig());
+    if (cachedTimetable?.schedule) {
+        schedule = cachedTimetable.schedule;
     } else {
-        const { dataPath, classId } = getAppConfig();
-
         try {
-            const response = await fetch(`${dataPath}${classId}.json`);
-            if (!response.ok) throw new Error("Failed to fetch class schedule.");
-            const data = await response.json();
+            const data = await getSharedTimetableData(getAppConfig());
             schedule = data.schedule || [];
         } catch {
             hideRecommendations();
@@ -336,13 +336,11 @@ export async function updateRecommendedManual() {
 
 function closeChoiceOverlay() {
     currentChoiceState = null;
-    window.overlayManager?.close("manualChoiceOverlay");
+    overlayManager.close("manualChoiceOverlay");
 }
 
 function initChoiceOverlay() {
-    if (window.overlayManager) {
-        window.overlayManager.register("manualChoiceOverlay");
-    }
+    overlayManager.register("manualChoiceOverlay");
 
     document.getElementById("closeManualChoiceOverlay")?.addEventListener("click", closeChoiceOverlay);
 
@@ -356,10 +354,10 @@ function initChoiceOverlay() {
 export function initRecommendedManuals({ refreshMs = 30000 } = {}) {
     initChoiceOverlay();
     window.setInterval(updateRecommendedManual, refreshMs);
-    window.addEventListener("library-settings:updated", () => {
+    onAppEvent("library-settings:updated", () => {
         void updateRecommendedManual();
     });
-    window.addEventListener("manuals:updated", () => {
+    onAppEvent("manuals:updated", () => {
         void updateRecommendedManual();
     });
 }

@@ -1,4 +1,6 @@
 import { getAccessibleTextColor, normalizeHexColor } from "../core/color.js";
+import { getManualsCatalog } from "../manuals/manuals-store.js";
+import { getBehaviorLabel } from "../manuals/manuals-model.js";
 import { sanitizeLibraryManualList } from "./customization-settings.js";
 import {
     getContrastRatio,
@@ -78,7 +80,7 @@ export function syncCustomizationInputs(state, normalizeLibrarySubjectKey) {
 }
 
 export function getLibrarySubjectEntries(normalizeLibrarySubjectKey) {
-    const manuals = window.getManualsCatalog ? window.getManualsCatalog() : [];
+    const manuals = getManualsCatalog();
     const grouped = new Map();
 
     manuals.forEach((manual) => {
@@ -226,9 +228,7 @@ export function syncLibrarySettingsInputs(state, normalizeLibrarySubjectKey) {
     });
 
     if (behaviorText) {
-        const label = window.getLibraryOpenBehaviorLabel
-            ? window.getLibraryOpenBehaviorLabel(state.uiSettings.libraryRecommendedOpenBehavior)
-            : "Deschide toate";
+        const label = getBehaviorLabel(state.uiSettings.libraryRecommendedOpenBehavior);
         behaviorText.textContent = label;
     }
 

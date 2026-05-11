@@ -1,4 +1,8 @@
 import { removeStorage, readStorage, writeStorage } from "../core/storage.js";
+import { fillToday } from "../mobile/mobile-nav-controller.js";
+import { updateRecommendedManual } from "../manuals/recommended-manuals.js";
+import { getTimetableData, highlightCurrent, loadTimetableData } from "../timetable/timetable-controller.js";
+import { getWeather } from "../weather/weather-controller.js";
 
 const DEV_MODE_KEY = "dev-mode-enabled";
 const DEV_TIME_OVERRIDE_KEY = "dev-time-override";
@@ -16,13 +20,13 @@ let storedDayOverride = Number.parseInt(readStorage(DEV_DAY_OVERRIDE_KEY, ""), 1
 let devDayOverride = Number.isFinite(storedDayOverride) ? storedDayOverride : null;
 
 function refreshHighlightAndManuals() {
-    window.highlightCurrent?.();
-    window.updateRecommendedManual?.();
+    highlightCurrent();
+    void updateRecommendedManual();
 }
 
 function refreshTodayViews() {
-    window.highlightCurrent?.();
-    window.fillToday?.();
+    highlightCurrent();
+    fillToday();
 }
 
 function getWeatherDescriptionForCode(code) {
@@ -186,7 +190,7 @@ export function initDevMode({ clearCustomizationStorage } = {}) {
             weatherInfoEl.innerHTML = "Current override: <strong>None</strong>";
         }
 
-        window.getWeather?.();
+        void getWeather();
     });
 
     devApplyDayBtn?.addEventListener("click", () => {
@@ -228,7 +232,7 @@ export function initDevMode({ clearCustomizationStorage } = {}) {
     });
 
     devRefreshHighlightBtn?.addEventListener("click", () => {
-        window.highlightCurrent?.();
+        highlightCurrent();
         devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-check"></i> Refreshed!';
         window.setTimeout(() => {
             devRefreshHighlightBtn.innerHTML = '<i class="fa-solid fa-rotate"></i> Refresh Highlighting';
@@ -236,7 +240,7 @@ export function initDevMode({ clearCustomizationStorage } = {}) {
     });
 
     devReloadDataBtn?.addEventListener("click", () => {
-        window.loadTimetableData?.();
+        void loadTimetableData({ force: true });
         devReloadDataBtn.innerHTML = '<i class="fa-solid fa-check"></i> Reloaded!';
         window.setTimeout(() => {
             devReloadDataBtn.innerHTML = '<i class="fa-solid fa-reload"></i> Reload Timetable Data';
@@ -244,7 +248,8 @@ export function initDevMode({ clearCustomizationStorage } = {}) {
     });
 
     devViewTodayBtn?.addEventListener("click", () => {
-        if (!window.timetableData) {
+        const timetableData = getTimetableData();
+        if (!timetableData) {
             alert("Timetable data not loaded");
             return;
         }
@@ -260,7 +265,7 @@ export function initDevMode({ clearCustomizationStorage } = {}) {
             return;
         }
 
-        const todayClasses = window.timetableData.schedule
+        const todayClasses = timetableData.schedule
             .map((row) => ({ ...row, dayClass: row[currentDayKey] }))
             .filter((row) => row.dayClass)
             .map((row) => `${row.time}: ${row.dayClass.name}`)
@@ -357,7 +362,8 @@ function updateDevInfo() {
         dayOfWeekEl.textContent = days[dayIndex];
     }
 
-    if (currentClassEl && window.timetableData) {
+    const timetableData = getTimetableData();
+    if (currentClassEl && timetableData) {
         const dayOfWeek = devDayOverride !== null ? devDayOverride : now.getDay();
         const currentMinutes = (now.getHours() * 60) + now.getMinutes();
         const dayKeys = [null, "monday", "tuesday", "wednesday", "thursday", "friday"];
@@ -365,7 +371,7 @@ function updateDevInfo() {
         let currentClass = "None";
 
         if (currentDayKey) {
-            for (const row of window.timetableData.schedule) {
+            for (const row of timetableData.schedule) {
                 const match = row.time.match(/^(\d{1,2}):(\d{2})/);
                 if (!match) continue;
 

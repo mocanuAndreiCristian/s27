@@ -1,5 +1,5 @@
 import { getAppConfig } from "../core/config.js";
-import { loadClassSchedule, loadManuals } from "../core/data-service.js";
+import { getSharedManualsData, getSharedTimetableData } from "../core/app-data.js";
 import { onReady } from "../core/dom.js";
 import { highlightCurrent as highlightCurrentTable } from "./current-highlight.js";
 import { buildManualMap, getManualUrlForSubject as getManualUrlForLookup } from "./schedule-utils.js";
@@ -20,7 +20,6 @@ let isInitialized = false;
 
 function setTimetableData(nextData) {
     timetableData = nextData || null;
-    window.timetableData = timetableData;
     return timetableData;
 }
 
@@ -38,7 +37,7 @@ function startHighlightLoop() {
 }
 
 export function getTimetableData() {
-    return window.timetableData || timetableData || null;
+    return timetableData || null;
 }
 
 export function getManualUrlForSubject(subject = "") {
@@ -49,14 +48,14 @@ export function highlightCurrent() {
     highlightCurrentTable(getTimetableData());
 }
 
-export async function loadTimetableData() {
+export async function loadTimetableData(options = {}) {
     renderTimetableSkeleton();
 
     try {
-        const { classId } = getAppConfig();
+        const config = getAppConfig();
         const [scheduleData, manuals] = await Promise.all([
-            loadClassSchedule(classId),
-            loadManuals(),
+            getSharedTimetableData(config, options),
+            getSharedManualsData(config, options),
         ]);
 
         setTimetableData(scheduleData);
@@ -83,10 +82,12 @@ export async function loadTimetableData() {
 }
 
 export function installTimetableGlobals() {
-    window.showTimetableSkeleton = renderTimetableSkeleton;
-    window.showTimetableError = renderTimetableError;
-    window.loadTimetableData = loadTimetableData;
-    window.highlightCurrent = highlightCurrent;
+    return {
+        renderTimetableSkeleton,
+        renderTimetableError,
+        loadTimetableData,
+        highlightCurrent,
+    };
 }
 
 export function initTimetable() {

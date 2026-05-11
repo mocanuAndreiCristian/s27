@@ -1,5 +1,5 @@
 import { normalizeHexColor } from "../core/color.js";
-import { loadThemes } from "../core/data-service.js";
+import { getSharedThemesData } from "../core/app-data.js";
 import { readJson, readStorage, removeStorage, writeJson, writeStorage } from "../core/storage.js";
 import {
     DEFAULT_A11Y_SETTINGS,
@@ -78,7 +78,7 @@ function normalizeSavedPresets(value) {
 }
 
 export async function loadCustomizationThemeData() {
-    return loadThemes();
+    return getSharedThemesData();
 }
 
 export function readUiSettings() {

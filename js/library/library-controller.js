@@ -1,6 +1,9 @@
+import { onAppEvent } from "../core/events.js";
 import { onReady } from "../core/dom.js";
+import { overlayManager } from "../overlays/overlay-manager.js";
 import { addCustomManual, getManualsCatalog, removeCustomManual } from "../manuals/manuals-store.js";
 import { openManualEntry } from "../manuals/manual-actions.js";
+import { closeSheet } from "../mobile/bottom-sheet.js";
 import {
     clearAddManualForm,
     renderLibraryCards,
@@ -46,21 +49,19 @@ function renderCards() {
 }
 
 export function openLibraryOverlay() {
-    if (window.overlayManager) {
-        window.overlayManager.close("sideMenu");
-        window.overlayManager.open("libraryOverlay");
-    }
+    overlayManager.close("sideMenu");
+    overlayManager.open("libraryOverlay");
 }
 
 function openAddManualOverlay() {
     clearAddManualForm();
-    window.overlayManager?.open("libraryAddManualOverlay");
+    overlayManager.open("libraryAddManualOverlay");
     document.getElementById("libraryAddTitle")?.focus();
 }
 
 function closeAddManualOverlay() {
     clearAddManualForm();
-    window.overlayManager?.close("libraryAddManualOverlay");
+    overlayManager.close("libraryAddManualOverlay");
 }
 
 function openManualFromGrid(manualId = "") {
@@ -134,17 +135,15 @@ function resetOverlayState() {
 }
 
 export function initLibrary() {
-    if (window.overlayManager) {
-        window.overlayManager.register("libraryOverlay", {
-            closeOnBackdrop: false,
-            onOpen: resetOverlayState,
-        });
+    overlayManager.register("libraryOverlay", {
+        closeOnBackdrop: false,
+        onOpen: resetOverlayState,
+    });
 
-        window.overlayManager.register("libraryAddManualOverlay");
-    }
+    overlayManager.register("libraryAddManualOverlay");
 
     document.getElementById("closeLibraryOverlay")?.addEventListener("click", () => {
-        window.overlayManager?.close("libraryOverlay");
+        overlayManager.close("libraryOverlay");
     });
 
     document.getElementById("closeLibraryAddManualOverlay")?.addEventListener("click", closeAddManualOverlay);
@@ -208,11 +207,11 @@ export function initLibrary() {
     document.getElementById("libraryBtn")?.addEventListener("click", openLibraryOverlay);
 
     document.getElementById("sheetLibraryBtn")?.addEventListener("click", () => {
-        window.mobileNav?.closeBottomSheet();
+        closeSheet();
         openLibraryOverlay();
     });
 
-    window.addEventListener("manuals:updated", () => {
+    onAppEvent("manuals:updated", () => {
         renderCards();
     });
 

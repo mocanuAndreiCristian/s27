@@ -1,4 +1,5 @@
 import { onReady } from "../core/dom.js";
+import { overlayManager } from "../overlays/overlay-manager.js";
 
 function getTodoOverlay() {
     return document.getElementById("todoOverlay");
@@ -11,12 +12,10 @@ export function initTodo() {
     const overlay = getTodoOverlay();
 
     function openTodoModal() {
-        if (window.overlayManager) {
-            window.overlayManager.close("sideMenu");
-            if (overlay) {
-                const overlayId = overlay.id;
-                window.overlayManager.open(overlayId);
-            }
+        overlayManager.close("sideMenu");
+        if (overlay) {
+            const overlayId = overlay.id;
+            overlayManager.open(overlayId);
         }
         if (overlay) {
             overlay.classList.add("active");
@@ -24,10 +23,10 @@ export function initTodo() {
     }
 
     function closeTodoModal() {
-        if (window.overlayManager && overlay) {
-            window.overlayManager.close(overlay.id);
-        } else if (window.overlayManager) {
-            window.overlayManager.close("todoOverlay");
+        if (overlay) {
+            overlayManager.close(overlay.id);
+        } else {
+            overlayManager.close("todoOverlay");
         }
         if (overlay) {
             overlay.classList.remove("active");
@@ -44,8 +43,8 @@ export function initTodo() {
         closeBtn.addEventListener("click", closeTodoModal);
     }
 
-    if (window.overlayManager && overlay) {
-        window.overlayManager.register(overlay.id, {
+    if (overlay) {
+        overlayManager.register(overlay.id, {
             onClose: () => {
                 if (overlay) {
                     overlay.classList.remove("active");
@@ -59,9 +58,9 @@ onReady(initTodo);
 
 export function openTodoModal() {
     const overlay = getTodoOverlay();
-    if (window.overlayManager && overlay) {
-        window.overlayManager.close("sideMenu");
-        window.overlayManager.open(overlay.id);
+    if (overlay) {
+        overlayManager.close("sideMenu");
+        overlayManager.open(overlay.id);
     }
     if (overlay) {
         overlay.classList.add("active");

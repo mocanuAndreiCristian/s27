@@ -17,6 +17,7 @@ import {
     getAdv,
     UI_KEY,
 } from "./mobile-state.js";
+import { getCachedTimetableData, getSharedManualsData, getSharedTimetableData } from "../core/app-data.js";
 import {
     renderCardsScroll,
     renderAccordion,
@@ -39,6 +40,7 @@ import {
 import { openSheet, closeSheet, trig } from "./bottom-sheet.js";
 import { upShortcuts, syncWeather } from "./shortcuts.js";
 import { upHeader } from "./mobile-clock.js";
+import { openManualForSubject } from "../manuals/recommended-manuals.js";
 import {
     buildManualMap,
     getManualUrlForSubject as getManualUrlForSubjectFromMap,
@@ -72,25 +74,14 @@ export async function load() {
 
     mobileState.loadPromise = (async () => {
         try {
-            const { dataPath, classId } = getAppConfig();
-            const scheduleSource = window.timetableData
-                ? Promise.resolve(window.timetableData)
-                : fetch(`${dataPath}${classId}.json`).then((response) => {
-                    if (!response.ok) throw new Error("Failed to load schedule.");
-                    return response.json();
-                });
-            const manualsSource = fetch(`${dataPath}manuals.json`).then((response) => {
-                if (!response.ok) throw new Error("Failed to load manuals.");
-                return response.json();
-            });
+            const config = getAppConfig();
 
             const [scheduleData, manuals] = await Promise.all([
-                scheduleSource,
-                manualsSource,
+                getSharedTimetableData(config),
+                getSharedManualsData(config),
             ]);
 
             mobileState.sched = scheduleData.schedule || [];
-            window.timetableData = scheduleData;
             mobileState.manualMap = buildManualMap(manuals);
             mobileState.week = null;
             mobileState.loadFailed = false;
@@ -116,9 +107,10 @@ export function ensureScheduleLoaded() {
     return load();
 }
 
-export function syncScheduleFromWindow() {
-    if (hasLoadedSchedule() || !Array.isArray(window.timetableData?.schedule)) return false;
-    mobileState.sched = window.timetableData.schedule;
+export function syncScheduleFromCache() {
+    const cached = getCachedTimetableData(getAppConfig());
+    if (hasLoadedSchedule() || !Array.isArray(cached?.schedule)) return false;
+    mobileState.sched = cached.schedule;
     mobileState.week = null;
     mobileState.loadFailed = false;
     return true;
@@ -167,7 +159,7 @@ export function buildWeek() {
 }
 
 export function renderFull() {
-    syncScheduleFromWindow();
+    syncScheduleFromCache();
     const host = ensureHost();
     if (!host) return;
 
@@ -236,18 +228,14 @@ export function renderFull() {
 export function onHostClick(event) {
     const card = event.target.closest('[data-subject-card="1"]');
     if (card) {
-        const interactionMode = getAdv().interactionMode || "link";
-        if (interactionMode === "mark") {
-            card.classList.toggle("marked-subject");
-        } else {
-            const subject = nsub(card.getAttribute("data-subject-name") || "");
-            const fallback = getManualFallback(subject);
-            if (window.openManualForSubject) {
-                void window.openManualForSubject(subject, fallback);
+            const interactionMode = getAdv().interactionMode || "link";
+            if (interactionMode === "mark") {
+                card.classList.toggle("marked-subject");
             } else {
-                window.open(fallback, "_blank");
+                const subject = nsub(card.getAttribute("data-subject-name") || "");
+                const fallback = getManualFallback(subject);
+                openManualForSubject(subject, fallback);
             }
-        }
         return;
     }
 
@@ -290,7 +278,7 @@ export function onHostClick(event) {
 export function fillToday() {
     if (!dom.todayCards || !dom.todayDate) return;
 
-    syncScheduleFromWindow();
+    syncScheduleFromCache();
     const current = now();
     dom.todayDate.textContent = fDate(new Date());
 
@@ -373,11 +361,7 @@ export function fillToday() {
             } else {
                 const subject = nsub(entry.subject);
                 const fallback = getManualFallback(subject);
-                if (window.openManualForSubject) {
-                    void window.openManualForSubject(subject, fallback);
-                } else {
-                    window.open(fallback, "_blank");
-                }
+                openManualForSubject(subject, fallback);
             }
         });
         dom.todayCards.appendChild(el);
@@ -467,6 +451,7 @@ export function bind() {
         else if (!dom.todayView?.classList.contains("active")) renderFull();
     });
     window.addEventListener("fullLayoutModeChanged", onModeChange);
+    window.addEventListener("mobile-nav:shortcuts-updated", upShortcuts);
     window.addEventListener("storage", (event) => {
         if (event.key === UI_KEY) onModeChange();
     });

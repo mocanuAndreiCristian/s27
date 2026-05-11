@@ -1,4 +1,5 @@
 import { getAppConfig } from "../core/config.js";
+import { getSharedManualsData } from "../core/app-data.js";
 import { emitAppEvent } from "../core/events.js";
 import { readJson, writeJson } from "../core/storage.js";
 import { normalizeText } from "../core/text.js";
@@ -132,22 +133,16 @@ function removeManualFromStoredSettings(manualId = "") {
 
 export function refreshCatalog() {
     allManualsData = [...customManuals, ...officialManuals];
-    window.manualsCatalog = allManualsData.slice();
     emitAppEvent("manuals:updated", {
         manuals: allManualsData.slice(),
     });
 }
 
 export async function loadManualsData() {
-    const { dataPath } = getAppConfig();
+    const config = getAppConfig();
 
     try {
-        const response = await fetch(`${dataPath}manuals.json`);
-        if (!response.ok) {
-            throw new Error("Failed to load manuals.json");
-        }
-
-        const data = await response.json();
+        const data = await getSharedManualsData(config);
         officialManuals = Array.isArray(data)
             ? data
                 .map((manual, index) => normalizeOfficialManual(manual, index))

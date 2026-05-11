@@ -1,4 +1,5 @@
 import { normalizeText, stripEmoji } from "../core/text.js";
+import { openManualForSubject } from "../manuals/recommended-manuals.js";
 
 let isBound = false;
 let selected = { r: -1, c: -1 };
@@ -97,11 +98,7 @@ export function setupTimetableInteractions({ getManualUrlForSubject } = {}) {
         const fallback = getManualUrlForSubject?.(subject)
             || `https://manuale.edu.ro/?s=${encodeURIComponent(subject)}`;
 
-        if (window.openManualForSubject) {
-            void window.openManualForSubject(subject, fallback);
-        } else {
-            openManual(fallback);
-        }
+        openManualForSubject(subject, fallback);
     }, true);
 
     document.addEventListener("keydown", (event) => {

@@ -1,4 +1,5 @@
 import { $, days, modeClasses, getUI, mode, isMobile, todayKey, fDate, applyRandomSkeletonDelay, markSkeletonVisible, waitForMinimumSkeletonVisibility, clearSkeletonVisible, dom, mobileState, skeletonShownAt, ensureHost } from './mobile-state.js';
+import { renderTimetableError, renderTimetableSkeleton } from "../timetable/timetable-renderer.js";
 
 export function cards(entries, cls = "full-subject-card") {
     if (!entries.length) return '<div class="full-day-empty">No classes</div>';
@@ -198,7 +199,7 @@ export function renderFullError(m) {
         if (dom.timetableWrapper) dom.timetableWrapper.style.display = "";
         h.style.display = "none";
         h.innerHTML = "";
-        window.showTimetableError?.("Unable to load the timetable right now.");
+        renderTimetableError("Unable to load the timetable right now.");
         return;
     }
 
@@ -216,7 +217,7 @@ export function renderFullLoading(m) {
         if (dom.timetableWrapper) dom.timetableWrapper.style.display = "";
         h.style.display = "none";
         h.innerHTML = "";
-        window.showTimetableSkeleton?.();
+        renderTimetableSkeleton();
         return;
     }
 
