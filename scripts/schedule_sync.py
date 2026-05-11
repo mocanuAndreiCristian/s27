@@ -7,7 +7,7 @@
 # Usage:
 #   python scripts/schedule_sync.py --class-id 8d                    # Fetch and update schedule JSON
 #   python scripts/schedule_sync.py --class-id 8a --build-html       # Build HTML file from shared template
-#   python scripts/schedule_sync.py --class-id 8a --build-html --template .templates/class-page.template.html  # Custom template
+#   python scripts/schedule_sync.py --class-id 8a --build-html --template 1templates/class-page.template.html  # Custom template
 #   --force can be added to skip confirmation prompt and update automatically if changes are detected.
 from __future__ import annotations
 
