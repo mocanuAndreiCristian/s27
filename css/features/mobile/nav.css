@@ -1,4 +1,4 @@
-﻿/* ========================================
+/* ========================================
    MOBILE NAVIGATION & VIEWS
    ======================================== */
 
@@ -146,14 +146,14 @@
     padding: var(--spacing-md) 0;
     position: sticky;
     top: 4.5rem;
-    background: color-mix(in srgb, var(--bg-color) 90%, transparent);
+    background: var(--card-bg);
     backdrop-filter: blur(var(--overlay-blur));
     -webkit-backdrop-filter: blur(var(--overlay-blur));
     z-index: var(--z-overlay);
     box-shadow: 0 4px 6px -4px var(--shadow-color);
     width: 100%;
     margin-bottom: var(--spacing-sm);
-    border-radius: 0 0 var(--border-radius) var(--border-radius);
+    border-radius: var(--border-radius);
     animation: fadeInUp 1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
