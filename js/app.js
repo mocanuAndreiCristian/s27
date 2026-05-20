@@ -19,6 +19,7 @@ import "./todo/todo-controller.js";
 import { initClock } from "./weather/clock-controller.js";
 import { initWeather } from "./weather/weather-controller.js";
 import { init as initMobile } from "./mobile/mobile-nav-controller.js";
+import "./library/library-controller.js";
 export { OverlayManager, overlayManager } from "./overlays/overlay-manager.js";
 export { initCustomization } from "./settings/customization-controller.js";
 export {
