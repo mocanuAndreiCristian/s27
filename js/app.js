@@ -41,7 +41,6 @@ initTimetable();
 initClock(overlayManager);
 initWeather(overlayManager);
 onReady(initManuals);
-onReady(() => openLibraryOverlay());
 
 if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
