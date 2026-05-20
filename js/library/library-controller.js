@@ -219,4 +219,4 @@ export function initLibrary() {
 }
 
 onReady(initLibrary);
-
+onReady(() => openLibraryOverlay());
