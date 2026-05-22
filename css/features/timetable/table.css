@@ -66,13 +66,6 @@
     white-space: nowrap;
 }
 
-/* Compact Mode */
-body.compact-timetable .timetable th,
-body.compact-timetable .timetable td {
-    padding: var(--spacing-sm);
-    font-size: calc(var(--font-size-2xl) * 0.85);
-}
-
 .timetable th {
     background-color: var(--card-bg);
     color: var(--text-color);
