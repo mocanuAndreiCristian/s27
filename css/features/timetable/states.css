@@ -37,7 +37,6 @@
 body.minimal-cells .timetable th,
 body.minimal-cells .timetable td {
     border: none;
-    background: transparent;
 }
 
 /* Time cells (first column) - border right */
