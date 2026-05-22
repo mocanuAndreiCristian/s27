@@ -128,7 +128,7 @@
     }
 
     #customizationOverlay .theme-options {
-        grid-template-columns: 1fr;
+        grid-template-columns: 2fr;
         gap: 0.75rem;
     }
 
