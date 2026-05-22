@@ -50,3 +50,10 @@ body.minimal-cells .timetable td:first-child {
 body.minimal-cells .timetable thead th:not(:first-child) {
     border-bottom: 1px solid var(--divider-color);
 }
+
+/* Compact Mode */
+body.compact-timetable .timetable th,
+body.compact-timetable .timetable td {
+    padding: var(--spacing-sm);
+    font-size: calc(var(--font-size-2xl) * 0.85);
+}
