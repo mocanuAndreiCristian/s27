@@ -1,0 +1,26 @@
+{
+  "name": "Orar Clasa 8C",
+  "short_name": "Orar 8C",
+  "description": "Orarul și informațiile clasei 8C",
+  "start_url": "/s27/8c/",
+  "scope": "/s27/8c/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#6196ff",
+  "lang": "ro",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
